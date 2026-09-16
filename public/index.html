@@ -5,11 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Video Conference - LiveKit</title>
   
+  <!-- ✅ PWA Meta Tags -->
+  <meta name="theme-color" content="#00b4d8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="VCMeeting">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2300b4d8'/%3E%3Ctext x='32' y='44' font-family='Arial' font-size='36' font-weight='bold' fill='white' text-anchor='middle'%3EVC%3C/text%3E%3C/svg%3E" type="image/svg+xml">
+  
+  <!-- ✅ Google Fonts - អក្សរខ្មែរស្អាត -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
   <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
   
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Kantumruy Pro', 'Segoe UI', sans-serif; }
-    body { background: #1a1a2e; color: #fff; min-height: 100vh; padding: 20px; }
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: 'Kantumruy Pro', 'Noto Sans Khmer', 'Khmer OS', 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    body { 
+      background: #1a1a2e; 
+      color: #fff; 
+      min-height: 100vh; 
+      padding: 20px;
+      line-height: 1.6;
+      letter-spacing: 0.3px;
+      font-feature-settings: 'kern' 1;
+    }
     
     /* ============================================================
        LOGIN SCREEN
@@ -31,7 +59,14 @@
       max-width: 420px;
       border: 1px solid #2d2d44;
     }
-    .login-card h1 { color: #48cae4; margin-bottom: 25px; font-size: 28px; text-align: center; }
+    .login-card h1 { 
+      color: #48cae4; 
+      margin-bottom: 25px; 
+      font-size: 28px; 
+      text-align: center;
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(72, 202, 228, 0.2);
+    }
     .login-card input {
       padding: 14px 20px;
       border-radius: 8px;
@@ -42,8 +77,13 @@
       width: 100%;
       outline: none;
       margin-bottom: 15px;
+      font-family: inherit;
+      transition: all 0.2s;
     }
-    .login-card input:focus { border-color: #48cae4; }
+    .login-card input:focus { 
+      border-color: #48cae4;
+      box-shadow: 0 0 0 3px rgba(72, 202, 228, 0.1);
+    }
     .login-card button {
       padding: 14px 40px;
       background: #00b4d8;
@@ -51,11 +91,12 @@
       border: none;
       border-radius: 8px;
       font-size: 16px;
-      font-weight: bold;
+      font-weight: 600;
       cursor: pointer;
       transition: 0.2s;
       width: 100%;
       margin-top: 10px;
+      font-family: inherit;
     }
     .login-card button:hover { background: #0096c7; }
     .login-card button:disabled { background: #475569; cursor: not-allowed; }
@@ -63,13 +104,103 @@
       color: #ef4444;
       font-size: 14px;
       text-align: center;
-      padding: 10px;
+      padding: 12px;
       background: rgba(239, 68, 68, 0.1);
       border-radius: 8px;
       display: none;
       margin-bottom: 15px;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      font-weight: 500;
     }
     .error-message.show { display: block; }
+    
+    /* ============================================================
+       OTP MODAL (2FA)
+       ============================================================ */
+    #otp-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 99999;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    #otp-modal.active { display: flex; }
+    .otp-card {
+      background: #16213e;
+      padding: 40px;
+      border-radius: 15px;
+      max-width: 420px;
+      width: 100%;
+      border: 2px solid #f59e0b;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+      text-align: center;
+    }
+    .otp-card .icon {
+      font-size: 60px;
+      margin-bottom: 15px;
+    }
+    .otp-card h2 {
+      color: #f59e0b;
+      margin-bottom: 15px;
+      font-size: 24px;
+      font-weight: 700;
+    }
+    .otp-card p {
+      color: #cbd5e1;
+      margin-bottom: 20px;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    .otp-card .security-note {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #fbbf24;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .otp-card input {
+      padding: 16px;
+      border-radius: 10px;
+      border: 2px solid #3a506b;
+      background: #0b132b;
+      color: #fff;
+      font-size: 24px;
+      width: 100%;
+      outline: none;
+      text-align: center;
+      letter-spacing: 8px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      font-family: 'Courier New', monospace;
+    }
+    .otp-card input:focus { 
+      border-color: #f59e0b;
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+    }
+    .otp-card button {
+      padding: 14px 30px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-bottom: 10px;
+      font-family: inherit;
+    }
+    .otp-card .btn-verify { background: #10b981; color: #fff; }
+    .otp-card .btn-verify:hover { background: #059669; }
+    .otp-card .btn-cancel { background: #ef4444; color: #fff; font-size: 14px; padding: 10px; }
+    .otp-card .btn-cancel:hover { background: #dc2626; }
     
     /* ============================================================
        LOBBY SCREEN
@@ -92,13 +223,19 @@
       border: 1px solid #2d2d44;
       text-align: center;
     }
-    .lobby-card h1 { color: #48cae4; margin-bottom: 15px; font-size: 24px; }
+    .lobby-card h1 { 
+      color: #48cae4; 
+      margin-bottom: 15px; 
+      font-size: 24px;
+      font-weight: 700;
+    }
     .user-info {
       background: #0b132b;
       padding: 15px;
       border-radius: 8px;
       margin-bottom: 20px;
       font-size: 14px;
+      border: 1px solid #2d2d44;
     }
     .user-info strong { color: #48cae4; }
     .lobby-card input {
@@ -111,6 +248,7 @@
       width: 100%;
       outline: none;
       margin-bottom: 15px;
+      font-family: inherit;
     }
     .lobby-card input:focus { border-color: #48cae4; }
     .lobby-card button {
@@ -120,15 +258,18 @@
       border: none;
       border-radius: 8px;
       font-size: 16px;
-      font-weight: bold;
+      font-weight: 600;
       cursor: pointer;
       transition: 0.2s;
       width: 100%;
       margin-bottom: 10px;
+      font-family: inherit;
     }
     .lobby-card button:hover { background: #0096c7; }
     .lobby-card button.admin-btn { background: #8b5cf6; }
     .lobby-card button.admin-btn:hover { background: #7c3aed; }
+    .lobby-card button.install-btn { background: #10b981; }
+    .lobby-card button.install-btn:hover { background: #059669; }
     .lobby-card button.logout-btn {
       background: #475569;
       font-size: 14px;
@@ -153,7 +294,11 @@
       flex-wrap: wrap;
       gap: 15px;
     }
-    .header h2 { color: #48cae4; font-size: 18px; }
+    .header h2 { 
+      color: #48cae4; 
+      font-size: 18px;
+      font-weight: 600;
+    }
     .header .user-badge {
       background: #0b132b;
       padding: 6px 12px;
@@ -170,7 +315,7 @@
       border: none;
       border-radius: 8px;
       font-size: 14px;
-      font-weight: bold;
+      font-weight: 600;
       cursor: pointer;
       transition: 0.2s;
       font-family: inherit;
@@ -183,9 +328,6 @@
     .btn-warning:hover { background: #d97706; }
     .controls button.off { background: #ef4444; color: #fff; }
     
-    /* ============================================================
-       SECTION TITLES
-       ============================================================ */
     .section-title {
       font-size: 14px;
       color: #94a3b8;
@@ -193,15 +335,13 @@
       padding-bottom: 8px;
       border-bottom: 1px solid #2d2d44;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 1.5px;
       display: flex;
       align-items: center;
       gap: 8px;
+      font-weight: 600;
     }
     
-    /* ============================================================
-       SCREEN SHARE GRID (ខាងលើ - តូចៗ)
-       ============================================================ */
     .screen-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -209,9 +349,6 @@
       margin-bottom: 25px;
     }
     
-    /* ============================================================
-       VIDEO GRID (ខាងក្រោម - តូចៗ)
-       ============================================================ */
     .video-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -219,9 +356,6 @@
       margin-bottom: 25px;
     }
     
-    /* ============================================================
-       VIDEO BOX
-       ============================================================ */
     .video-box {
       position: relative;
       background: #000;
@@ -240,9 +374,7 @@
       transform: scale(1.02);
       box-shadow: 0 8px 25px rgba(72, 202, 228, 0.3);
     }
-    .video-box.screen-share {
-      border-color: #f59e0b;
-    }
+    .video-box.screen-share { border-color: #f59e0b; }
     .video-box.screen-share:hover {
       border-color: #fbbf24;
       box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
@@ -285,7 +417,7 @@
       background: rgba(0,0,0,0.7);
       padding: 6px 10px;
       border-radius: 6px;
-      font-size: 14px;
+      font-size: 12px;
       color: #fff;
       z-index: 2;
       opacity: 0;
@@ -293,15 +425,17 @@
     }
     .video-box:hover .expand-icon { opacity: 1; }
     
-    /* ============================================================
-       PARTICIPANTS
-       ============================================================ */
     .participants-list {
       background: #16213e;
       padding: 20px;
       border-radius: 10px;
     }
-    .participants-list h3 { color: #48cae4; margin-bottom: 15px; font-size: 16px; }
+    .participants-list h3 { 
+      color: #48cae4; 
+      margin-bottom: 15px; 
+      font-size: 16px;
+      font-weight: 600;
+    }
     .participant-item {
       padding: 10px 15px;
       background: #0b132b;
@@ -320,9 +454,6 @@
       box-shadow: 0 0 8px #10b981;
     }
     
-    /* ============================================================
-       STATUS MESSAGE
-       ============================================================ */
     #status {
       position: fixed;
       bottom: 20px;
@@ -338,12 +469,10 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.5);
       max-width: 90%;
       text-align: center;
+      font-weight: 500;
     }
     #status.show { display: block; }
     
-    /* ============================================================
-       FULLSCREEN MODAL (Discord Style)
-       ============================================================ */
     #fullscreenModal {
       display: none;
       position: fixed;
@@ -356,9 +485,7 @@
       flex-direction: column;
       padding: 20px;
     }
-    #fullscreenModal.active {
-      display: flex;
-    }
+    #fullscreenModal.active { display: flex; }
     .modal-header {
       display: flex;
       justify-content: space-between;
@@ -371,20 +498,18 @@
     .modal-header .modal-title {
       color: #48cae4;
       font-size: 18px;
-      font-weight: bold;
-    }
-    .modal-header .modal-controls {
-      display: flex;
-      gap: 10px;
+      font-weight: 600;
     }
     .modal-header button {
       padding: 10px 20px;
       border: none;
       border-radius: 8px;
       font-size: 14px;
-      font-weight: bold;
+      font-weight: 600;
       cursor: pointer;
       font-family: inherit;
+      background: #00b4d8;
+      color: #fff;
     }
     .modal-body {
       flex: 1;
@@ -394,7 +519,6 @@
       background: #000;
       border-radius: 12px;
       overflow: hidden;
-      position: relative;
     }
     .modal-body video {
       width: 100%;
@@ -403,9 +527,6 @@
       background: #000;
     }
     
-    /* ============================================================
-       RESPONSIVE
-       ============================================================ */
     @media (max-width: 768px) {
       .screen-grid { grid-template-columns: 1fr; }
       .video-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
@@ -413,6 +534,8 @@
       .controls { width: 100%; }
       .controls button { flex: 1; padding: 10px; font-size: 12px; }
       .login-card, .lobby-card { padding: 25px; }
+      body { padding: 10px; }
+      .login-card h1 { font-size: 22px; }
     }
   </style>
 </head>
@@ -425,9 +548,26 @@
     <div class="login-card">
       <h1>🔐 ចូលប្រើប្រាស់</h1>
       <div id="login-error" class="error-message"></div>
-      <input type="text" id="loginUsername" placeholder="ឈ្មោះអ្នកប្រើ (Username)">
-      <input type="password" id="loginPassword" placeholder="លេខសម្ងាត់ (Password)">
+      <input type="text" id="loginUsername" placeholder="ឈ្មោះអ្នកប្រើ (Username)" autocomplete="username">
+      <input type="password" id="loginPassword" placeholder="លេខសម្ងាត់ (Password)" autocomplete="current-password">
       <button id="loginBtn" onclick="login()">🔑 ចូល</button>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       OTP MODAL (2FA)
+       ============================================================ -->
+  <div id="otp-modal">
+    <div class="otp-card">
+      <div class="icon">🔐</div>
+      <h2>ផ្ទៀងផ្ទាត់ 2FA</h2>
+      <p>គណនីរបស់អ្នកកំពុង Online នៅឧបករណ៍ផ្សេង។ សូមបញ្ចូលលេខកូដ ៦ ខ្ទង់ដែលបានផ្ញើទៅឧបករណ៍នោះ។</p>
+      <div class="security-note">
+        ⚠️ <strong>សេចក្តីជូនដំណឹង:</strong> ប្រសិនបើអ្នកមិនបាន Login ពីឧបករណ៍ផ្សេងទេ សូមកុំបញ្ចូលលេខកូដ។ វាអាចជាការព្យាយាម Hack!
+      </div>
+      <input type="text" id="otpInput" placeholder="______" maxlength="6" inputmode="numeric" autocomplete="off">
+      <button class="btn-verify" onclick="verifyOTP()">✅ បញ្ជាក់</button>
+      <button class="btn-cancel" onclick="cancelOTP()">❌ បោះបង់</button>
     </div>
   </div>
 
@@ -442,6 +582,7 @@
       </div>
       <input type="text" id="roomNameInput" placeholder="ឈ្មោះបន្ទប់ (ឧ. meeting-1)" value="meeting-1">
       <button onclick="joinRoom()">🚀 ចូលបន្ទប់</button>
+      <button id="installBtn" class="install-btn" onclick="installApp()" style="display:none;">📲 Install App</button>
       <button id="adminBtn" class="admin-btn" onclick="openAdmin()" style="display:none;">👑 គ្រប់គ្រង Users</button>
       <button class="logout-btn" onclick="logout()">🚪 ចាកចេញពីគណនី</button>
     </div>
@@ -457,26 +598,20 @@
         <span class="user-badge">👤 <span id="currentUser">-</span></span>
       </div>
       <div class="controls">
-        <button id="btnMic" class="btn-primary" onclick="toggleMic()">🎤 Mic On</button>
-        <button id="btnCam" class="btn-primary" onclick="toggleCamera()">📹 Camera On</button>
-        <button id="btnScreen" class="btn-warning" onclick="toggleScreenShare()">🖥️ Share Screen</button>
+        <button id="btnMic" class="btn-primary" onclick="toggleMic()">🎤 បើកមេក្រូ</button>
+        <button id="btnCam" class="btn-primary" onclick="toggleCamera()">📹 បើកកាមេរ៉ា</button>
+        <button id="btnScreen" class="btn-warning" onclick="toggleScreenShare()">🖥️ ចែកអេក្រង់</button>
         <button class="btn-danger" onclick="leaveRoom()">🚪 ចាកចេញ</button>
       </div>
     </div>
 
-    <!-- ============================================================
-         SCREEN SHARE (ខាងលើ)
-         ============================================================ -->
     <h4 class="section-title" id="screenTitle" style="display:none;">
-      🖥️ SCREEN SHARE (<span id="screenCount">0</span>)
+      🖥️ ការចែកអេក្រង់ (<span id="screenCount">0</span>)
     </h4>
     <div class="screen-grid" id="screenGrid"></div>
 
-    <!-- ============================================================
-         CAMERA & PARTICIPANTS (ខាងក្រោម)
-         ============================================================ -->
     <h4 class="section-title">
-      👤 CAMERA & PARTICIPANTS (<span id="videoCount">0</span>)
+      👤 កាមេរ៉ា និងអ្នកចូលរួម (<span id="videoCount">0</span>)
     </h4>
     <div class="video-grid" id="videoGrid"></div>
 
@@ -493,7 +628,7 @@
     <div class="modal-header">
       <div class="modal-title" id="modalTitle">📺 Video</div>
       <div class="modal-controls">
-        <button class="btn-primary" onclick="closeFullscreen()">✕ បិទ</button>
+        <button onclick="closeFullscreen()">✕ បិទ</button>
       </div>
     </div>
     <div class="modal-body" id="modalBody"></div>
@@ -513,7 +648,9 @@
     let LIVEKIT_URL = 'wss://meeting-86lp77zt.livekit.cloud';
     let authToken = null;
     let currentUser = null;
-    let currentFullscreenTrack = null;
+    let pendingLoginData = null;
+    let deferredPrompt = null;
+    let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
     // ============================================================
     // CHECK SESSION ON LOAD
@@ -529,7 +666,57 @@
       } else {
         showLogin();
       }
+      
+      registerServiceWorker();
     });
+
+    // ============================================================
+    // PWA SERVICE WORKER
+    // ============================================================
+    function registerServiceWorker() {
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('✅ ServiceWorker registered:', reg.scope))
+            .catch(err => console.log('❌ ServiceWorker failed:', err));
+        });
+      }
+    }
+
+    // ============================================================
+    // PWA INSTALL PROMPT
+    // ============================================================
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      console.log('✅ Install prompt available');
+      
+      const btn = document.getElementById('installBtn');
+      if (btn) btn.style.display = 'block';
+    });
+
+    window.addEventListener('appinstalled', () => {
+      console.log('✅ App installed');
+      const btn = document.getElementById('installBtn');
+      if (btn) btn.style.display = 'none';
+      deferredPrompt = null;
+      showStatus('✅ កម្មវិធីត្រូវបាន Install ជោគជ័យ!');
+    });
+
+    function installApp() {
+      if (!deferredPrompt) {
+        showStatus('⚠️ មិនអាច Install បានទេ - សូមប្រើ Chrome ឬ Edge!');
+        return;
+      }
+      
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('✅ User accepted install');
+        }
+        deferredPrompt = null;
+      });
+    }
 
     // ============================================================
     // SHOW/HIDE SCREENS
@@ -578,10 +765,22 @@
         const response = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
+          body: JSON.stringify({ 
+            username, 
+            password,
+            deviceId: getDeviceId()
+          })
         });
 
         const data = await response.json();
+
+        if (data.requires2FA) {
+          // ត្រូវការ 2FA
+          pendingLoginData = { username, password };
+          document.getElementById('otp-modal').classList.add('active');
+          document.getElementById('otpInput').focus();
+          return;
+        }
 
         if (!response.ok) {
           throw new Error(data.error || 'Login failed');
@@ -591,9 +790,11 @@
         currentUser = data.user;
         localStorage.setItem('authToken', authToken);
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        localStorage.setItem('deviceId', getDeviceId());
 
         console.log('✅ Login successful:', currentUser);
         showLobby();
+        showStatus('✅ ចូលប្រើប្រាស់ជោគជ័យ!');
 
       } catch (error) {
         console.error('Login error:', error);
@@ -603,6 +804,77 @@
         loginBtn.disabled = false;
         loginBtn.textContent = '🔑 ចូល';
       }
+    }
+
+    // ============================================================
+    // GET DEVICE ID (Unique per browser)
+    // ============================================================
+    function getDeviceId() {
+      let deviceId = localStorage.getItem('deviceId');
+      if (!deviceId) {
+        deviceId = 'device-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now();
+        localStorage.setItem('deviceId', deviceId);
+      }
+      return deviceId;
+    }
+
+    // ============================================================
+    // VERIFY OTP (2FA)
+    // ============================================================
+    async function verifyOTP() {
+      const otp = document.getElementById('otpInput').value.trim();
+      
+      if (!otp || otp.length !== 6) {
+        alert('សូមបញ្ចូលលេខកូដ ៦ ខ្ទង់!');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/auth/verify-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: pendingLoginData.username,
+            password: pendingLoginData.password,
+            otp: otp,
+            deviceId: getDeviceId()
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Invalid OTP');
+        }
+
+        authToken = data.token;
+        currentUser = data.user;
+        localStorage.setItem('authToken', authToken);
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        localStorage.setItem('deviceId', getDeviceId());
+
+        document.getElementById('otp-modal').classList.remove('active');
+        document.getElementById('otpInput').value = '';
+        pendingLoginData = null;
+
+        showLobby();
+        showStatus('✅ ចូលប្រើប្រាស់ជោគជ័យ!');
+
+      } catch (error) {
+        console.error('OTP error:', error);
+        alert('❌ ' + error.message);
+        document.getElementById('otpInput').value = '';
+      }
+    }
+
+    // ============================================================
+    // CANCEL OTP
+    // ============================================================
+    function cancelOTP() {
+      document.getElementById('otp-modal').classList.remove('active');
+      document.getElementById('otpInput').value = '';
+      pendingLoginData = null;
+      showStatus('❌ បោះបង់ការចូល');
     }
 
     // ============================================================
@@ -672,23 +944,40 @@
         
         localParticipant = room.localParticipant;
 
-        try {
-          await localParticipant.enableCameraAndMicrophone();
-          isCameraOn = true;
-          isMicOn = true;
-        } catch (deviceError) {
-          console.warn('⚠️ Camera/Mic not available:', deviceError.message);
-          showStatus('⚠️ គ្មានកាមេរ៉ា/មេក្រូ - អ្នកអាច Share Screen បាន');
-          
+        // ============================================================
+        // ✅ FIX: Mobile - Don't auto-enable camera immediately
+        // ============================================================
+        if (isMobile) {
+          // នៅលើទូរស័ព្ទ សូមរង់ចាំ User ចុច Button ជាមុន
           try {
             await localParticipant.setMicrophoneEnabled(true);
             isMicOn = true;
-          } catch (e) { isMicOn = false; }
-          
+            showStatus('🎤 មេក្រូបើកហើយ - ចុច "បើកកាមេរ៉ា" ដើម្បីបើក');
+          } catch (e) {
+            isMicOn = false;
+            showStatus('⚠️ មេក្រូមិនអាចបើកបាន');
+          }
+          isCameraOn = false;
+        } else {
+          // នៅលើកុំព្យូទ័រ បើកទាំងពីរភ្លាម
           try {
-            await localParticipant.setCameraEnabled(true);
+            await localParticipant.enableCameraAndMicrophone();
             isCameraOn = true;
-          } catch (e) { isCameraOn = false; }
+            isMicOn = true;
+          } catch (deviceError) {
+            console.warn('⚠️ Camera/Mic not available:', deviceError.message);
+            showStatus('⚠️ គ្មានកាមេរ៉ា/មេក្រូ');
+            
+            try {
+              await localParticipant.setMicrophoneEnabled(true);
+              isMicOn = true;
+            } catch (e) { isMicOn = false; }
+            
+            try {
+              await localParticipant.setCameraEnabled(true);
+              isCameraOn = true;
+            } catch (e) { isCameraOn = false; }
+          }
         }
         
         displayLocalTracks(currentUser.displayName || currentUser.username);
@@ -850,7 +1139,6 @@
       box.insertBefore(videoElement, box.firstChild);
       document.getElementById(gridId).appendChild(box);
       
-      // ចុចដើម្បីមើលធំ
       box.onclick = function(e) {
         if (e.target.tagName === 'VIDEO' || e.target.tagName === 'DIV') {
           openFullscreen(videoElement, name, isScreen);
@@ -875,7 +1163,6 @@
       modalTitle.textContent = (isScreen ? '🖥️ ' : '👤 ') + name;
       modalBody.innerHTML = '';
       
-      // Clone video element
       const newVideo = document.createElement('video');
       newVideo.autoplay = true;
       newVideo.playsInline = true;
@@ -886,9 +1173,6 @@
       modal.classList.add('active');
     }
 
-    // ============================================================
-    // CLOSE FULLSCREEN
-    // ============================================================
     function closeFullscreen() {
       const modal = document.getElementById('fullscreenModal');
       const modalBody = document.getElementById('modalBody');
@@ -897,11 +1181,9 @@
       modalBody.innerHTML = '';
     }
 
-    // Close modal on Escape key
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        closeFullscreen();
-      }
+      if (e.key === 'Escape') closeFullscreen();
+      if (e.key === 'Enter' && pendingLoginData) verifyOTP();
     });
 
     // ============================================================
@@ -922,9 +1204,6 @@
       updateVideoCounts();
     }
 
-    // ============================================================
-    // UPDATE VIDEO COUNTS
-    // ============================================================
     function updateVideoCounts() {
       const screenCount = document.getElementById('screenGrid').children.length;
       const videoCount = document.getElementById('videoGrid').children.length;
@@ -938,11 +1217,11 @@
     // ============================================================
     function updateMediaButtons() {
       const btnMic = document.getElementById('btnMic');
-      btnMic.innerHTML = isMicOn ? '🎤 Mic On' : '🔇 Mic Off';
+      btnMic.innerHTML = isMicOn ? '🎤 បើកមេក្រូ' : '🔇 បិទមេក្រូ';
       btnMic.className = isMicOn ? 'btn-primary' : 'btn-primary off';
       
       const btnCam = document.getElementById('btnCam');
-      btnCam.innerHTML = isCameraOn ? '📹 Camera On' : '📷 Camera Off';
+      btnCam.innerHTML = isCameraOn ? '📹 បើកកាមេរ៉ា' : '📷 បិទកាមេរ៉ា';
       btnCam.className = isCameraOn ? 'btn-primary' : 'btn-primary off';
     }
 
@@ -988,6 +1267,13 @@
     // ============================================================
     async function toggleScreenShare() {
       if (!localParticipant) return;
+      
+      // ✅ FIX: Check if screen share is supported on this device
+      if (isMobile && !navigator.mediaDevices.getDisplayMedia) {
+        showStatus('⚠️ ទូរស័ព្ទមិនអាចចែកអេក្រង់បានទេ - សូមប្រើកុំព្យូទ័រ!');
+        return;
+      }
+      
       try {
         isScreenSharing = !isScreenSharing;
         await localParticipant.setScreenShareEnabled(isScreenSharing, {
@@ -996,10 +1282,10 @@
         });
         
         const btn = document.getElementById('btnScreen');
-        btn.innerHTML = isScreenSharing ? '🛑 Stop Sharing' : '🖥️ Share Screen';
+        btn.innerHTML = isScreenSharing ? '🛑 ឈប់ចែក' : '🖥️ ចែកអេក្រង់';
         btn.className = isScreenSharing ? 'btn-danger' : 'btn-warning';
         
-        showStatus(isScreenSharing ? '🖥️ ចាប់ផ្តើម Share Screen' : '🖥️ បញ្ចប់ Share Screen');
+        showStatus(isScreenSharing ? '🖥️ ចាប់ផ្តើមចែកអេក្រង់' : '🖥️ បញ្ចប់ការចែកអេក្រង់');
         
         if (!isScreenSharing) {
           removeVideoByParticipant(localParticipant.identity + ' (អ្នក)', true);
@@ -1007,9 +1293,9 @@
       } catch (error) {
         isScreenSharing = false;
         const btn = document.getElementById('btnScreen');
-        btn.innerHTML = '🖥️ Share Screen';
+        btn.innerHTML = '🖥️ ចែកអេក្រង់';
         btn.className = 'btn-warning';
-        showStatus('❌ បោះបង់ការ Share Screen');
+        showStatus('❌ បោះបង់ការចែកអេក្រង់');
       }
     }
 
@@ -1068,11 +1354,11 @@
       isCameraOn = false;
       isScreenSharing = false;
       
-      document.getElementById('btnMic').innerHTML = '🎤 Mic On';
+      document.getElementById('btnMic').innerHTML = '🎤 បើកមេក្រូ';
       document.getElementById('btnMic').className = 'btn-primary';
-      document.getElementById('btnCam').innerHTML = '📹 Camera On';
+      document.getElementById('btnCam').innerHTML = '📹 បើកកាមេរ៉ា';
       document.getElementById('btnCam').className = 'btn-primary';
-      document.getElementById('btnScreen').innerHTML = '🖥️ Share Screen';
+      document.getElementById('btnScreen').innerHTML = '🖥️ ចែកអេក្រង់';
       document.getElementById('btnScreen').className = 'btn-warning';
       
       showLobby();
