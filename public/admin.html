@@ -11,66 +11,50 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Kantumruy Pro', 'Noto Sans Khmer', sans-serif; -webkit-font-smoothing: antialiased; }
     body { background: #0b132b; color: #fff; min-height: 100vh; padding: 20px; line-height: 1.6; }
-    
     .container { max-width: 1300px; margin: 0 auto; }
-    
     .header { background: #1c2541; padding: 25px 30px; border-radius: 12px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; border: 1px solid #2d2d44; }
     .header h1 { color: #48cae4; font-size: 24px; }
     .header .user-info { color: #94a3b8; font-size: 14px; }
     .header .user-info strong { color: #48cae4; }
-    
     .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
     .btn-primary { background: #00b4d8; color: #fff; }
-    .btn-primary:hover { background: #0096c7; }
     .btn-success { background: #10b981; color: #fff; }
     .btn-danger { background: #ef4444; color: #fff; }
     .btn-warning { background: #f59e0b; color: #000; }
     .btn-secondary { background: #475569; color: #fff; }
-    
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
     .stat-card { background: #1c2541; padding: 25px; border-radius: 12px; border: 1px solid #2d2d44; text-align: center; }
     .stat-card .stat-value { font-size: 36px; font-weight: bold; color: #48cae4; margin-bottom: 5px; }
     .stat-card .stat-label { font-size: 13px; color: #94a3b8; }
-    
     .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
     .tab-btn { padding: 12px 24px; background: #1c2541; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
     .tab-btn.active { background: #00b4d8; }
-    
     .tab-content { display: none; }
     .tab-content.active { display: block; }
-    
     .card { background: #1c2541; padding: 30px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #2d2d44; }
     .card h2 { color: #48cae4; margin-bottom: 20px; font-size: 20px; padding-bottom: 15px; border-bottom: 1px solid #2d2d44; }
-    
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
-    
     input, select { width: 100%; padding: 12px 15px; border-radius: 8px; border: 1px solid #3a506b; background: #0b132b; color: #fff; font-size: 14px; outline: none; font-family: inherit; }
     input:focus, select:focus { border-color: #48cae4; }
-    
     .checkbox-group { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; padding: 12px; background: #0b132b; border-radius: 8px; border: 1px solid #2d2d44; max-height: 150px; overflow-y: auto; }
     .checkbox-group label { display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: #1c2541; border-radius: 6px; cursor: pointer; font-size: 13px; }
     .checkbox-group input[type="checkbox"] { width: auto; margin: 0; }
-    
     table { width: 100%; border-collapse: collapse; margin-top: 15px; }
     th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #2d2d44; font-size: 14px; }
     th { background: #0b132b; color: #48cae4; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
     tr:hover { background: #16213e; }
-    
     .badge { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; }
     .badge-admin { background: #f59e0b; color: #000; }
     .badge-supervisor { background: #8b5cf6; color: #fff; }
     .badge-user { background: #00b4d8; color: #fff; }
     .badge-active { background: #10b981; color: #fff; }
     .badge-inactive { background: #ef4444; color: #fff; }
-    
     .action-buttons { display: flex; gap: 5px; flex-wrap: wrap; }
     .action-buttons button { padding: 6px 10px; font-size: 12px; }
-    
     .alert { padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; display: none; font-size: 14px; }
     .alert.show { display: block; }
     .alert-success { background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #10b981; }
     .alert-error { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #ef4444; }
-    
     .room-monitor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
     .room-monitor-card { background: #0b132b; padding: 20px; border-radius: 10px; border: 2px solid #2d2d44; cursor: pointer; transition: all 0.2s; }
     .room-monitor-card:hover { border-color: #48cae4; transform: translateY(-3px); }
@@ -79,9 +63,7 @@
     .room-monitor-card .online-count { font-size: 24px; font-weight: bold; color: #10b981; margin: 10px 0; }
     .room-monitor-card .user-list { font-size: 12px; color: #94a3b8; margin-top: 10px; max-height: 100px; overflow-y: auto; }
     .room-monitor-card .join-hint { margin-top: 10px; padding: 8px; background: #16213e; border-radius: 6px; font-size: 12px; text-align: center; color: #48cae4; }
-    
     .loading { text-align: center; padding: 40px; color: #94a3b8; }
-    
     @media (max-width: 768px) {
       .header { flex-direction: column; align-items: flex-start; }
       .form-grid { grid-template-columns: 1fr; }
@@ -149,9 +131,9 @@
           <input type="text" id="newDisplayName" placeholder="Display Name">
           <input type="password" id="newPassword" placeholder="Password">
           <select id="newRole">
-            <option value="user">User</option>
-            <option value="supervisor">Supervisor</option>
-            <option value="admin">Admin</option>
+            <option value="user">User (អ្នកប្រើធម្មតា)</option>
+            <option value="supervisor">Supervisor (អ្នកត្រួតពិនិត្យ)</option>
+            <option value="admin">Admin (អ្នកគ្រប់គ្រង)</option>
           </select>
         </div>
         <div style="margin-bottom: 15px;">
@@ -164,7 +146,7 @@
       <div class="card">
         <h2>➕ បង្កើតបន្ទប់ថ្មី</h2>
         <div class="form-grid">
-          <input type="text" id="newRoomId" placeholder="Room ID">
+          <input type="text" id="newRoomId" placeholder="Room ID (ឧ. meeting-4)">
           <input type="text" id="newRoomName" placeholder="ឈ្មោះបន្ទប់">
         </div>
         <button class="btn btn-primary" onclick="createRoom()">➕ បង្កើតបន្ទប់</button>
@@ -187,6 +169,31 @@
     if (user.role === 'supervisor') {
       document.getElementById('createTabBtn').style.display = 'none';
     }
+
+    // ============================================================
+    // ✅ AUDIO UNLOCK (សម្រាប់ ADMIN - ដើម្បីឱ្យសំឡេងដំណើរការក្នុង index.html)
+    // ============================================================
+    window.vcAudioCtx = null;
+
+    function unlockGlobalAudio() {
+      try {
+        if (!window.vcAudioCtx) {
+          window.vcAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (window.vcAudioCtx.state === 'suspended') {
+          window.vcAudioCtx.resume().then(() => {
+            console.log('🔊 Audio Unlocked (Admin)');
+          }).catch(() => {});
+        }
+      } catch (e) {}
+    }
+
+    ['click', 'touchstart', 'keydown', 'pointerdown'].forEach(evt => {
+      document.addEventListener(evt, unlockGlobalAudio, { passive: true });
+    });
+
+    // Unlock ភ្លាមៗនៅ Load
+    unlockGlobalAudio();
 
     function showAlert(message, type = 'success') {
       const alert = document.getElementById('alert');
@@ -239,59 +246,58 @@
       } catch (e) {}
     }
 
-    // ✅ បង្ហាញ Popup ឱ្យចុចដោយដៃ (Unlock Audio)
-    function joinRoomFromAdmin(roomId) {
-      const popup = document.createElement('div');
-      popup.id = 'joinRoomPopup';
-      popup.style.cssText = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 99999; display: flex; justify-content: center; align-items: center; padding: 20px;`;
-      popup.innerHTML = `
-        <div style="background: #16213e; padding: 50px; border-radius: 20px; text-align: center; max-width: 450px; border: 3px solid #48cae4; box-shadow: 0 20px 60px rgba(72,202,228,0.4);">
-          <div style="font-size: 80px; margin-bottom: 20px;">🔊</div>
-          <h2 style="color: #48cae4; margin-bottom: 15px; font-size: 24px;">ចុចដើម្បីចូលបន្ទប់</h2>
-          <p style="color: #94a3b8; margin-bottom: 10px; font-size: 14px;">ដើម្បីឱ្យសំឡេងជូនដំណឹងដំណើរការ សូមចុចប៊ូតុងខាងក្រោម</p>
-          <div style="background: rgba(72,202,228,0.1); padding: 12px; border-radius: 8px; margin-bottom: 25px; font-size: 13px; color: #48cae4;">
-            🚪 បន្ទប់: <strong>${roomId}</strong>
-          </div>
-          <button id="confirmJoinBtn" style="padding: 18px 50px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; font-family: inherit; width: 100%; box-shadow: 0 8px 25px rgba(16,185,129,0.4);">🚀 ចូលបន្ទប់ឥឡូវ</button>
-          <button onclick="cancelJoinRoom()" style="padding: 12px 30px; background: #475569; color: #fff; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; font-family: inherit; width: 100%; margin-top: 10px;">✕ បោះបង់</button>
-        </div>
+    // ✅ ចុចលើបន្ទប់ → Unlock Audio + ចូលបន្ទប់ភ្លាម
+    async function joinRoomFromAdmin(roomId) {
+      console.log('🚀 Joining room from admin:', roomId);
+
+      // ✅ Step 1: Unlock Audio ដោយបង្កើត AudioContext + លេងសំឡេង Test
+      try {
+        if (!window.vcAudioCtx) {
+          window.vcAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (window.vcAudioCtx.state === 'suspended') {
+          await window.vcAudioCtx.resume();
+        }
+        const ctx = window.vcAudioCtx;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = 800;
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.15);
+        console.log('🔊 Audio unlocked from admin');
+      } catch (e) {
+        console.log('Audio unlock error:', e);
+      }
+
+      // ✅ Step 2: Save + Redirect
+      localStorage.setItem('autoJoinRoom', roomId);
+      localStorage.setItem('audioUnlocked', 'true');
+
+      // ✅ Step 3: Loading overlay
+      const overlay = document.createElement('div');
+      overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.9); z-index: 99999;
+        display: flex; justify-content: center; align-items: center;
+        flex-direction: column; gap: 20px;
       `;
-      document.body.appendChild(popup);
+      overlay.innerHTML = `
+        <div style="width:60px; height:60px; border:5px solid rgba(72,202,228,0.2); border-top-color:#48cae4; border-radius:50%; animation: spin 1s linear infinite;"></div>
+        <div style="color:#48cae4; font-size:18px; font-weight:600;">⏳ កំពុងចូលបន្ទប់ ${roomId}...</div>
+        <div style="color:#94a3b8; font-size:14px;">សូមរង់ចាំបន្តិច</div>
+        <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+      `;
+      document.body.appendChild(overlay);
 
-      document.getElementById('confirmJoinBtn').onclick = async function() {
-        try {
-          const ctx = new (window.AudioContext || window.webkitAudioContext)();
-          if (ctx.state === 'suspended') await ctx.resume();
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.value = 800;
-          gain.gain.value = 0.05;
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start();
-          osc.stop(ctx.currentTime + 0.05);
-        } catch (e) {}
-        
-        localStorage.setItem('autoJoinRoom', roomId);
-        localStorage.setItem('audioUnlocked', 'true');
-        
-        popup.innerHTML = `
-          <div style="background: #16213e; padding: 50px; border-radius: 20px; text-align: center; max-width: 450px; border: 3px solid #48cae4;">
-            <div style="width:60px; height:60px; border:5px solid rgba(72,202,228,0.2); border-top-color:#48cae4; border-radius:50%; animation: spin 1s linear infinite; margin: 0 auto 25px;"></div>
-            <h2 style="color: #48cae4; margin-bottom: 15px;">⏳ កំពុងចូលបន្ទប់</h2>
-            <p style="color: #94a3b8; font-size: 14px;">${roomId}</p>
-            <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
-          </div>
-        `;
-        
-        setTimeout(() => { window.location.href = '/?autoJoin=' + roomId; }, 300);
-      };
-    }
-
-    function cancelJoinRoom() {
-      const p = document.getElementById('joinRoomPopup');
-      if (p) p.remove();
+      setTimeout(() => {
+        window.location.href = '/?autoJoin=' + roomId;
+      }, 400);
     }
 
     async function loadUsers() {
@@ -304,7 +310,6 @@
           const tr = document.createElement('tr');
           const roomsText = u.assignedRooms.includes('*') ? 'ទាំងអស់' : (u.assignedRooms.join(', ') || 'គ្មាន');
           const canEdit = !(user.role === 'supervisor' && u.role === 'admin');
-          
           let actions = '';
           if (canEdit) {
             actions = `<div class="action-buttons">
@@ -317,7 +322,6 @@
           } else {
             actions = '<span style="color:#64748b;">គ្មានសិទ្ធិ</span>';
           }
-          
           tr.innerHTML = `
             <td><strong>${u.username}</strong></td>
             <td>${u.displayName || '-'}</td>
@@ -389,16 +393,12 @@
       const displayName = document.getElementById('newDisplayName').value.trim();
       const password = document.getElementById('newPassword').value;
       const role = document.getElementById('newRole').value;
-      
       if (!username || !password) return showAlert('សូមបំពេញ Username និង Password!', 'error');
       if (password.length < 4) return showAlert('Password ត្រូវមាន ៤ តួ!', 'error');
-      
       const assignedRooms = [];
       if (document.getElementById('allRoomsCheck').checked) assignedRooms.push('*');
       else document.querySelectorAll('.room-check:checked').forEach(cb => assignedRooms.push(cb.value));
-      
       if (assignedRooms.length === 0) return showAlert('សូមជ្រើសរើសបន្ទប់យ៉ាងតិច ១!', 'error');
-      
       try {
         const res = await fetch('/api/auth/register', {
           method: 'POST',
