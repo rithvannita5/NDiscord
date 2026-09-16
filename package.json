@@ -1,14 +1,17 @@
 {
   "name": "livekit-meeting",
   "version": "1.0.0",
-  "description": "Video Conference with LiveKit",
+  "description": "Video Conference with LiveKit and User Management",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.19.2",
-    "livekit-server-sdk": "^2.6.0"
+    "livekit-server-sdk": "^2.6.0",
+    "mongoose": "^8.4.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2"
   },
   "engines": {
     "node": ">=18.x"
