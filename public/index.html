@@ -15,6 +15,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap" rel="stylesheet">
   
   <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
   
   <style>
     * { 
@@ -322,6 +323,9 @@
       font-weight: bold;
       cursor: pointer;
     }
+    .participant-item .remote-btn:hover {
+      background: #d97706;
+    }
     
     #status {
       position: fixed;
@@ -416,7 +420,9 @@
       font-family: inherit;
     }
     .btn-approve { background: #10b981; color: #fff; }
+    .btn-approve:hover { background: #059669; }
     .btn-reject { background: #ef4444; color: #fff; }
+    .btn-reject:hover { background: #dc2626; }
     
     /* LOADING OVERLAY */
     #loadingOverlay {
@@ -448,12 +454,83 @@
       font-weight: 600;
     }
     
+    /* REMOTE CONTROL PANEL */
+    #remoteControlPanel {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #16213e;
+      border: 2px solid #10b981;
+      border-radius: 12px;
+      padding: 15px 20px;
+      z-index: 99999;
+      display: none;
+      box-shadow: 0 10px 40px rgba(16, 185, 129, 0.3);
+      max-width: 320px;
+    }
+    #remoteControlPanel.active { display: block; }
+    #remoteControlPanel .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    #remoteControlPanel .panel-header .icon {
+      font-size: 24px;
+    }
+    #remoteControlPanel .panel-header .title {
+      color: #48cae4;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    #remoteControlPanel .panel-header .subtitle {
+      color: #94a3b8;
+      font-size: 12px;
+    }
+    #remoteControlPanel .panel-actions {
+      display: flex;
+      gap: 8px;
+    }
+    #remoteControlPanel .panel-actions button {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    
+    /* BEING CONTROLLED INDICATOR */
+    #beingControlledIndicator {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(239, 68, 68, 0.95);
+      color: white;
+      padding: 12px 25px;
+      border-radius: 10px;
+      font-weight: bold;
+      z-index: 999999;
+      box-shadow: 0 4px 20px rgba(239, 68, 68, 0.6);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
     @media (max-width: 768px) {
       .screen-grid, .video-grid { grid-template-columns: 1fr; }
       .header { flex-direction: column; align-items: flex-start; }
       .controls { width: 100%; }
       .controls button { flex: 1; padding: 10px; font-size: 12px; }
       body { padding: 10px; }
+      #remoteControlPanel {
+        right: 10px;
+        bottom: 10px;
+        padding: 10px 15px;
+      }
     }
   </style>
 </head>
@@ -520,7 +597,7 @@
     </div>
   </div>
 
-  <!-- FULLSCREEN -->
+  <!-- FULLSCREEN MODAL -->
   <div id="fullscreenModal">
     <div class="modal-header">
       <div class="modal-title" id="modalTitle">📺 Video</div>
@@ -536,6 +613,21 @@
       <p><strong id="remoteRequesterName">-</strong> ចង់គ្រប់គ្រង Screen របស់អ្នក!<br>តើអ្នកអនុញ្ញាតទេ?</p>
       <button class="btn-approve" onclick="approveRemote()">✅ អនុញ្ញាត</button>
       <button class="btn-reject" onclick="rejectRemote()">❌ បដិសេធ</button>
+    </div>
+  </div>
+
+  <!-- REMOTE CONTROL PANEL -->
+  <div id="remoteControlPanel">
+    <div class="panel-header">
+      <div class="icon">🎮</div>
+      <div>
+        <div class="title">Remote Control</div>
+        <div class="subtitle">កំពុងបញ្ជា: <span id="remoteTargetName">-</span></div>
+      </div>
+    </div>
+    <div class="panel-actions">
+      <button onclick="startRemoteControl()" style="background:#10b981; color:#fff;">▶️ ចាប់ផ្ដើម</button>
+      <button onclick="endRemoteControl()" style="background:#ef4444; color:#fff;">🛑 បញ្ចប់</button>
     </div>
   </div>
 
@@ -561,11 +653,20 @@
     let currentUser = null;
     let pendingLoginData = null;
     let deferredPrompt = null;
-    let currentRemoteRequest = null;
     let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
+    // Remote Control Variables
+    let socket = null;
+    let socketConnected = false;
+    let isRemoteControlling = false;
+    let isBeingControlled = false;
+    let remoteTargetSocketId = null;
+    let remoteControllerSocketId = null;
+    let remotePointer = null;
+    let remoteClickAnimationFrame = null;
+
     // ✅ FORCE UPDATE VERSION
-    const APP_VERSION = 'v13';
+    const APP_VERSION = 'v14';
     if (localStorage.getItem('appVersion') !== APP_VERSION) {
       localStorage.clear();
       sessionStorage.clear();
@@ -576,12 +677,11 @@
     }
 
     // ============================================================
-    // ✅ SHOW/HIDE LOADING OVERLAY
+    // SHOW/HIDE LOADING
     // ============================================================
     function showLoading(text) {
-      const overlay = document.getElementById('loadingOverlay');
       document.getElementById('loadingText').textContent = text || '⏳ កំពុងភ្ជាប់...';
-      overlay.classList.add('active');
+      document.getElementById('loadingOverlay').classList.add('active');
     }
 
     function hideLoading() {
@@ -589,16 +689,14 @@
     }
 
     // ============================================================
-    // ✅ INIT - ពិនិត្យ URL Parameter + autoJoinRoom មុនគេ
+    // INIT
     // ============================================================
     window.addEventListener('DOMContentLoaded', async () => {
-      // ✅ ពិនិត្យ URL parameter `?autoJoin=roomId`
       const urlParams = new URLSearchParams(window.location.search);
       const urlRoom = urlParams.get('autoJoin');
       
       if (urlRoom) {
         localStorage.setItem('autoJoinRoom', urlRoom);
-        // លុប URL parameter ចេញ
         window.history.replaceState({}, '', '/');
       }
       
@@ -606,15 +704,12 @@
       const savedUser = localStorage.getItem('currentUser');
       const autoJoinRoom = localStorage.getItem('autoJoinRoom');
       
-      // ✅ ប្រសិនបើមាន autoJoinRoom + session → ចូលបន្ទប់ភ្លាម
       if (autoJoinRoom && savedToken && savedUser) {
         authToken = savedToken;
         currentUser = JSON.parse(savedUser);
         localStorage.removeItem('autoJoinRoom');
         
-        console.log('🚀 Auto-joining room:', autoJoinRoom);
         showLoading('⏳ កំពុងចូលបន្ទប់ ' + autoJoinRoom + '...');
-        
         await joinRoom(autoJoinRoom);
         
         if ('serviceWorker' in navigator) {
@@ -623,7 +718,6 @@
         return;
       }
       
-      // ✅ ប្រសិនបើមាន session ធម្មតា
       if (savedToken && savedUser) {
         authToken = savedToken;
         currentUser = JSON.parse(savedUser);
@@ -639,6 +733,486 @@
     });
 
     // ============================================================
+    // SOCKET.IO CONNECTION
+    // ============================================================
+    function connectSocket() {
+      if (socket && socket.connected) return;
+      
+      socket = io({
+        transports: ['polling', 'websocket'],
+        reconnection: true,
+        reconnectionAttempts: 10,
+        reconnectionDelay: 1000
+      });
+
+      socket.on('connect', () => {
+        console.log('✅ Socket.IO connected:', socket.id);
+        socketConnected = true;
+        
+        if (currentUser) {
+          socket.emit('register-user', { username: currentUser.username });
+        }
+      });
+
+      socket.on('disconnect', () => {
+        console.log('🔌 Socket.IO disconnected');
+        socketConnected = false;
+      });
+
+      // ============================================================
+      // REMOTE REQUEST RECEIVED (Target)
+      // ============================================================
+      socket.on('remote-request-received', ({ controllerName, controllerSocketId }) => {
+        console.log('📨 Remote request from:', controllerName);
+        
+        remoteControllerSocketId = controllerSocketId;
+        document.getElementById('remoteRequesterName').textContent = controllerName;
+        document.getElementById('remoteRequestModal').classList.add('active');
+      });
+
+      // ============================================================
+      // REMOTE APPROVED (Controller)
+      // ============================================================
+      socket.on('remote-approved-notify', ({ targetUsername, targetSocketId }) => {
+        console.log('✅ Remote approved by:', targetUsername);
+        
+        isRemoteControlling = true;
+        remoteTargetSocketId = targetSocketId;
+        
+        showStatus('✅ អ្នកអាចបញ្ជា Screen បានហើយ!');
+        
+        document.getElementById('remoteControlPanel').classList.add('active');
+        document.getElementById('remoteTargetName').textContent = targetUsername;
+      });
+
+      socket.on('remote-rejected-notify', () => {
+        showStatus('❌ ម្ចាស់ Screen បដិសេធ!');
+        isRemoteControlling = false;
+        remoteTargetSocketId = null;
+      });
+
+      // ============================================================
+      // MOUSE MOVE RECEIVED (Target)
+      // ============================================================
+      socket.on('remote-mouse-move-received', ({ x, y }) => {
+        if (!isBeingControlled) return;
+        
+        const screenX = x * window.innerWidth;
+        const screenY = y * window.innerHeight;
+        
+        showRemotePointer(screenX, screenY);
+      });
+
+      // ============================================================
+      // MOUSE CLICK RECEIVED (Target)
+      // ============================================================
+      socket.on('remote-mouse-click-received', ({ x, y, button }) => {
+        if (!isBeingControlled) return;
+        
+        const screenX = x * window.innerWidth;
+        const screenY = y * window.innerHeight;
+        
+        showRemoteClick(screenX, screenY);
+        
+        const element = document.elementFromPoint(screenX, screenY);
+        if (element) {
+          const clickEvent = new MouseEvent('click', {
+            view: window,
+            bubbles: true,
+            cancelable: true,
+            clientX: screenX,
+            clientY: screenY,
+            button: button || 0
+          });
+          element.dispatchEvent(clickEvent);
+          
+          if (element.tagName === 'INPUT' || element.tagName === 'BUTTON' || element.tagName === 'A' || element.tagName === 'SELECT') {
+            element.focus();
+          }
+        }
+      });
+
+      // ============================================================
+      // KEYBOARD RECEIVED (Target)
+      // ============================================================
+      socket.on('remote-keyboard-received', ({ key }) => {
+        if (!isBeingControlled) return;
+        
+        const activeElement = document.activeElement;
+        if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+          const keyEvent = new KeyboardEvent('keydown', {
+            key: key,
+            bubbles: true
+          });
+          activeElement.dispatchEvent(keyEvent);
+          
+          if (key === 'Backspace') {
+            activeElement.value = activeElement.value.slice(0, -1);
+          } else if (key.length === 1) {
+            activeElement.value += key;
+          }
+          
+          const inputEvent = new InputEvent('input', { bubbles: true });
+          activeElement.dispatchEvent(inputEvent);
+        }
+      });
+
+      // ============================================================
+      // REMOTE ENDED
+      // ============================================================
+      socket.on('remote-ended-notify', () => {
+        showStatus('🛑 Remote Control បានបញ្ចប់');
+        
+        isBeingControlled = false;
+        isRemoteControlling = false;
+        remoteTargetSocketId = null;
+        remoteControllerSocketId = null;
+        
+        if (remotePointer) {
+          remotePointer.remove();
+          remotePointer = null;
+        }
+        
+        const indicator = document.getElementById('beingControlledIndicator');
+        if (indicator) indicator.remove();
+        
+        document.getElementById('remoteControlPanel').classList.remove('active');
+        document.getElementById('remoteRequestModal').classList.remove('active');
+      });
+    }
+
+    // ============================================================
+    // SHOW REMOTE POINTER (Target Screen)
+    // ============================================================
+    function showRemotePointer(x, y) {
+      if (!remotePointer) {
+        remotePointer = document.createElement('div');
+        remotePointer.style.cssText = `
+          position: fixed;
+          width: 24px;
+          height: 24px;
+          border: 3px solid #ef4444;
+          border-radius: 50%;
+          background: rgba(239, 68, 68, 0.4);
+          pointer-events: none;
+          z-index: 999999;
+          transform: translate(-50%, -50%);
+          transition: left 0.05s linear, top 0.05s linear;
+          box-shadow: 0 0 20px rgba(239, 68, 68, 0.9);
+        `;
+        document.body.appendChild(remotePointer);
+      }
+      
+      remotePointer.style.left = x + 'px';
+      remotePointer.style.top = y + 'px';
+    }
+
+    function showRemoteClick(x, y) {
+      const clickEffect = document.createElement('div');
+      clickEffect.style.cssText = `
+        position: fixed;
+        width: 40px;
+        height: 40px;
+        border: 4px solid #10b981;
+        border-radius: 50%;
+        background: rgba(16, 185, 129, 0.3);
+        pointer-events: none;
+        z-index: 999999;
+        transform: translate(-50%, -50%);
+        animation: remoteClickPulse 0.6s ease-out forwards;
+      `;
+      clickEffect.style.left = x + 'px';
+      clickEffect.style.top = y + 'px';
+      document.body.appendChild(clickEffect);
+      
+      setTimeout(() => clickEffect.remove(), 600);
+    }
+
+    // Add CSS animation
+    const remoteStyle = document.createElement('style');
+    remoteStyle.textContent = `
+      @keyframes remoteClickPulse {
+        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+        100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
+      }
+      @keyframes pulseRed {
+        0%, 100% { box-shadow: 0 4px 20px rgba(239, 68, 68, 0.6); }
+        50% { box-shadow: 0 4px 30px rgba(239, 68, 68, 1); }
+      }
+    `;
+    document.head.appendChild(remoteStyle);
+
+    // ============================================================
+    // REQUEST REMOTE (Controller)
+    // ============================================================
+    function requestRemote(targetName) {
+      if (!socketConnected) {
+        return showStatus('⚠️ កំពុងភ្ជាប់ Socket... សូមព្យាយាមម្តងទៀត');
+      }
+      
+      const targetUsername = targetName.replace(' (អ្នក)', '').trim();
+      
+      if (!confirm(`ស្នើសុំគ្រប់គ្រង Screen របស់ "${targetUsername}"?`)) return;
+      
+      console.log('📨 Sending remote request to:', targetUsername);
+      
+      socket.emit('remote-request', {
+        targetUsername: targetUsername,
+        controllerName: currentUser.displayName || currentUser.username
+      });
+      
+      showStatus('📨 ស្នើសុំរួច! សូមរង់ចាំការអនុញ្ញាត...');
+    }
+
+    // ============================================================
+    // APPROVE REMOTE (Target)
+    // ============================================================
+    function approveRemote() {
+      if (!remoteControllerSocketId) return;
+      
+      isBeingControlled = true;
+      
+      socket.emit('remote-approved', {
+        controllerSocketId: remoteControllerSocketId,
+        targetUsername: currentUser.username
+      });
+      
+      document.getElementById('remoteRequestModal').classList.remove('active');
+      showStatus('✅ អ្នកបានអនុញ្ញាត!');
+      
+      showBeingControlledIndicator();
+    }
+
+    function showBeingControlledIndicator() {
+      let indicator = document.getElementById('beingControlledIndicator');
+      if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'beingControlledIndicator';
+        indicator.style.cssText = `
+          position: fixed;
+          top: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(239, 68, 68, 0.95);
+          color: white;
+          padding: 12px 25px;
+          border-radius: 10px;
+          font-weight: bold;
+          z-index: 999999;
+          box-shadow: 0 4px 20px rgba(239, 68, 68, 0.6);
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          animation: pulseRed 1.5s ease-in-out infinite;
+        `;
+        indicator.innerHTML = `
+          <span>🔴</span>
+          <span>កំពុងត្រូវបានគ្រប់គ្រងពីចម្ងាយ</span>
+          <button onclick="stopBeingControlled()" style="
+            background: white;
+            color: #ef4444;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: 10px;
+            font-family: inherit;
+          ">បញ្ចប់</button>
+        `;
+        document.body.appendChild(indicator);
+      }
+    }
+
+    function stopBeingControlled() {
+      isBeingControlled = false;
+      
+      if (remoteControllerSocketId) {
+        socket.emit('remote-end', {
+          targetSocketId: remoteControllerSocketId
+        });
+      }
+      
+      const indicator = document.getElementById('beingControlledIndicator');
+      if (indicator) indicator.remove();
+      
+      if (remotePointer) {
+        remotePointer.remove();
+        remotePointer = null;
+      }
+      
+      showStatus('🛑 បានបញ្ចប់ការគ្រប់គ្រង');
+    }
+
+    // ============================================================
+    // REJECT REMOTE (Target)
+    // ============================================================
+    function rejectRemote() {
+      if (remoteControllerSocketId) {
+        socket.emit('remote-rejected', {
+          controllerSocketId: remoteControllerSocketId
+        });
+      }
+      
+      document.getElementById('remoteRequestModal').classList.remove('active');
+      showStatus('❌ អ្នកបានបដិសេធ');
+      remoteControllerSocketId = null;
+    }
+
+    // ============================================================
+    // START REMOTE CONTROL (Controller)
+    // ============================================================
+    function startRemoteControl() {
+      if (!isRemoteControlling || !remoteTargetSocketId) {
+        return showStatus('⚠️ មិនទាន់មានការអនុញ្ញាត!');
+      }
+      
+      console.log('🎮 Starting remote control');
+      
+      // បង្កើត Remote Screen Container ប្រសិនបើមិនទាន់មាន
+      let container = document.getElementById('remoteScreenContainer');
+      if (!container) {
+        container = createRemoteScreenContainer();
+      }
+      
+      // បង្ហាញ Container
+      container.style.display = 'flex';
+      
+      const video = document.getElementById('remoteScreenVideo');
+      
+      // យក Screen Share Stream ពី LiveKit
+      // ស្វែងរក Screen Share Track របស់ Target
+      let targetScreenTrack = null;
+      room.remoteParticipants.forEach(participant => {
+        if (participant.identity === document.getElementById('remoteTargetName').textContent) {
+          participant.videoTrackPublications.forEach(pub => {
+            if (pub.source === 'screen_share' && pub.track) {
+              targetScreenTrack = pub.track;
+            }
+          });
+        }
+      });
+      
+      if (targetScreenTrack) {
+        video.srcObject = new MediaStream([targetScreenTrack.mediaStreamTrack]);
+      } else {
+        // ប្រសិនបើគ្មាន Screen Share → បង្ហាញ Camera
+        room.remoteParticipants.forEach(participant => {
+          if (participant.identity === document.getElementById('remoteTargetName').textContent) {
+            participant.videoTrackPublications.forEach(pub => {
+              if (pub.track && !targetScreenTrack) {
+                targetScreenTrack = pub.track;
+                video.srcObject = new MediaStream([pub.track.mediaStreamTrack]);
+              }
+            });
+          }
+        });
+      }
+      
+      // Mouse Events
+      video.onmousemove = (e) => {
+        if (!isRemoteControlling) return;
+        
+        const rect = video.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width;
+        const y = (e.clientY - rect.top) / rect.height;
+        
+        socket.emit('remote-mouse-move', {
+          targetSocketId: remoteTargetSocketId,
+          x: x,
+          y: y
+        });
+      };
+      
+      video.onclick = (e) => {
+        if (!isRemoteControlling) return;
+        
+        const rect = video.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width;
+        const y = (e.clientY - rect.top) / rect.height;
+        
+        socket.emit('remote-mouse-click', {
+          targetSocketId: remoteTargetSocketId,
+          x: x,
+          y: y,
+          button: e.button
+        });
+      };
+      
+      // Keyboard
+      video.tabIndex = 0;
+      video.onkeydown = (e) => {
+        if (!isRemoteControlling) return;
+        e.preventDefault();
+        
+        socket.emit('remote-keyboard', {
+          targetSocketId: remoteTargetSocketId,
+          key: e.key
+        });
+      };
+      
+      video.focus();
+      showStatus('🎮 ចាប់ផ្ដើមបញ្ជា! ចុចលើ Screen');
+    }
+
+    function createRemoteScreenContainer() {
+      const container = document.createElement('div');
+      container.id = 'remoteScreenContainer';
+      container.style.cssText = `
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 99998;
+        display: none;
+        flex-direction: column;
+        padding: 20px;
+      `;
+      container.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:15px 20px; background:#16213e; border-radius:12px; margin-bottom:20px;">
+          <div style="color:#48cae4; font-size:18px; font-weight:600;">
+            🖥️ កំពុងបញ្ជា: <span id="remoteTargetNameDisplay">-</span>
+          </div>
+          <button onclick="endRemoteControl()" style="
+            background:#ef4444; color:#fff; border:none;
+            padding:10px 20px; border-radius:8px;
+            font-weight:600; cursor:pointer;
+            font-family: inherit;
+          ">🛑 បញ្ចប់</button>
+        </div>
+        <div style="flex:1; display:flex; align-items:center; justify-content:center; background:#000; border-radius:12px; overflow:hidden; position:relative;">
+          <video id="remoteScreenVideo" autoplay playsinline style="width:100%; height:100%; object-fit:contain; cursor: crosshair;" tabindex="0"></video>
+          <div style="position:absolute; bottom:15px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.8); padding:8px 20px; border-radius:8px; color:#fff; font-size:13px; pointer-events: none;">
+            💡 ចុចលើ Screen ដើម្បីបញ្ជា Mouse
+          </div>
+        </div>
+      `;
+      document.body.appendChild(container);
+      
+      document.getElementById('remoteTargetNameDisplay').textContent = 
+        document.getElementById('remoteTargetName').textContent;
+      
+      return container;
+    }
+
+    function endRemoteControl() {
+      if (remoteTargetSocketId) {
+        socket.emit('remote-end', {
+          targetSocketId: remoteTargetSocketId
+        });
+      }
+      
+      isRemoteControlling = false;
+      remoteTargetSocketId = null;
+      
+      const container = document.getElementById('remoteScreenContainer');
+      if (container) container.style.display = 'none';
+      
+      document.getElementById('remoteControlPanel').classList.remove('active');
+      
+      showStatus('🛑 បញ្ចប់ការបញ្ជា');
+    }
+
+    // ============================================================
     // PWA
     // ============================================================
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -646,14 +1220,8 @@
       deferredPrompt = e;
     });
 
-    function installApp() {
-      if (!deferredPrompt) return;
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
-    }
-
     // ============================================================
-    // LOAD PUBLIC ROOMS (សម្រាប់ Login Screen)
+    // LOAD PUBLIC ROOMS
     // ============================================================
     async function loadPublicRooms() {
       try {
@@ -674,9 +1242,6 @@
       }
     }
 
-    // ============================================================
-    // SHOW LOGIN
-    // ============================================================
     function showLogin() {
       document.getElementById('login-screen').style.display = 'flex';
       document.getElementById('app').classList.remove('active');
@@ -760,21 +1325,18 @@
     }
 
     // ============================================================
-    // ✅ POST LOGIN HANDLER
+    // POST LOGIN HANDLER
     // ============================================================
     async function handlePostLogin(selectedRoom) {
-      // ✅ ជាដំបូង: ពិនិត្យ autoJoinRoom
       const autoJoinRoom = localStorage.getItem('autoJoinRoom');
       
       if (autoJoinRoom) {
         localStorage.removeItem('autoJoinRoom');
-        console.log('🚀 Auto-joining room:', autoJoinRoom);
         showLoading('⏳ កំពុងចូលបន្ទប់...');
         await joinRoom(autoJoinRoom);
         return;
       }
       
-      // ✅ Admin/Supervisor → បើក Dashboard
       if (currentUser.role === 'admin' || currentUser.role === 'supervisor') {
         showStatus('✅ ចូលជោគជ័យ! កំពុងបើក Dashboard...');
         setTimeout(() => {
@@ -783,7 +1345,6 @@
         return;
       }
       
-      // ✅ User ធម្មតា → ចូលបន្ទប់ដែលបានជ្រើស
       if (selectedRoom) {
         await joinRoom(selectedRoom);
       } else {
@@ -886,7 +1447,7 @@
     }
 
     // ============================================================
-    // ✅ JOIN ROOM
+    // JOIN ROOM
     // ============================================================
     async function joinRoom(roomName) {
       console.log('📞 joinRoom called:', roomName);
@@ -907,7 +1468,6 @@
         if (!response.ok) {
           hideLoading();
           
-          // ✅ ប្រសិនបើ Admin មានបញ្ហា → ត្រឡប់ទៅ Dashboard
           if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'supervisor')) {
             showStatus('❌ ' + data.error);
             setTimeout(() => {
@@ -958,7 +1518,6 @@
         document.getElementById('currentRoom').textContent = roomName;
         document.getElementById('currentUser').textContent = currentUser.displayName || currentUser.username;
         
-        // ✅ បង្ហាញ Admin Button
         if (currentUser.role === 'admin' || currentUser.role === 'supervisor') {
           document.getElementById('adminBtn').style.display = 'inline-block';
         }
@@ -968,14 +1527,14 @@
         hideLoading();
         showStatus('✅ ភ្ជាប់ជោគជ័យ!');
         
-        setTimeout(checkRemoteRequests, 2000);
+        // ✅ ភ្ជាប់ Socket.IO សម្រាប់ Remote Control
+        connectSocket();
 
       } catch (error) {
         console.error('❌ Error:', error);
         hideLoading();
         showStatus('❌ ' + error.message);
         
-        // ✅ ត្រឡប់ទៅ Admin Dashboard ប្រសិនបើជា Admin
         if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'supervisor')) {
           setTimeout(() => {
             window.location.href = '/admin.html';
@@ -1242,92 +1801,17 @@
     }
 
     // ============================================================
-    // REMOTE CONTROL
-    // ============================================================
-    async function requestRemote(targetName) {
-      if (!confirm(`ស្នើសុំគ្រប់គ្រង Screen របស់ ${targetName}?`)) return;
-      
-      try {
-        const res = await fetch('/api/remote/request', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
-          },
-          body: JSON.stringify({
-            targetId: targetName.replace(' (អ្នក)', ''),
-            targetName: targetName,
-            roomId: document.getElementById('currentRoom').textContent
-          })
-        });
-        
-        if (res.ok) {
-          showStatus('📨 ស្នើសុំរួចរាល់!');
-        }
-      } catch (error) {
-        showStatus('❌ មិនអាចស្នើសុំបានទេ');
-      }
-    }
-
-    async function checkRemoteRequests() {
-      try {
-        const res = await fetch(`/api/remote/requests/${currentUser.username}`, {
-          headers: { 'Authorization': `Bearer ${authToken}` }
-        });
-        const data = await res.json();
-        
-        if (data.requests && data.requests.length > 0) {
-          currentRemoteRequest = data.requests[0];
-          document.getElementById('remoteRequesterName').textContent = currentRemoteRequest.controllerName;
-          document.getElementById('remoteRequestModal').classList.add('active');
-        }
-      } catch (error) {}
-    }
-
-    async function approveRemote() {
-      if (!currentRemoteRequest) return;
-      try {
-        await fetch(`/api/remote/requests/${currentRemoteRequest._id}`, {
-          method: 'PUT',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
-          },
-          body: JSON.stringify({ status: 'approved' })
-        });
-        
-        document.getElementById('remoteRequestModal').classList.remove('active');
-        showStatus('✅ អនុញ្ញាតរួចរាល់!');
-        currentRemoteRequest = null;
-      } catch (error) {}
-    }
-
-    async function rejectRemote() {
-      if (!currentRemoteRequest) return;
-      try {
-        await fetch(`/api/remote/requests/${currentRemoteRequest._id}`, {
-          method: 'PUT',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
-          },
-          body: JSON.stringify({ status: 'rejected' })
-        });
-        
-        document.getElementById('remoteRequestModal').classList.remove('active');
-        showStatus('❌ បដិសេធរួចរាល់');
-        currentRemoteRequest = null;
-      } catch (error) {}
-    }
-
-    setInterval(() => {
-      if (room && currentUser) checkRemoteRequests();
-    }, 5000);
-
-    // ============================================================
     // LEAVE ROOM
     // ============================================================
     async function leaveRoom(showLobby = true) {
+      if (isBeingControlled) {
+        stopBeingControlled();
+      }
+      
+      if (isRemoteControlling) {
+        endRemoteControl();
+      }
+      
       if (room) {
         try { await room.disconnect(); } catch (e) {}
         room = null;
@@ -1354,7 +1838,6 @@
       isCameraOn = false;
       isScreenSharing = false;
       
-      // ✅ Admin/Supervisor ត្រឡប់ទៅ Dashboard
       if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'supervisor')) {
         showStatus('🚪 ត្រឡប់ទៅ Dashboard...');
         setTimeout(() => {
