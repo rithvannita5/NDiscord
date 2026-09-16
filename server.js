@@ -746,3 +746,58 @@ server.listen(PORT, () => {
   console.log(`📡 LiveKit URL: ${LIVEKIT_URL}`);
   console.log(`🎮 Socket.IO Remote Control: Enabled`);
 });
+/**
+ * បន្ថែមកូដនេះចូលក្នុង server.js ដែលមានស្រាប់
+ * ដាក់នៅខាងក្នុង io.on('connection', (socket) => { ... })
+ * (ក្បែរកន្លែងដែលមាន socket.on('register-user', ...) ស្រាប់)
+ *
+ * គោលបំណង៖ ធ្វើអោយ admin ចូល/ចេញបន្ទប់ណាមួយ អោយសំឡេង Join/Leave
+ * ឮដល់អ្នកទាំងអស់ក្នុងបន្ទប់នោះ (រួមទាំង user ធម្មតា ចូល/ចេញផងដែរ)
+ * ដោយមិនពឹងផ្អែកតែលើ LiveKit event ដែលពេលខ្លះ delay ឬខកខាន។
+ */
+
+io.on('connection', (socket) => {
+
+  // ... (កូដ connection ដែលមានស្រាប់របស់អ្នក ដូចជា socket.on('register-user', ...) ជាដើម) ...
+
+  // ✅ ចងចាំ username លើ socket ដើម្បីប្រើនៅពេល disconnect
+  socket.on('register-user', ({ username }) => {
+    socket.data.username = username;
+    // ... (កូដ register-user ដែលមានស្រាប់របស់អ្នក បន្តនៅទីនេះ) ...
+  });
+
+  // ✅ NEW: User/Admin ប្រកាសថាកំពុងចូលបន្ទប់មួយ
+  socket.on('room-joined', ({ roomId, username, displayName }) => {
+    if (!roomId || !username) return;
+    socket.join('vc-room-' + roomId);
+    socket.data.currentRoomId = roomId;
+    socket.data.username = username;
+    // ជូនដំណឹងទៅអ្នកផ្សេងទៀតទាំងអស់ក្នុងបន្ទប់នេះ (មិនរាប់បញ្ចូលខ្លួនឯង)
+    socket.to('vc-room-' + roomId).emit('room-user-joined', { roomId, username, displayName });
+  });
+
+  // ✅ NEW: User/Admin ប្រកាសថាកំពុងចេញពីបន្ទប់
+  socket.on('room-left', ({ roomId, username }) => {
+    if (!roomId || !username) return;
+    socket.to('vc-room-' + roomId).emit('room-user-left', { roomId, username });
+    socket.leave('vc-room-' + roomId);
+    if (socket.data.currentRoomId === roomId) {
+      socket.data.currentRoomId = null;
+    }
+  });
+
+  // ... (កូដ remote-request, remote-approved ។ល។ ដែលមានស្រាប់របស់អ្នក បន្តនៅទីនេះ) ...
+
+  // ✅ NEW/UPDATED: ករណី user/admin បិទ browser tab ឬបាត់ Internet
+  // ដោយមិនចុច "ចាកចេញបន្ទប់" — ត្រូវអោយសំឡេង Leave ឮដែរ
+  socket.on('disconnect', () => {
+    if (socket.data.currentRoomId && socket.data.username) {
+      socket.to('vc-room-' + socket.data.currentRoomId).emit('room-user-left', {
+        roomId: socket.data.currentRoomId,
+        username: socket.data.username
+      });
+    }
+    // ... (កូដ disconnect ដែលមានស្រាប់របស់អ្នក ដូចជា online/leave cleanup ជាដើម បន្តនៅទីនេះ) ...
+  });
+
+});
