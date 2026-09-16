@@ -8,10 +8,12 @@
   <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
   
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Kantumruy Pro', sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Kantumruy Pro', 'Segoe UI', sans-serif; }
     body { background: #1a1a2e; color: #fff; min-height: 100vh; padding: 20px; }
     
-    /* Login Screen */
+    /* ============================================================
+       LOGIN SCREEN
+       ============================================================ */
     #login-screen {
       display: flex;
       flex-direction: column;
@@ -20,7 +22,12 @@
       min-height: 100vh;
       gap: 15px;
     }
-    #login-screen h1 { color: #48cae4; margin-bottom: 20px; font-size: 32px; }
+    #login-screen h1 { 
+      color: #48cae4; 
+      margin-bottom: 20px; 
+      font-size: 32px;
+      text-align: center;
+    }
     #login-screen input {
       padding: 14px 20px;
       border-radius: 8px;
@@ -47,8 +54,14 @@
       max-width: 400px;
     }
     #login-screen button:hover { background: #0096c7; }
+    #login-screen button:disabled { 
+      background: #475569; 
+      cursor: not-allowed; 
+    }
     
-    /* Main App */
+    /* ============================================================
+       MAIN APP
+       ============================================================ */
     #app { display: none; }
     #app.active { display: block; }
     
@@ -89,8 +102,14 @@
     .btn-success { background: #10b981; color: #fff; }
     .btn-success:hover { background: #059669; }
     .controls button.off { background: #ef4444; color: #fff; }
+    .controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
     
-    /* Video Grids */
+    /* ============================================================
+       VIDEO GRIDS
+       ============================================================ */
     .section-title {
       font-size: 14px;
       color: #94a3b8;
@@ -114,6 +133,9 @@
       overflow: hidden;
       aspect-ratio: 16/9;
       border: 2px solid #2d2d44;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .video-box video {
       width: 100%;
@@ -135,6 +157,7 @@
       font-size: 13px;
       color: #fff;
       font-weight: 500;
+      z-index: 2;
     }
     .video-box .status-tag {
       position: absolute;
@@ -146,6 +169,17 @@
       font-size: 11px;
       color: #fff;
       font-weight: bold;
+      z-index: 2;
+    }
+    .video-box .placeholder {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #475569;
+      font-size: 14px;
+      text-align: center;
+      z-index: 1;
     }
     
     .screen-grid {
@@ -155,7 +189,9 @@
       margin-bottom: 20px;
     }
     
-    /* Participants */
+    /* ============================================================
+       PARTICIPANTS
+       ============================================================ */
     .participants-list {
       background: #16213e;
       padding: 20px;
@@ -184,7 +220,9 @@
       box-shadow: 0 0 8px #10b981;
     }
     
-    /* Status Message */
+    /* ============================================================
+       STATUS MESSAGE
+       ============================================================ */
     #status {
       position: fixed;
       bottom: 20px;
@@ -198,28 +236,38 @@
       display: none;
       z-index: 9999;
       box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      max-width: 90%;
+      text-align: center;
     }
     #status.show { display: block; }
     
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
     @media (max-width: 768px) {
       .video-grid, .screen-grid { grid-template-columns: 1fr; }
       .header { flex-direction: column; align-items: flex-start; }
       .controls { width: 100%; }
       .controls button { flex: 1; padding: 10px; font-size: 12px; }
+      #login-screen h1 { font-size: 24px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Login Screen -->
+  <!-- ============================================================
+       LOGIN SCREEN
+       ============================================================ -->
   <div id="login-screen">
     <h1>🎥 Video Conference</h1>
     <input type="text" id="roomNameInput" placeholder="ឈ្មោះបន្ទប់ (ឧ. meeting-1)" value="meeting-1">
-    <input type="text" id="usernameInput" placeholder="ឈ្មោះរបស់អ្នក" value="">
-    <button onclick="joinRoom()">🚀 ចូលបន្ទប់</button>
+    <input type="text" id="usernameInput" placeholder="ឈ្មោះរបស់អ្នក">
+    <button id="joinBtn" onclick="joinRoom()">🚀 ចូលបន្ទប់</button>
   </div>
 
-  <!-- Main App -->
+  <!-- ============================================================
+       MAIN APP
+       ============================================================ -->
   <div id="app">
     <div class="header">
       <h2>🎥 បន្ទប់: <span id="currentRoom">-</span></h2>
@@ -243,13 +291,19 @@
     </div>
   </div>
 
+  <!-- ============================================================
+       STATUS MESSAGE
+       ============================================================ -->
   <div id="status"></div>
 
   <script>
+    // ============================================================
+    // GLOBAL VARIABLES
+    // ============================================================
     let room = null;
     let localParticipant = null;
-    let isMicOn = true;
-    let isCameraOn = true;
+    let isMicOn = false;
+    let isCameraOn = false;
     let isScreenSharing = false;
     let LIVEKIT_URL = 'wss://meeting-86lp77zt.livekit.cloud';
 
@@ -259,11 +313,14 @@
     async function joinRoom() {
       const roomName = document.getElementById('roomNameInput').value.trim();
       const username = document.getElementById('usernameInput').value.trim();
+      const joinBtn = document.getElementById('joinBtn');
       
       if (!roomName || !username) {
         return alert('សូមបំពេញឈ្មោះបន្ទប់ និងឈ្មោះរបស់អ្នក!');
       }
 
+      joinBtn.disabled = true;
+      joinBtn.textContent = '⏳ កំពុងភ្ជាប់...';
       showStatus('⏳ កំពុងភ្ជាប់...');
 
       try {
@@ -280,7 +337,6 @@
           throw new Error(data.error || 'Failed to get token');
         }
 
-        // ប្រើ URL ពី Server ប្រសិនបើមាន
         if (data.url) LIVEKIT_URL = data.url;
 
         // បង្កើត Room
@@ -300,8 +356,42 @@
         
         localParticipant = room.localParticipant;
 
-        // បើកកាមេរ៉ា និងមេក្រូ
-        await localParticipant.enableCameraAndMicrophone();
+        // ============================================================
+        // ព្យាយាមបើកកាមេរ៉ា និងមេក្រូ (បើមាន)
+        // ប្រសិនបើគ្មាន កម្មវិធីនឹងបន្តដំណើរការធម្មតា
+        // ============================================================
+        try {
+          await localParticipant.enableCameraAndMicrophone();
+          isCameraOn = true;
+          isMicOn = true;
+          console.log('✅ Camera and microphone enabled');
+          showStatus('✅ កាមេរ៉ា និងមេក្រូ បានបើក');
+        } catch (deviceError) {
+          console.warn('⚠️ Camera/Mic not available:', deviceError.message);
+          showStatus('⚠️ គ្មានកាមេរ៉ា/មេក្រូ - អ្នកអាច Share Screen បាន');
+          
+          // ព្យាយាមបើកមេក្រូតែម្នាក់ឯង
+          try {
+            await localParticipant.setMicrophoneEnabled(true);
+            isMicOn = true;
+            console.log('✅ Microphone enabled');
+          } catch (micError) {
+            console.warn('⚠️ Microphone not available');
+            isMicOn = false;
+          }
+          
+          // ព្យាយាមបើកកាមេរ៉ាតែម្នាក់ឯង
+          try {
+            await localParticipant.setCameraEnabled(true);
+            isCameraOn = true;
+            console.log('✅ Camera enabled');
+          } catch (camError) {
+            console.warn('⚠️ Camera not available');
+            isCameraOn = false;
+          }
+          
+          updateMediaButtons();
+        }
         
         // បង្ហាញ Local Video
         localParticipant.videoTracks.forEach(pub => {
@@ -329,14 +419,19 @@
         document.getElementById('currentRoom').textContent = roomName;
         
         updateParticipantCount();
+        updateMediaButtons();
         showStatus('✅ ភ្ជាប់បានជោគជ័យ!');
 
       } catch (error) {
         console.error('❌ Error joining room:', error);
         showStatus('❌ មិនអាចភ្ជាប់បានទេ: ' + error.message);
+        
         setTimeout(() => {
-          alert('មិនអាចភ្ជាប់បានទេ!\n\nមូលហេតុដែលអាចកើតឡើង:\n- កាមេរ៉ា/មេក្រូ មិនត្រូវបានអនុញ្ញាត\n- ត្រូវប្រើ HTTPS ឬ localhost\n- Token មិនត្រឹមត្រូវ\n\nError: ' + error.message);
+          alert('មិនអាចភ្ជាប់បានទេ!\n\nមូលហេតុដែលអាចកើតឡើង:\n- ត្រូវប្រើ HTTPS ឬ localhost\n- Token មិនត្រឹមត្រូវ\n- Server មានបញ្ហា\n\nError: ' + error.message);
         }, 500);
+      } finally {
+        joinBtn.disabled = false;
+        joinBtn.textContent = '🚀 ចូលបន្ទប់';
       }
     }
 
@@ -391,9 +486,14 @@
       const videoElement = track.attach();
       videoElement.autoplay = true;
       videoElement.playsInline = true;
-      videoElement.muted = name.includes('អ្នក'); // Mute own video
+      
+      // Mute វីដេអូរបស់ខ្លួនឯង
+      if (name.includes('អ្នក')) {
+        videoElement.muted = true;
+      }
 
-      const boxId = (isScreen ? 'screen-' : 'video-') + name.replace(/\s+/g, '-');
+      const safeName = name.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
+      const boxId = (isScreen ? 'screen-' : 'video-') + safeName;
       const gridId = isScreen ? 'screenGrid' : 'videoGrid';
       
       let box = document.getElementById(boxId);
@@ -414,7 +514,6 @@
       box.insertBefore(videoElement, box.firstChild);
       document.getElementById(gridId).appendChild(box);
       
-      // បង្ហាញ Screen Title ប្រសិនបើមាន Screen Share
       if (isScreen) {
         document.getElementById('screenTitle').style.display = 'block';
       }
@@ -424,16 +523,29 @@
     // REMOVE VIDEO
     // ============================================================
     function removeVideoByParticipant(name, isScreen = false) {
-      const box = document.getElementById((isScreen ? 'screen-' : 'video-') + name.replace(/\s+/g, '-'));
+      const safeName = name.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
+      const box = document.getElementById((isScreen ? 'screen-' : 'video-') + safeName);
       if (box) box.remove();
       
-      // លាក់ Screen Title ប្រសិនបើគ្មាន Screen Share ទៀត
       if (isScreen) {
         const screenGrid = document.getElementById('screenGrid');
         if (screenGrid.children.length === 0) {
           document.getElementById('screenTitle').style.display = 'none';
         }
       }
+    }
+
+    // ============================================================
+    // UPDATE MEDIA BUTTONS
+    // ============================================================
+    function updateMediaButtons() {
+      const btnMic = document.getElementById('btnMic');
+      btnMic.innerHTML = isMicOn ? '🎤 Mic On' : '🔇 Mic Off';
+      btnMic.className = isMicOn ? 'btn-primary' : 'btn-primary off';
+      
+      const btnCam = document.getElementById('btnCam');
+      btnCam.innerHTML = isCameraOn ? '📹 Camera On' : '📷 Camera Off';
+      btnCam.className = isCameraOn ? 'btn-primary' : 'btn-primary off';
     }
 
     // ============================================================
@@ -445,13 +557,13 @@
       try {
         isMicOn = !isMicOn;
         await localParticipant.setMicrophoneEnabled(isMicOn);
-        
-        const btn = document.getElementById('btnMic');
-        btn.innerHTML = isMicOn ? '🎤 Mic On' : '🔇 Mic Off';
-        btn.className = isMicOn ? 'btn-primary' : 'btn-primary off';
+        updateMediaButtons();
         showStatus(isMicOn ? '🎤 បើកមេក្រូ' : '🔇 បិទមេក្រូ');
       } catch (error) {
         console.error('Mic toggle error:', error);
+        isMicOn = !isMicOn;
+        showStatus('⚠️ មិនអាចប្តូរមេក្រូបានទេ: ' + error.message);
+        updateMediaButtons();
       }
     }
 
@@ -464,10 +576,7 @@
       try {
         isCameraOn = !isCameraOn;
         await localParticipant.setCameraEnabled(isCameraOn);
-        
-        const btn = document.getElementById('btnCam');
-        btn.innerHTML = isCameraOn ? '📹 Camera On' : '📷 Camera Off';
-        btn.className = isCameraOn ? 'btn-primary' : 'btn-primary off';
+        updateMediaButtons();
         
         if (!isCameraOn) {
           removeVideoByParticipant(localParticipant.identity + ' (អ្នក)', false);
@@ -475,6 +584,9 @@
         showStatus(isCameraOn ? '📹 បើកកាមេរ៉ា' : '📷 បិទកាមេរ៉ា');
       } catch (error) {
         console.error('Camera toggle error:', error);
+        isCameraOn = !isCameraOn;
+        showStatus('⚠️ មិនអាចប្តូរកាមេរ៉ាបានទេ: ' + error.message);
+        updateMediaButtons();
       }
     }
 
@@ -509,7 +621,7 @@
         const btn = document.getElementById('btnScreen');
         btn.innerHTML = '🖥️ Share Screen';
         btn.className = 'btn-warning';
-        showStatus('❌ បោះបង់ការ Share Screen');
+        showStatus('❌ បោះបង់ការ Share Screen: ' + error.message);
       }
     }
 
@@ -518,7 +630,8 @@
     // ============================================================
     function addParticipantToList(name) {
       const list = document.getElementById('participantsList');
-      const itemId = 'p-' + name.replace(/\s+/g, '-');
+      const safeName = name.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
+      const itemId = 'p-' + safeName;
       if (document.getElementById(itemId)) return;
       
       const item = document.createElement('div');
@@ -529,7 +642,8 @@
     }
 
     function removeParticipantFromList(name) {
-      const item = document.getElementById('p-' + name.replace(/\s+/g, '-'));
+      const safeName = name.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
+      const item = document.getElementById('p-' + safeName);
       if (item) item.remove();
     }
 
@@ -565,6 +679,11 @@
       document.getElementById('app').classList.remove('active');
       document.getElementById('login-screen').style.display = 'flex';
       
+      // Reset variables
+      isMicOn = false;
+      isCameraOn = false;
+      isScreenSharing = false;
+      
       // Reset buttons
       document.getElementById('btnMic').innerHTML = '🎤 Mic On';
       document.getElementById('btnMic').className = 'btn-primary';
@@ -572,10 +691,6 @@
       document.getElementById('btnCam').className = 'btn-primary';
       document.getElementById('btnScreen').innerHTML = '🖥️ Share Screen';
       document.getElementById('btnScreen').className = 'btn-warning';
-      
-      isMicOn = true;
-      isCameraOn = true;
-      isScreenSharing = false;
       
       showStatus('🚪 បានចាកចេញពីបន្ទប់');
     }
@@ -588,7 +703,7 @@
       status.textContent = message;
       status.classList.add('show');
       clearTimeout(status.timeout);
-      status.timeout = setTimeout(() => status.classList.remove('show'), 3000);
+      status.timeout = setTimeout(() => status.classList.remove('show'), 4000);
     }
 
     // ============================================================
@@ -596,6 +711,9 @@
     // ============================================================
     document.getElementById('usernameInput').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') joinRoom();
+    });
+    document.getElementById('roomNameInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') document.getElementById('usernameInput').focus();
     });
   </script>
 </body>
