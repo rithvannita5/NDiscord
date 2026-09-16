@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Video Conference - LiveKit</title>
   
-  <!-- ✅ PWA Meta Tags -->
   <meta name="theme-color" content="#00b4d8">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -13,7 +12,6 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2300b4d8'/%3E%3Ctext x='32' y='44' font-family='Arial' font-size='36' font-weight='bold' fill='white' text-anchor='middle'%3EVC%3C/text%3E%3C/svg%3E" type="image/svg+xml">
   
-  <!-- ✅ Google Fonts - អក្សរខ្មែរស្អាត -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -36,7 +34,6 @@
       padding: 20px;
       line-height: 1.6;
       letter-spacing: 0.3px;
-      font-feature-settings: 'kern' 1;
     }
     
     /* ============================================================
@@ -141,22 +138,9 @@
       box-shadow: 0 10px 40px rgba(0,0,0,0.8);
       text-align: center;
     }
-    .otp-card .icon {
-      font-size: 60px;
-      margin-bottom: 15px;
-    }
-    .otp-card h2 {
-      color: #f59e0b;
-      margin-bottom: 15px;
-      font-size: 24px;
-      font-weight: 700;
-    }
-    .otp-card p {
-      color: #cbd5e1;
-      margin-bottom: 20px;
-      font-size: 14px;
-      line-height: 1.7;
-    }
+    .otp-card .icon { font-size: 60px; margin-bottom: 15px; }
+    .otp-card h2 { color: #f59e0b; margin-bottom: 15px; font-size: 24px; font-weight: 700; }
+    .otp-card p { color: #cbd5e1; margin-bottom: 20px; font-size: 14px; line-height: 1.7; }
     .otp-card .security-note {
       background: rgba(245, 158, 11, 0.1);
       border: 1px solid rgba(245, 158, 11, 0.3);
@@ -266,10 +250,6 @@
       font-family: inherit;
     }
     .lobby-card button:hover { background: #0096c7; }
-    .lobby-card button.admin-btn { background: #8b5cf6; }
-    .lobby-card button.admin-btn:hover { background: #7c3aed; }
-    .lobby-card button.install-btn { background: #10b981; }
-    .lobby-card button.install-btn:hover { background: #059669; }
     .lobby-card button.logout-btn {
       background: #475569;
       font-size: 14px;
@@ -326,6 +306,12 @@
     .btn-danger:hover { background: #dc2626; }
     .btn-warning { background: #f59e0b; color: #000; }
     .btn-warning:hover { background: #d97706; }
+    .btn-purple { background: #8b5cf6; color: #fff; }
+    .btn-purple:hover { background: #7c3aed; }
+    .btn-success { background: #10b981; color: #fff; }
+    .btn-success:hover { background: #059669; }
+    .btn-secondary { background: #475569; color: #fff; }
+    .btn-secondary:hover { background: #334155; }
     .controls button.off { background: #ef4444; color: #fff; }
     
     .section-title {
@@ -572,7 +558,7 @@
   </div>
 
   <!-- ============================================================
-       LOBBY SCREEN
+       LOBBY SCREEN (ក្រោយ Login - គ្មាន Install/Admin/Logout)
        ============================================================ -->
   <div id="lobby-screen">
     <div class="lobby-card">
@@ -582,14 +568,11 @@
       </div>
       <input type="text" id="roomNameInput" placeholder="ឈ្មោះបន្ទប់ (ឧ. meeting-1)" value="meeting-1">
       <button onclick="joinRoom()">🚀 ចូលបន្ទប់</button>
-      <button id="installBtn" class="install-btn" onclick="installApp()" style="display:none;">📲 Install App</button>
-      <button id="adminBtn" class="admin-btn" onclick="openAdmin()" style="display:none;">👑 គ្រប់គ្រង Users</button>
-      <button class="logout-btn" onclick="logout()">🚪 ចាកចេញពីគណនី</button>
     </div>
   </div>
 
   <!-- ============================================================
-       MAIN APP
+       MAIN APP (ពេលចូលបន្ទប់ - មាន Install/Admin/Logout)
        ============================================================ -->
   <div id="app">
     <div class="header">
@@ -598,10 +581,19 @@
         <span class="user-badge">👤 <span id="currentUser">-</span></span>
       </div>
       <div class="controls">
+        <!-- ✅ ប៊ូតុង Install ផ្លាស់មកទីនេះ -->
+        <button id="installBtn" class="btn-success" onclick="installApp()" style="display:none;">📲 Install App</button>
+        
+        <!-- ✅ ប៊ូតុង Admin ផ្លាស់មកទីនេះ -->
+        <button id="adminBtn" class="btn-purple" onclick="openAdmin()" style="display:none;">👑 គ្រប់គ្រង Users</button>
+        
         <button id="btnMic" class="btn-primary" onclick="toggleMic()">🎤 បើកមេក្រូ</button>
         <button id="btnCam" class="btn-primary" onclick="toggleCamera()">📹 បើកកាមេរ៉ា</button>
         <button id="btnScreen" class="btn-warning" onclick="toggleScreenShare()">🖥️ ចែកអេក្រង់</button>
-        <button class="btn-danger" onclick="leaveRoom()">🚪 ចាកចេញ</button>
+        
+        <!-- ✅ ប៊ូតុង Logout ផ្លាស់មកទីនេះ -->
+        <button class="btn-secondary" onclick="logout()">🚪 ចាកចេញពីគណនី</button>
+        <button class="btn-danger" onclick="leaveRoom()">🚪 ចាកចេញពីបន្ទប់</button>
       </div>
     </div>
 
@@ -692,7 +684,7 @@
       console.log('✅ Install prompt available');
       
       const btn = document.getElementById('installBtn');
-      if (btn) btn.style.display = 'block';
+      if (btn) btn.style.display = 'inline-block';
     });
 
     window.addEventListener('appinstalled', () => {
@@ -733,12 +725,6 @@
       document.getElementById('app').classList.remove('active');
       
       document.getElementById('lobbyUsername').textContent = currentUser.displayName || currentUser.username;
-      
-      if (currentUser.role === 'admin') {
-        document.getElementById('adminBtn').style.display = 'block';
-      } else {
-        document.getElementById('adminBtn').style.display = 'none';
-      }
     }
 
     // ============================================================
@@ -775,7 +761,6 @@
         const data = await response.json();
 
         if (data.requires2FA) {
-          // ត្រូវការ 2FA
           pendingLoginData = { username, password };
           document.getElementById('otp-modal').classList.add('active');
           document.getElementById('otpInput').focus();
@@ -807,7 +792,7 @@
     }
 
     // ============================================================
-    // GET DEVICE ID (Unique per browser)
+    // GET DEVICE ID
     // ============================================================
     function getDeviceId() {
       let deviceId = localStorage.getItem('deviceId');
@@ -867,9 +852,6 @@
       }
     }
 
-    // ============================================================
-    // CANCEL OTP
-    // ============================================================
     function cancelOTP() {
       document.getElementById('otp-modal').classList.remove('active');
       document.getElementById('otpInput').value = '';
@@ -882,6 +864,11 @@
     // ============================================================
     function logout() {
       if (!confirm('តើអ្នកចង់ចាកចេញពីគណនីទេ?')) return;
+      
+      // ប្រសិនបើកំពុងនៅក្នុងបន្ទប់ ត្រូវ Leave មុន
+      if (room) {
+        leaveRoom();
+      }
       
       authToken = null;
       currentUser = null;
@@ -945,29 +932,23 @@
         localParticipant = room.localParticipant;
 
         // ============================================================
-        // ✅ FIX: Mobile - Don't auto-enable camera immediately
+        // ✅ Mobile: Don't auto-enable camera
         // ============================================================
         if (isMobile) {
-          // នៅលើទូរស័ព្ទ សូមរង់ចាំ User ចុច Button ជាមុន
           try {
             await localParticipant.setMicrophoneEnabled(true);
             isMicOn = true;
             showStatus('🎤 មេក្រូបើកហើយ - ចុច "បើកកាមេរ៉ា" ដើម្បីបើក');
           } catch (e) {
             isMicOn = false;
-            showStatus('⚠️ មេក្រូមិនអាចបើកបាន');
           }
           isCameraOn = false;
         } else {
-          // នៅលើកុំព្យូទ័រ បើកទាំងពីរភ្លាម
           try {
             await localParticipant.enableCameraAndMicrophone();
             isCameraOn = true;
             isMicOn = true;
           } catch (deviceError) {
-            console.warn('⚠️ Camera/Mic not available:', deviceError.message);
-            showStatus('⚠️ គ្មានកាមេរ៉ា/មេក្រូ');
-            
             try {
               await localParticipant.setMicrophoneEnabled(true);
               isMicOn = true;
@@ -987,6 +968,13 @@
           displayRemoteTracks(participant);
         });
 
+        // ✅ បង្ហាញ Admin Button ប្រសិនបើជា Admin
+        if (currentUser.role === 'admin') {
+          document.getElementById('adminBtn').style.display = 'inline-block';
+        } else {
+          document.getElementById('adminBtn').style.display = 'none';
+        }
+
         document.getElementById('lobby-screen').style.display = 'none';
         document.getElementById('app').classList.add('active');
         document.getElementById('currentRoom').textContent = roomName;
@@ -1003,8 +991,14 @@
     }
 
     // ============================================================
-    // DISPLAY LOCAL TRACKS
+    // (Rest of the functions remain the same - displayLocalTracks, 
+    // displayRemoteTracks, setupRoomEvents, attachVideoTrack, 
+    // openFullscreen, closeFullscreen, removeVideoByParticipant, 
+    // updateVideoCounts, updateMediaButtons, toggleMic, toggleCamera, 
+    // toggleScreenShare, addParticipantToList, removeParticipantFromList, 
+    // updateParticipantCount, leaveRoom, showStatus)
     // ============================================================
+    
     function displayLocalTracks(username) {
       try {
         const videoPublications = Array.from(localParticipant.videoTrackPublications.values());
@@ -1023,9 +1017,6 @@
       }
     }
 
-    // ============================================================
-    // DISPLAY REMOTE TRACKS
-    // ============================================================
     function displayRemoteTracks(participant) {
       try {
         const videoPublications = Array.from(participant.videoTrackPublications.values());
@@ -1044,12 +1035,8 @@
       }
     }
 
-    // ============================================================
-    // SETUP ROOM EVENTS
-    // ============================================================
     function setupRoomEvents() {
       room.on('participantConnected', (participant) => {
-        console.log('👤 Connected:', participant.identity);
         addParticipantToList(participant.identity);
         updateParticipantCount();
         showStatus('👤 ' + participant.identity + ' បានចូលរួម');
@@ -1057,7 +1044,6 @@
       });
 
       room.on('participantDisconnected', (participant) => {
-        console.log('👤 Disconnected:', participant.identity);
         removeParticipantFromList(participant.identity);
         removeVideoByParticipant(participant.identity, false);
         removeVideoByParticipant(participant.identity, true);
@@ -1066,7 +1052,6 @@
       });
 
       room.on('trackSubscribed', (track, publication, participant) => {
-        console.log('📺 Track subscribed:', track.kind, 'from', participant.identity);
         if (track.kind === 'video') {
           const isScreen = publication.source === 'screen_share';
           attachVideoTrack(track, participant.identity, isScreen);
@@ -1097,14 +1082,10 @@
       });
 
       room.on('disconnected', () => {
-        console.log('🔌 Disconnected from room');
         leaveRoom();
       });
     }
 
-    // ============================================================
-    // ATTACH VIDEO TRACK
-    // ============================================================
     function attachVideoTrack(track, name, isScreen = false) {
       if (!track) return;
       
@@ -1152,9 +1133,6 @@
       updateVideoCounts();
     }
 
-    // ============================================================
-    // OPEN FULLSCREEN
-    // ============================================================
     function openFullscreen(videoElement, name, isScreen) {
       const modal = document.getElementById('fullscreenModal');
       const modalBody = document.getElementById('modalBody');
@@ -1186,9 +1164,6 @@
       if (e.key === 'Enter' && pendingLoginData) verifyOTP();
     });
 
-    // ============================================================
-    // REMOVE VIDEO
-    // ============================================================
     function removeVideoByParticipant(name, isScreen = false) {
       const safeName = name.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
       const box = document.getElementById((isScreen ? 'screen-' : 'video-') + safeName);
@@ -1212,9 +1187,6 @@
       document.getElementById('videoCount').textContent = videoCount;
     }
 
-    // ============================================================
-    // UPDATE MEDIA BUTTONS
-    // ============================================================
     function updateMediaButtons() {
       const btnMic = document.getElementById('btnMic');
       btnMic.innerHTML = isMicOn ? '🎤 បើកមេក្រូ' : '🔇 បិទមេក្រូ';
@@ -1225,9 +1197,6 @@
       btnCam.className = isCameraOn ? 'btn-primary' : 'btn-primary off';
     }
 
-    // ============================================================
-    // TOGGLE MIC
-    // ============================================================
     async function toggleMic() {
       if (!localParticipant) return;
       try {
@@ -1242,9 +1211,6 @@
       }
     }
 
-    // ============================================================
-    // TOGGLE CAMERA
-    // ============================================================
     async function toggleCamera() {
       if (!localParticipant) return;
       try {
@@ -1262,13 +1228,9 @@
       }
     }
 
-    // ============================================================
-    // TOGGLE SCREEN SHARE
-    // ============================================================
     async function toggleScreenShare() {
       if (!localParticipant) return;
       
-      // ✅ FIX: Check if screen share is supported on this device
       if (isMobile && !navigator.mediaDevices.getDisplayMedia) {
         showStatus('⚠️ ទូរស័ព្ទមិនអាចចែកអេក្រង់បានទេ - សូមប្រើកុំព្យូទ័រ!');
         return;
@@ -1299,9 +1261,6 @@
       }
     }
 
-    // ============================================================
-    // PARTICIPANTS LIST
-    // ============================================================
     function addParticipantToList(name) {
       const list = document.getElementById('participantsList');
       const safeName = name.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
@@ -1331,9 +1290,6 @@
       }
     }
 
-    // ============================================================
-    // LEAVE ROOM
-    // ============================================================
     async function leaveRoom() {
       if (room) {
         try { await room.disconnect(); } catch (e) {}
@@ -1365,9 +1321,6 @@
       showStatus('🚪 បានចាកចេញពីបន្ទប់');
     }
 
-    // ============================================================
-    // STATUS
-    // ============================================================
     function showStatus(message) {
       const status = document.getElementById('status');
       status.textContent = message;
@@ -1376,9 +1329,6 @@
       status.timeout = setTimeout(() => status.classList.remove('show'), 4000);
     }
 
-    // ============================================================
-    // ENTER KEY SHORTCUTS
-    // ============================================================
     document.getElementById('loginPassword').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') login();
     });
