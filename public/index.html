@@ -560,7 +560,7 @@
   <!-- ============================================================
        LOBBY SCREEN (ក្រោយ Login - គ្មាន Install/Admin/Logout)
        ============================================================ -->
-  <div id="lobby-screen">
+ <div id="lobby-screen">
   <div class="lobby-card">
     <h1>🎥 Video Conference</h1>
     <div class="user-info">
@@ -568,6 +568,12 @@
     </div>
     <input type="text" id="roomNameInput" placeholder="ឈ្មោះបន្ទប់ (ឧ. meeting-1)" value="meeting-1">
     <button onclick="joinRoom()">🚀 ចូលបន្ទប់</button>
+    
+    <!-- ✅ បន្ថែមប៊ូតុង Install -->
+    <button id="lobbyInstallBtn" class="install-btn" onclick="installApp()" style="display:none;">📲 Install App</button>
+    
+    <!-- ✅ បន្ថែមប៊ូតុង Logout -->
+    <button class="logout-btn" onclick="logout()">🚪 ចាកចេញពីគណនី</button>
   </div>
 </div>
   <!-- ============================================================
