@@ -3,13 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard - User Management</title>
+  <title>Admin Dashboard</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap" rel="stylesheet">
   
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Kantumruy Pro', 'Segoe UI', sans-serif; }
-    body { background: #0b132b; color: #fff; min-height: 100vh; padding: 20px; }
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: 'Kantumruy Pro', 'Noto Sans Khmer', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    body { background: #0b132b; color: #fff; min-height: 100vh; padding: 20px; line-height: 1.6; }
     
-    .container { max-width: 1200px; margin: 0 auto; }
+    .container { max-width: 1300px; margin: 0 auto; }
     
     .header {
       background: #1c2541;
@@ -24,10 +33,7 @@
       border: 1px solid #2d2d44;
     }
     .header h1 { color: #48cae4; font-size: 24px; }
-    .header .user-info {
-      color: #94a3b8;
-      font-size: 14px;
-    }
+    .header .user-info { color: #94a3b8; font-size: 14px; }
     .header .user-info strong { color: #48cae4; }
     
     .btn {
@@ -35,21 +41,63 @@
       border: none;
       border-radius: 8px;
       font-size: 14px;
-      font-weight: bold;
+      font-weight: 600;
       cursor: pointer;
-      transition: 0.2s;
       font-family: inherit;
     }
     .btn-primary { background: #00b4d8; color: #fff; }
     .btn-primary:hover { background: #0096c7; }
     .btn-success { background: #10b981; color: #fff; }
-    .btn-success:hover { background: #059669; }
     .btn-danger { background: #ef4444; color: #fff; }
-    .btn-danger:hover { background: #dc2626; }
     .btn-warning { background: #f59e0b; color: #000; }
-    .btn-warning:hover { background: #d97706; }
     .btn-secondary { background: #475569; color: #fff; }
-    .btn-secondary:hover { background: #334155; }
+    .btn-purple { background: #8b5cf6; color: #fff; }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+    .stat-card {
+      background: #1c2541;
+      padding: 25px;
+      border-radius: 12px;
+      border: 1px solid #2d2d44;
+      text-align: center;
+    }
+    .stat-card .stat-value {
+      font-size: 36px;
+      font-weight: bold;
+      color: #48cae4;
+      margin-bottom: 5px;
+    }
+    .stat-card .stat-label {
+      font-size: 13px;
+      color: #94a3b8;
+    }
+    
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      padding: 12px 24px;
+      background: #1c2541;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .tab-btn.active { background: #00b4d8; }
+    
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
     
     .card {
       background: #1c2541;
@@ -73,7 +121,7 @@
       margin-bottom: 15px;
     }
     
-    input, select {
+    input, select, textarea {
       width: 100%;
       padding: 12px 15px;
       border-radius: 8px;
@@ -85,6 +133,33 @@
       font-family: inherit;
     }
     input:focus, select:focus { border-color: #48cae4; }
+    
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+      padding: 12px;
+      background: #0b132b;
+      border-radius: 8px;
+      border: 1px solid #2d2d44;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+    .checkbox-group label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: #1c2541;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .checkbox-group input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+    }
     
     table {
       width: 100%;
@@ -101,8 +176,8 @@
       background: #0b132b;
       color: #48cae4;
       font-weight: 600;
-      text-transform: uppercase;
       font-size: 12px;
+      text-transform: uppercase;
       letter-spacing: 1px;
     }
     tr:hover { background: #16213e; }
@@ -115,17 +190,18 @@
       display: inline-block;
     }
     .badge-admin { background: #f59e0b; color: #000; }
+    .badge-supervisor { background: #8b5cf6; color: #fff; }
     .badge-user { background: #00b4d8; color: #fff; }
     .badge-active { background: #10b981; color: #fff; }
     .badge-inactive { background: #ef4444; color: #fff; }
     
     .action-buttons {
       display: flex;
-      gap: 8px;
+      gap: 5px;
       flex-wrap: wrap;
     }
     .action-buttons button {
-      padding: 6px 12px;
+      padding: 6px 10px;
       font-size: 12px;
     }
     
@@ -140,35 +216,39 @@
     .alert-success { background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #10b981; }
     .alert-error { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #ef4444; }
     
-    .stats-grid {
+    .room-monitor-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 15px;
-      margin-bottom: 25px;
     }
-    .stat-card {
-      background: #16213e;
+    .room-monitor-card {
+      background: #0b132b;
       padding: 20px;
       border-radius: 10px;
-      border: 1px solid #2d2d44;
-      text-align: center;
+      border: 2px solid #2d2d44;
     }
-    .stat-card .stat-value {
-      font-size: 32px;
-      font-weight: bold;
+    .room-monitor-card.live {
+      border-color: #10b981;
+    }
+    .room-monitor-card h4 {
       color: #48cae4;
-      margin-bottom: 5px;
+      margin-bottom: 10px;
     }
-    .stat-card .stat-label {
-      font-size: 13px;
+    .room-monitor-card .online-count {
+      font-size: 24px;
+      font-weight: bold;
+      color: #10b981;
+      margin: 10px 0;
+    }
+    .room-monitor-card .user-list {
+      font-size: 12px;
       color: #94a3b8;
+      margin-top: 10px;
+      max-height: 100px;
+      overflow-y: auto;
     }
     
-    .loading {
-      text-align: center;
-      padding: 40px;
-      color: #94a3b8;
-    }
+    .loading { text-align: center; padding: 40px; color: #94a3b8; }
     
     @media (max-width: 768px) {
       .header { flex-direction: column; align-items: flex-start; }
@@ -182,18 +262,16 @@
 <body>
 
   <div class="container">
-    <!-- Header -->
     <div class="header">
       <div>
         <h1>👑 Admin Dashboard</h1>
-        <div class="user-info">ចូលជា: <strong id="adminName">-</strong></div>
+        <div class="user-info">ចូលជា: <strong id="adminName">-</strong> <span id="adminRole"></span></div>
       </div>
       <div>
         <button class="btn btn-secondary" onclick="window.close()">✕ បិទ</button>
       </div>
     </div>
 
-    <!-- Alert -->
     <div id="alert" class="alert"></div>
 
     <!-- Stats -->
@@ -203,47 +281,49 @@
         <div class="stat-label">👥 អ្នកប្រើសរុប</div>
       </div>
       <div class="stat-card">
+        <div class="stat-value" id="totalRooms">0</div>
+        <div class="stat-label">🚪 បន្ទប់សរុប</div>
+      </div>
+      <div class="stat-card">
         <div class="stat-value" id="activeUsers">0</div>
         <div class="stat-label">✅ សកម្ម</div>
       </div>
       <div class="stat-card">
-        <div class="stat-value" id="inactiveUsers">0</div>
-        <div class="stat-label">🚫 អសកម្ម</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="adminUsers">0</div>
-        <div class="stat-label">👑 Admin</div>
+        <div class="stat-value" id="totalOnline">0</div>
+        <div class="stat-label">🟢 កំពុង Online</div>
       </div>
     </div>
 
-    <!-- Create User Form -->
-    <div class="card">
-      <h2>➕ បង្កើតអ្នកប្រើថ្មី</h2>
-      <div class="form-grid">
-        <input type="text" id="newUsername" placeholder="ឈ្មោះអ្នកប្រើ (Username)">
-        <input type="text" id="newDisplayName" placeholder="ឈ្មោះបង្ហាញ (Display Name)">
-        <input type="password" id="newPassword" placeholder="លេខសម្ងាត់ (Password)">
-        <select id="newRole">
-          <option value="user">User (អ្នកប្រើធម្មតា)</option>
-          <option value="admin">Admin (អ្នកគ្រប់គ្រង)</option>
-        </select>
-      </div>
-      <button class="btn btn-success" onclick="createUser()">➕ បង្កើតអ្នកប្រើ</button>
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('rooms')">📡 តាមដានបន្ទប់</button>
+      <button class="tab-btn" onclick="switchTab('users')">👥 គ្រប់គ្រង Users</button>
+      <button class="tab-btn" onclick="switchTab('create')">➕ បង្កើតថ្មី</button>
     </div>
 
-    <!-- Users Table -->
-    <div class="card">
-      <h2>👥 បញ្ជីអ្នកប្រើ</h2>
-      <div id="usersLoading" class="loading">⏳ កំពុងផ្ទុក...</div>
-      <div style="overflow-x: auto;">
+    <!-- Tab: Rooms Monitor -->
+    <div id="tab-rooms" class="tab-content active">
+      <div class="card">
+        <h2>📡 តាមដានបន្ទប់សកម្ម</h2>
+        <div id="roomsMonitor" class="room-monitor-grid">
+          <div class="loading">⏳ កំពុងផ្ទុក...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Users -->
+    <div id="tab-users" class="tab-content">
+      <div class="card">
+        <h2>👥 បញ្ជីអ្នកប្រើ</h2>
+        <div id="usersLoading" class="loading">⏳ កំពុងផ្ទុក...</div>
         <table id="usersTable" style="display:none;">
           <thead>
             <tr>
               <th>Username</th>
               <th>Display Name</th>
               <th>Role</th>
+              <th>បន្ទប់</th>
               <th>Status</th>
-              <th>Last Login</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -251,25 +331,60 @@
         </table>
       </div>
     </div>
+
+    <!-- Tab: Create -->
+    <div id="tab-create" class="tab-content">
+      <!-- Create User -->
+      <div class="card">
+        <h2>➕ បង្កើតអ្នកប្រើថ្មី</h2>
+        <div class="form-grid">
+          <input type="text" id="newUsername" placeholder="Username">
+          <input type="text" id="newDisplayName" placeholder="Display Name">
+          <input type="password" id="newPassword" placeholder="Password">
+          <select id="newRole">
+            <option value="user">User (អ្នកប្រើធម្មតា)</option>
+            <option value="supervisor">Supervisor (អ្នកត្រួតពិនិត្យ)</option>
+            <option value="admin">Admin (អ្នកគ្រប់គ្រង)</option>
+          </select>
+        </div>
+        <div style="margin-bottom: 15px;">
+          <label style="display:block; margin-bottom:8px; color:#94a3b8; font-size:13px;">🚪 បន្ទប់ដែលអនុញ្ញាត:</label>
+          <div id="roomsCheckbox" class="checkbox-group"></div>
+        </div>
+        <button class="btn btn-success" onclick="createUser()">➕ បង្កើត User</button>
+      </div>
+
+      <!-- Create Room -->
+      <div class="card">
+        <h2>➕ បង្កើតបន្ទប់ថ្មី</h2>
+        <div class="form-grid">
+          <input type="text" id="newRoomId" placeholder="Room ID (ឧ. meeting-4)">
+          <input type="text" id="newRoomName" placeholder="ឈ្មោះបន្ទប់">
+        </div>
+        <button class="btn btn-primary" onclick="createRoom()">➕ បង្កើតបន្ទប់</button>
+      </div>
+    </div>
   </div>
 
   <script>
-    // ============================================================
-    // CHECK AUTHENTICATION
-    // ============================================================
     const token = localStorage.getItem('authToken');
     const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
 
-    if (!token || user.role !== 'admin') {
-      alert('អ្នកគ្មានសិទ្ធិចូលទំព័រនេះទេ!');
+    if (!token || (user.role !== 'admin' && user.role !== 'supervisor')) {
+      alert('អ្នកគ្មានសិទ្ធិ!');
       window.location.href = '/';
     }
 
     document.getElementById('adminName').textContent = user.displayName || user.username;
+    document.getElementById('adminRole').innerHTML = `<span class="badge badge-${user.role}">${user.role.toUpperCase()}</span>`;
 
-    // ============================================================
-    // SHOW ALERT
-    // ============================================================
+    // Hide create tab for supervisors
+    if (user.role === 'supervisor') {
+      document.querySelectorAll('.tab-btn')[2].style.display = 'none';
+    }
+
+    let allRooms = [];
+
     function showAlert(message, type = 'success') {
       const alert = document.getElementById('alert');
       alert.textContent = message;
@@ -277,231 +392,267 @@
       setTimeout(() => alert.classList.remove('show'), 3000);
     }
 
-    // ============================================================
-    // LOAD USERS
-    // ============================================================
-    async function loadUsers() {
-      try {
-        const response = await fetch('/api/admin/users', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (!response.ok) {
-          if (response.status === 401 || response.status === 403) {
-            alert('Session ផុតកំណត់ សូមចូលម្តងទៀត!');
-            window.location.href = '/';
-            return;
-          }
-          throw new Error('Failed to load users');
-        }
-
-        const data = await response.json();
-        displayUsers(data.users);
-        updateStats(data.users);
-
-      } catch (error) {
-        console.error('Load users error:', error);
-        document.getElementById('usersLoading').textContent = '❌ មិនអាចផ្ទុកបានទេ: ' + error.message;
-      }
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById('tab-' + tab).classList.add('active');
+      
+      if (tab === 'rooms') loadRoomsMonitor();
+      if (tab === 'users') loadUsers();
+      if (tab === 'create') loadRoomsForCheckbox();
     }
 
     // ============================================================
-    // DISPLAY USERS
+    // STATS
     // ============================================================
-    function displayUsers(users) {
-      const tbody = document.getElementById('usersTableBody');
-      tbody.innerHTML = '';
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/admin/stats', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        
+        document.getElementById('totalUsers').textContent = data.totalUsers;
+        document.getElementById('totalRooms').textContent = data.totalRooms;
+        document.getElementById('activeUsers').textContent = data.activeUsers;
+        document.getElementById('totalOnline').textContent = data.totalOnline;
+      } catch (error) {}
+    }
 
-      if (users.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:#94a3b8;">គ្មានអ្នកប្រើទេ</td></tr>';
-      } else {
-        users.forEach(u => {
+    // ============================================================
+    // ROOMS MONITOR
+    // ============================================================
+    async function loadRoomsMonitor() {
+      try {
+        const res = await fetch('/api/online/rooms-status', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        
+        const container = document.getElementById('roomsMonitor');
+        container.innerHTML = '';
+        
+        if (data.rooms.length === 0) {
+          container.innerHTML = '<div class="loading">គ្មានបន្ទប់ទេ</div>';
+          return;
+        }
+        
+        data.rooms.forEach(room => {
+          const isLive = room.onlineCount > 0;
+          const card = document.createElement('div');
+          card.className = 'room-monitor-card' + (isLive ? ' live' : '');
+          card.innerHTML = `
+            <h4>🚪 ${room.roomName || room.roomId}</h4>
+            <div class="online-count">🟢 ${room.onlineCount} នាក់</div>
+            <div class="user-list">
+              ${room.users.length > 0 ? '👥 ' + room.users.join(', ') : '<em>គ្មានអ្នកចូល</em>'}
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      } catch (error) {}
+    }
+
+    // ============================================================
+    // USERS
+    // ============================================================
+    async function loadUsers() {
+      try {
+        const res = await fetch('/api/admin/users', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        
+        const tbody = document.getElementById('usersTableBody');
+        tbody.innerHTML = '';
+        
+        data.users.forEach(u => {
           const tr = document.createElement('tr');
+          const lastLogin = u.lastLogin ? new Date(u.lastLogin).toLocaleString('km-KH') : 'មិនធ្លាប់';
+          const roomsText = u.assignedRooms.includes('*') ? 'ទាំងអស់' : (u.assignedRooms.join(', ') || 'គ្មាន');
           
-          const lastLogin = u.lastLogin 
-            ? new Date(u.lastLogin).toLocaleString('km-KH') 
-            : 'មិនធ្លាប់';
-
-          const roleBadge = u.role === 'admin' 
-            ? '<span class="badge badge-admin">👑 Admin</span>' 
-            : '<span class="badge badge-user">👤 User</span>';
-
-          const statusBadge = u.isActive 
-            ? '<span class="badge badge-active">✅ សកម្ម</span>' 
-            : '<span class="badge badge-inactive">🚫 អសកម្ម</span>';
-
           tr.innerHTML = `
             <td><strong>${u.username}</strong></td>
             <td>${u.displayName || '-'}</td>
-            <td>${roleBadge}</td>
-            <td>${statusBadge}</td>
-            <td>${lastLogin}</td>
+            <td><span class="badge badge-${u.role}">${u.role}</span></td>
+            <td style="font-size:12px;">${roomsText}</td>
+            <td><span class="badge badge-${u.isActive ? 'active' : 'inactive'}">${u.isActive ? 'សកម្ម' : 'អសកម្ម'}</span></td>
             <td>
               <div class="action-buttons">
-                <button class="btn btn-warning" onclick="toggleUser('${u._id}')">
-                  ${u.isActive ? '🚫 ផ្អាក' : '✅ សកម្ម'}
-                </button>
-                <button class="btn btn-primary" onclick="resetPassword('${u._id}', '${u.username}')">
-                  🔑 Reset
-                </button>
-                ${u.role !== 'admin' ? `
-                  <button class="btn btn-danger" onclick="deleteUser('${u._id}', '${u.username}')">
-                    🗑️ លុប
-                  </button>
-                ` : ''}
+                ${user.role === 'admin' ? `
+                  <button class="btn btn-warning" onclick="toggleUser('${u._id}')">${u.isActive ? '🚫 ផ្អាក' : '✅ សកម្ម'}</button>
+                  <button class="btn btn-primary" onclick="resetPassword('${u._id}', '${u.username}')">🔑 Reset</button>
+                  ${u.role !== 'admin' ? `<button class="btn btn-danger" onclick="deleteUser('${u._id}', '${u.username}')">🗑️ លុប</button>` : ''}
+                ` : '<span style="color:#64748b;">គ្មានសិទ្ធិ</span>'}
               </div>
             </td>
           `;
           tbody.appendChild(tr);
         });
-      }
-
-      document.getElementById('usersLoading').style.display = 'none';
-      document.getElementById('usersTable').style.display = 'table';
+        
+        document.getElementById('usersLoading').style.display = 'none';
+        document.getElementById('usersTable').style.display = 'table';
+      } catch (error) {}
     }
 
-    // ============================================================
-    // UPDATE STATS
-    // ============================================================
-    function updateStats(users) {
-      document.getElementById('totalUsers').textContent = users.length;
-      document.getElementById('activeUsers').textContent = users.filter(u => u.isActive).length;
-      document.getElementById('inactiveUsers').textContent = users.filter(u => !u.isActive).length;
-      document.getElementById('adminUsers').textContent = users.filter(u => u.role === 'admin').length;
+    async function toggleUser(id) {
+      try {
+        const res = await fetch(`/api/admin/users/${id}/toggle`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        showAlert('✅ ប្តូរស្ថានភាពជោគជ័យ!');
+        loadUsers();
+      } catch (error) {
+        showAlert('❌ ' + error.message, 'error');
+      }
+    }
+
+    async function resetPassword(id, username) {
+      const newPassword = prompt(`Password ថ្មីសម្រាប់ "${username}":`);
+      if (!newPassword || newPassword.length < 4) return showAlert('Password ត្រូវមាន ៤ តួ!', 'error');
+      
+      try {
+        const res = await fetch(`/api/admin/users/${id}`, {
+          method: 'PUT',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` 
+          },
+          body: JSON.stringify({ newPassword })
+        });
+        if (!res.ok) throw new Error('Failed');
+        showAlert('✅ ប្តូរ Password ជោគជ័យ!');
+      } catch (error) {
+        showAlert('❌ មិនអាចប្តូរបានទេ', 'error');
+      }
+    }
+
+    async function deleteUser(id, username) {
+      if (!confirm(`លុប "${username}"?`)) return;
+      try {
+        const res = await fetch(`/api/admin/users/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('Failed');
+        showAlert('✅ លុបជោគជ័យ!');
+        loadUsers();
+      } catch (error) {
+        showAlert('❌ មិនអាចលុបបានទេ', 'error');
+      }
     }
 
     // ============================================================
     // CREATE USER
     // ============================================================
+    async function loadRoomsForCheckbox() {
+      try {
+        const res = await fetch('/api/admin/rooms', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        allRooms = data.rooms;
+        
+        const container = document.getElementById('roomsCheckbox');
+        container.innerHTML = `
+          <label>
+            <input type="checkbox" value="*" id="allRoomsCheck">
+            <strong>🌐 បន្ទប់ទាំងអស់</strong>
+          </label>
+        `;
+        
+        data.rooms.forEach(room => {
+          const label = document.createElement('label');
+          label.innerHTML = `
+            <input type="checkbox" value="${room.roomId}" class="room-check">
+            ${room.roomName || room.roomId}
+          `;
+          container.appendChild(label);
+        });
+        
+        document.getElementById('allRoomsCheck').onchange = function() {
+          document.querySelectorAll('.room-check').forEach(cb => {
+            cb.checked = this.checked;
+            cb.disabled = this.checked;
+          });
+        };
+      } catch (error) {}
+    }
+
     async function createUser() {
       const username = document.getElementById('newUsername').value.trim();
       const displayName = document.getElementById('newDisplayName').value.trim();
       const password = document.getElementById('newPassword').value;
       const role = document.getElementById('newRole').value;
-
-      if (!username || !password) {
-        return showAlert('សូមបំពេញ Username និង Password!', 'error');
-      }
-
-      if (password.length < 4) {
-        return showAlert('Password ត្រូវមានយ៉ាងតិច 4 តួអក្សរ!', 'error');
-      }
-
-      try {
-        const response = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ username, password, displayName, role })
+      
+      if (!username || !password) return showAlert('សូមបំពេញ Username និង Password!', 'error');
+      if (password.length < 4) return showAlert('Password ត្រូវមាន ៤ តួ!', 'error');
+      
+      const assignedRooms = [];
+      if (document.getElementById('allRoomsCheck').checked) {
+        assignedRooms.push('*');
+      } else {
+        document.querySelectorAll('.room-check:checked').forEach(cb => {
+          assignedRooms.push(cb.value);
         });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || 'Failed to create user');
-        }
-
-        showAlert('✅ បង្កើតអ្នកប្រើជោគជ័យ!', 'success');
+      }
+      
+      if (assignedRooms.length === 0) return showAlert('សូមជ្រើសរើសបន្ទប់យ៉ាងតិច ១!', 'error');
+      
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` 
+          },
+          body: JSON.stringify({ username, password, displayName, role, assignedRooms })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
         
-        // Clear form
+        showAlert('✅ បង្កើត User ជោគជ័យ!');
         document.getElementById('newUsername').value = '';
         document.getElementById('newDisplayName').value = '';
         document.getElementById('newPassword').value = '';
-        document.getElementById('newRole').value = 'user';
-
-        // Reload users
         loadUsers();
-
-      } catch (error) {
-        console.error('Create user error:', error);
-        showAlert('❌ ' + error.message, 'error');
-      }
-    }
-
-    // ============================================================
-    // TOGGLE USER STATUS
-    // ============================================================
-    async function toggleUser(id) {
-      try {
-        const response = await fetch(`/api/admin/users/${id}/toggle`, {
-          method: 'PUT',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || 'Failed to toggle');
-        }
-
-        showAlert(`✅ អ្នកប្រើត្រូវបាន${data.isActive ? 'សកម្ម' : 'ផ្អាក'}!`, 'success');
-        loadUsers();
-
+        loadStats();
       } catch (error) {
         showAlert('❌ ' + error.message, 'error');
       }
     }
 
     // ============================================================
-    // RESET PASSWORD
+    // CREATE ROOM
     // ============================================================
-    async function resetPassword(id, username) {
-      const newPassword = prompt(`បញ្ចូលលេខសម្ងាត់ថ្មីសម្រាប់ "${username}":`);
+    async function createRoom() {
+      const roomId = document.getElementById('newRoomId').value.trim();
+      const roomName = document.getElementById('newRoomName').value.trim();
       
-      if (!newPassword) return;
+      if (!roomId) return showAlert('សូមបំពេញ Room ID!', 'error');
       
-      if (newPassword.length < 4) {
-        return showAlert('Password ត្រូវមានយ៉ាងតិច 4 តួអក្សរ!', 'error');
-      }
-
       try {
-        const response = await fetch(`/api/admin/users/${id}/reset-password`, {
-          method: 'PUT',
-          headers: {
+        const res = await fetch('/api/admin/rooms', {
+          method: 'POST',
+          headers: { 
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}` 
           },
-          body: JSON.stringify({ newPassword })
+          body: JSON.stringify({ roomId, roomName })
         });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || 'Failed to reset');
-        }
-
-        showAlert('✅ ប្តូរលេខសម្ងាត់ជោគជ័យ!', 'success');
-
-      } catch (error) {
-        showAlert('❌ ' + error.message, 'error');
-      }
-    }
-
-    // ============================================================
-    // DELETE USER
-    // ============================================================
-    async function deleteUser(id, username) {
-      if (!confirm(`តើអ្នកប្រាកដថាចង់លុប "${username}" ទេ?\n\nការលុបមិនអាចត្រឡប់វិញបានទេ!`)) {
-        return;
-      }
-
-      try {
-        const response = await fetch(`/api/admin/users/${id}`, {
-          method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || 'Failed to delete');
-        }
-
-        showAlert('✅ លុបអ្នកប្រើជោគជ័យ!', 'success');
-        loadUsers();
-
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        
+        showAlert('✅ បង្កើតបន្ទប់ជោគជ័យ!');
+        document.getElementById('newRoomId').value = '';
+        document.getElementById('newRoomName').value = '';
+        loadRoomsForCheckbox();
+        loadStats();
       } catch (error) {
         showAlert('❌ ' + error.message, 'error');
       }
@@ -510,7 +661,16 @@
     // ============================================================
     // INITIAL LOAD
     // ============================================================
-    loadUsers();
+    loadStats();
+    loadRoomsMonitor();
+    
+    // Auto-refresh every 10s
+    setInterval(() => {
+      loadStats();
+      if (document.getElementById('tab-rooms').classList.contains('active')) {
+        loadRoomsMonitor();
+      }
+    }, 10000);
   </script>
 </body>
 </html>
