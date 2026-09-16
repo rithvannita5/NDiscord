@@ -51,7 +51,6 @@
     .btn-danger { background: #ef4444; color: #fff; }
     .btn-warning { background: #f59e0b; color: #000; }
     .btn-secondary { background: #475569; color: #fff; }
-    .btn-purple { background: #8b5cf6; color: #fff; }
     
     .stats-grid {
       display: grid;
@@ -121,7 +120,7 @@
       margin-bottom: 15px;
     }
     
-    input, select, textarea {
+    input, select {
       width: 100%;
       padding: 12px 15px;
       border-radius: 8px;
@@ -226,6 +225,12 @@
       padding: 20px;
       border-radius: 10px;
       border: 2px solid #2d2d44;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .room-monitor-card:hover {
+      border-color: #48cae4;
+      transform: translateY(-3px);
     }
     .room-monitor-card.live {
       border-color: #10b981;
@@ -246,6 +251,15 @@
       margin-top: 10px;
       max-height: 100px;
       overflow-y: auto;
+    }
+    .room-monitor-card .join-hint {
+      margin-top: 10px;
+      padding: 8px;
+      background: #16213e;
+      border-radius: 6px;
+      font-size: 12px;
+      text-align: center;
+      color: #48cae4;
     }
     
     .loading { text-align: center; padding: 40px; color: #94a3b8; }
@@ -268,7 +282,8 @@
         <div class="user-info">ចូលជា: <strong id="adminName">-</strong> <span id="adminRole"></span></div>
       </div>
       <div>
-        <button class="btn btn-secondary" onclick="window.close()">✕ បិទ</button>
+        <button class="btn btn-primary" onclick="window.location.href='/'">🏠 ទំព័រដើម</button>
+        <button class="btn btn-danger" onclick="adminLogout()">🚪 ចាកចេញ</button>
       </div>
     </div>
 
@@ -296,15 +311,18 @@
 
     <!-- Tabs -->
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('rooms')">📡 តាមដានបន្ទប់</button>
-      <button class="tab-btn" onclick="switchTab('users')">👥 គ្រប់គ្រង Users</button>
-      <button class="tab-btn" onclick="switchTab('create')">➕ បង្កើតថ្មី</button>
+      <button class="tab-btn active" onclick="switchTab('rooms', event)">📡 តាមដានបន្ទប់</button>
+      <button class="tab-btn" onclick="switchTab('users', event)">👥 គ្រប់គ្រង Users</button>
+      <button class="tab-btn" onclick="switchTab('create', event)" id="createTabBtn">➕ បង្កើតថ្មី</button>
     </div>
 
-    <!-- Tab: Rooms Monitor -->
+    <!-- Tab: Rooms -->
     <div id="tab-rooms" class="tab-content active">
       <div class="card">
         <h2>📡 តាមដានបន្ទប់សកម្ម</h2>
+        <p style="color:#94a3b8; margin-bottom:20px; font-size:14px;">
+          💡 ចុចលើបន្ទប់ដើម្បីចូលមើល
+        </p>
         <div id="roomsMonitor" class="room-monitor-grid">
           <div class="loading">⏳ កំពុងផ្ទុក...</div>
         </div>
@@ -378,12 +396,10 @@
     document.getElementById('adminName').textContent = user.displayName || user.username;
     document.getElementById('adminRole').innerHTML = `<span class="badge badge-${user.role}">${user.role.toUpperCase()}</span>`;
 
-    // Hide create tab for supervisors
+    // ✅ Supervisor មិនអាចបង្កើត User បានទេ
     if (user.role === 'supervisor') {
-      document.querySelectorAll('.tab-btn')[2].style.display = 'none';
+      document.getElementById('createTabBtn').style.display = 'none';
     }
-
-    let allRooms = [];
 
     function showAlert(message, type = 'success') {
       const alert = document.getElementById('alert');
@@ -392,7 +408,7 @@
       setTimeout(() => alert.classList.remove('show'), 3000);
     }
 
-    function switchTab(tab) {
+    function switchTab(tab, event) {
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       
@@ -404,9 +420,6 @@
       if (tab === 'create') loadRoomsForCheckbox();
     }
 
-    // ============================================================
-    // STATS
-    // ============================================================
     async function loadStats() {
       try {
         const res = await fetch('/api/admin/stats', {
@@ -422,7 +435,7 @@
     }
 
     // ============================================================
-    // ROOMS MONITOR
+    // ROOMS MONITOR - ✅ អាចចុចចូលបន្ទប់
     // ============================================================
     async function loadRoomsMonitor() {
       try {
@@ -449,10 +462,19 @@
             <div class="user-list">
               ${room.users.length > 0 ? '👥 ' + room.users.join(', ') : '<em>គ្មានអ្នកចូល</em>'}
             </div>
+            <div class="join-hint">🔗 ចុចដើម្បីចូលបន្ទប់នេះ</div>
           `;
+          card.onclick = () => joinRoomFromAdmin(room.roomId);
           container.appendChild(card);
         });
       } catch (error) {}
+    }
+
+    // ✅ ចុចលើបន្ទប់ → ចូលបន្ទប់
+    function joinRoomFromAdmin(roomId) {
+      // រក្សាទុក roomId ក្នុង localStorage រួចបញ្ជូនទៅ index.html
+      localStorage.setItem('autoJoinRoom', roomId);
+      window.location.href = '/';
     }
 
     // ============================================================
@@ -470,8 +492,27 @@
         
         data.users.forEach(u => {
           const tr = document.createElement('tr');
-          const lastLogin = u.lastLogin ? new Date(u.lastLogin).toLocaleString('km-KH') : 'មិនធ្លាប់';
           const roomsText = u.assignedRooms.includes('*') ? 'ទាំងអស់' : (u.assignedRooms.join(', ') || 'គ្មាន');
+          
+          // ✅ Supervisor មិនអាចកែ Admin បានទេ
+          const canEdit = !(user.role === 'supervisor' && u.role === 'admin');
+          
+          let actions = '';
+          if (canEdit) {
+            actions = `
+              <div class="action-buttons">
+                ${user.role === 'admin' ? `
+                  <button class="btn btn-warning" onclick="toggleUser('${u._id}')">${u.isActive ? '🚫 ផ្អាក' : '✅ សកម្ម'}</button>
+                  <button class="btn btn-primary" onclick="resetPassword('${u._id}', '${u.username}')">🔑 Reset</button>
+                  ${u.role !== 'admin' ? `<button class="btn btn-danger" onclick="deleteUser('${u._id}', '${u.username}')">🗑️ លុប</button>` : ''}
+                ` : `
+                  <button class="btn btn-primary" onclick="resetPassword('${u._id}', '${u.username}')">🔑 Reset</button>
+                `}
+              </div>
+            `;
+          } else {
+            actions = '<span style="color:#64748b;">គ្មានសិទ្ធិ</span>';
+          }
           
           tr.innerHTML = `
             <td><strong>${u.username}</strong></td>
@@ -479,15 +520,7 @@
             <td><span class="badge badge-${u.role}">${u.role}</span></td>
             <td style="font-size:12px;">${roomsText}</td>
             <td><span class="badge badge-${u.isActive ? 'active' : 'inactive'}">${u.isActive ? 'សកម្ម' : 'អសកម្ម'}</span></td>
-            <td>
-              <div class="action-buttons">
-                ${user.role === 'admin' ? `
-                  <button class="btn btn-warning" onclick="toggleUser('${u._id}')">${u.isActive ? '🚫 ផ្អាក' : '✅ សកម្ម'}</button>
-                  <button class="btn btn-primary" onclick="resetPassword('${u._id}', '${u.username}')">🔑 Reset</button>
-                  ${u.role !== 'admin' ? `<button class="btn btn-danger" onclick="deleteUser('${u._id}', '${u.username}')">🗑️ លុប</button>` : ''}
-                ` : '<span style="color:#64748b;">គ្មានសិទ្ធិ</span>'}
-              </div>
-            </td>
+            <td>${actions}</td>
           `;
           tbody.appendChild(tr);
         });
@@ -556,7 +589,6 @@
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
-        allRooms = data.rooms;
         
         const container = document.getElementById('roomsCheckbox');
         container.innerHTML = `
@@ -659,12 +691,33 @@
     }
 
     // ============================================================
+    // LOGOUT
+    // ============================================================
+    async function adminLogout() {
+      if (!confirm('ចាកចេញពីគណនីទេ?')) return;
+      
+      try {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+      } catch (e) {}
+      
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('deviceId');
+      window.location.href = '/';
+    }
+
+    // ============================================================
     // INITIAL LOAD
     // ============================================================
     loadStats();
     loadRoomsMonitor();
     
-    // Auto-refresh every 10s
     setInterval(() => {
       loadStats();
       if (document.getElementById('tab-rooms').classList.contains('active')) {
