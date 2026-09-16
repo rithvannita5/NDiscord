@@ -18,44 +18,200 @@
   <script src="/socket.io/socket.io.js"></script>
   
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Kantumruy Pro', 'Noto Sans Khmer', sans-serif; -webkit-font-smoothing: antialiased; }
-    body { background: #1a1a2e; color: #fff; min-height: 100vh; padding: 20px; line-height: 1.6; }
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: 'Kantumruy Pro', 'Noto Sans Khmer', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    body { 
+      background: #1a1a2e; 
+      color: #fff; 
+      min-height: 100vh; 
+      padding: 20px;
+      line-height: 1.6;
+    }
     
-    #audioUnlockPrompt { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 999999; display: none; justify-content: center; align-items: center; padding: 20px; }
+    /* AUDIO UNLOCK PROMPT */
+    #audioUnlockPrompt {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 999999;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
     #audioUnlockPrompt.active { display: flex; }
     
-    #login-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; }
-    .login-card { background: #16213e; padding: 40px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); width: 100%; max-width: 440px; border: 1px solid #2d2d44; }
-    .login-card h1 { color: #48cae4; margin-bottom: 25px; font-size: 26px; text-align: center; font-weight: 700; }
-    .login-card input, .login-card select { padding: 14px 20px; border-radius: 8px; border: 1px solid #3a506b; background: #0b132b; color: #fff; font-size: 16px; width: 100%; outline: none; margin-bottom: 15px; font-family: inherit; }
-    .login-card input:focus, .login-card select:focus { border-color: #48cae4; box-shadow: 0 0 0 3px rgba(72, 202, 228, 0.1); }
-    .login-card label { display: block; margin-bottom: 8px; font-size: 13px; color: #94a3b8; font-weight: 500; }
-    .login-card button { padding: 14px 40px; background: #00b4d8; color: #fff; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 10px; font-family: inherit; }
+    /* LOGIN */
+    #login-screen {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .login-card {
+      background: #16213e;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      width: 100%;
+      max-width: 440px;
+      border: 1px solid #2d2d44;
+    }
+    .login-card h1 { 
+      color: #48cae4; 
+      margin-bottom: 25px; 
+      font-size: 26px; 
+      text-align: center;
+      font-weight: 700;
+    }
+    .login-card input,
+    .login-card select {
+      padding: 14px 20px;
+      border-radius: 8px;
+      border: 1px solid #3a506b;
+      background: #0b132b;
+      color: #fff;
+      font-size: 16px;
+      width: 100%;
+      outline: none;
+      margin-bottom: 15px;
+      font-family: inherit;
+    }
+    .login-card input:focus,
+    .login-card select:focus { 
+      border-color: #48cae4;
+      box-shadow: 0 0 0 3px rgba(72, 202, 228, 0.1);
+    }
+    .login-card label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+    .login-card button {
+      padding: 14px 40px;
+      background: #00b4d8;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+      font-family: inherit;
+    }
     .login-card button:hover { background: #0096c7; }
     .login-card button:disabled { background: #475569; cursor: not-allowed; }
-    .error-message { color: #ef4444; font-size: 14px; text-align: center; padding: 12px; background: rgba(239, 68, 68, 0.1); border-radius: 8px; display: none; margin-bottom: 15px; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .error-message {
+      color: #ef4444;
+      font-size: 14px;
+      text-align: center;
+      padding: 12px;
+      background: rgba(239, 68, 68, 0.1);
+      border-radius: 8px;
+      display: none;
+      margin-bottom: 15px;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
     .error-message.show { display: block; }
     
-    #otp-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); z-index: 99999; justify-content: center; align-items: center; padding: 20px; }
+    /* OTP */
+    #otp-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 99999;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
     #otp-modal.active { display: flex; }
-    .otp-card { background: #16213e; padding: 40px; border-radius: 15px; max-width: 420px; width: 100%; border: 2px solid #f59e0b; text-align: center; }
+    .otp-card {
+      background: #16213e;
+      padding: 40px;
+      border-radius: 15px;
+      max-width: 420px;
+      width: 100%;
+      border: 2px solid #f59e0b;
+      text-align: center;
+    }
     .otp-card h2 { color: #f59e0b; margin-bottom: 15px; }
     .otp-card p { color: #cbd5e1; margin-bottom: 20px; font-size: 14px; }
-    .otp-card input { padding: 16px; border-radius: 10px; border: 2px solid #3a506b; background: #0b132b; color: #fff; font-size: 24px; width: 100%; outline: none; text-align: center; letter-spacing: 8px; font-weight: bold; margin-bottom: 20px; font-family: 'Courier New', monospace; }
+    .otp-card input {
+      padding: 16px;
+      border-radius: 10px;
+      border: 2px solid #3a506b;
+      background: #0b132b;
+      color: #fff;
+      font-size: 24px;
+      width: 100%;
+      outline: none;
+      text-align: center;
+      letter-spacing: 8px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      font-family: 'Courier New', monospace;
+    }
     .otp-card input:focus { border-color: #f59e0b; }
-    .otp-card button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; margin-bottom: 10px; font-family: inherit; }
+    .otp-card button {
+      padding: 14px 30px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-bottom: 10px;
+      font-family: inherit;
+    }
     .otp-card .btn-verify { background: #10b981; color: #fff; }
     .otp-card .btn-cancel { background: #ef4444; color: #fff; font-size: 14px; padding: 10px; }
     
+    /* MAIN APP */
     #app { display: none; }
     #app.active { display: block; }
     
-    .header { display: flex; justify-content: space-between; align-items: center; background: #16213e; padding: 15px 20px; border-radius: 10px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #16213e;
+      padding: 15px 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
     .header h2 { color: #48cae4; font-size: 18px; }
-    .header .user-badge { background: #0b132b; padding: 6px 12px; border-radius: 6px; font-size: 13px; color: #94a3b8; margin-top: 5px; display: inline-block; }
+    .header .user-badge {
+      background: #0b132b;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #94a3b8;
+      margin-top: 5px;
+      display: inline-block;
+    }
     
     .controls { display: flex; gap: 10px; flex-wrap: wrap; }
-    .controls button { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .controls button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
     .btn-primary { background: #00b4d8; color: #fff; }
     .btn-primary:hover { background: #0096c7; }
     .btn-danger { background: #ef4444; color: #fff; }
@@ -63,73 +219,343 @@
     .btn-warning { background: #f59e0b; color: #000; }
     .btn-warning:hover { background: #d97706; }
     .btn-purple { background: #8b5cf6; color: #fff; }
+    .btn-success { background: #10b981; color: #fff; }
     .btn-secondary { background: #475569; color: #fff; }
     .controls button.off { background: #ef4444; color: #fff; }
     
-    .section-title { font-size: 14px; color: #94a3b8; margin: 15px 0 10px 0; padding-bottom: 8px; border-bottom: 1px solid #2d2d44; text-transform: uppercase; letter-spacing: 1.5px; display: flex; align-items: center; gap: 8px; font-weight: 600; }
+    .section-title {
+      font-size: 14px;
+      color: #94a3b8;
+      margin: 15px 0 10px 0;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #2d2d44;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+    }
     
-    .screen-grid, .video-grid { display: grid; gap: 15px; margin-bottom: 25px; }
+    .screen-grid, .video-grid {
+      display: grid;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
     .screen-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
     .video-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
     
-    .video-box { position: relative; background: #000; border-radius: 12px; overflow: hidden; aspect-ratio: 16/9; border: 2px solid #2d2d44; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
-    .video-box:hover { border-color: #48cae4; transform: scale(1.02); box-shadow: 0 8px 25px rgba(72, 202, 228, 0.3); }
-    .video-box.screen-share { border-color: #f59e0b; cursor: context-menu; }
+    .video-box {
+      position: relative;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      aspect-ratio: 16/9;
+      border: 2px solid #2d2d44;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .video-box:hover {
+      border-color: #48cae4;
+      transform: scale(1.02);
+      box-shadow: 0 8px 25px rgba(72, 202, 228, 0.3);
+    }
+    .video-box.screen-share { 
+      border-color: #f59e0b; 
+      cursor: context-menu;
+    }
+    .video-box.screen-share:hover {
+      border-color: #fbbf24;
+      box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+    }
     .video-box video { width: 100%; height: 100%; object-fit: cover; display: block; }
     .video-box.screen-share video { object-fit: contain; }
-    .video-box .name-tag { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.75); padding: 6px 12px; border-radius: 6px; font-size: 13px; z-index: 2; }
-    .video-box .status-tag { position: absolute; top: 10px; right: 10px; background: rgba(16, 185, 129, 0.9); padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; z-index: 2; }
-    .video-box .expand-icon { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 6px 10px; border-radius: 6px; font-size: 12px; z-index: 2; opacity: 0; transition: opacity 0.2s; }
+    .video-box .name-tag {
+      position: absolute;
+      bottom: 10px; left: 10px;
+      background: rgba(0,0,0,0.75);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      z-index: 2;
+    }
+    .video-box .status-tag {
+      position: absolute;
+      top: 10px; right: 10px;
+      background: rgba(16, 185, 129, 0.9);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: bold;
+      z-index: 2;
+    }
+    .video-box .expand-icon {
+      position: absolute;
+      top: 10px; left: 10px;
+      background: rgba(0,0,0,0.7);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      z-index: 2;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
     .video-box:hover .expand-icon { opacity: 1; }
     
-    .participants-list { background: #16213e; padding: 20px; border-radius: 10px; }
+    .participants-list {
+      background: #16213e;
+      padding: 20px;
+      border-radius: 10px;
+    }
     .participants-list h3 { color: #48cae4; margin-bottom: 15px; font-size: 16px; }
-    .participant-item { padding: 10px 15px; background: #0b132b; border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; }
-    .participant-item .info { display: flex; align-items: center; gap: 10px; }
-    .participant-item .dot { width: 10px; height: 10px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981; }
-    .participant-item .remote-btn { padding: 5px 12px; background: #f59e0b; color: #000; border: none; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
+    .participant-item {
+      padding: 10px 15px;
+      background: #0b132b;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 14px;
+    }
+    .participant-item .info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .participant-item .dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+    }
+    .participant-item .remote-btn {
+      padding: 5px 12px;
+      background: #f59e0b;
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .participant-item .remote-btn:hover {
+      background: #d97706;
+    }
     
-    #status { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 12px 25px; background: #1c2541; border: 1px solid #48cae4; border-radius: 10px; font-size: 14px; display: none; z-index: 9999; max-width: 90%; text-align: center; }
+    #status {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 25px;
+      background: #1c2541;
+      border: 1px solid #48cae4;
+      border-radius: 10px;
+      font-size: 14px;
+      display: none;
+      z-index: 9999;
+      max-width: 90%;
+      text-align: center;
+    }
     #status.show { display: block; }
     
-    #fullscreenModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 10000; flex-direction: column; padding: 20px; }
+    #fullscreenModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 10000;
+      flex-direction: column;
+      padding: 20px;
+    }
     #fullscreenModal.active { display: flex; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: #16213e; border-radius: 12px; margin-bottom: 20px; }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background: #16213e;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
     .modal-header .modal-title { color: #48cae4; font-size: 18px; font-weight: 600; }
-    .modal-header button { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; background: #00b4d8; color: #fff; font-family: inherit; }
-    .modal-body { flex: 1; display: flex; align-items: center; justify-content: center; background: #000; border-radius: 12px; overflow: hidden; }
+    .modal-header button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #00b4d8;
+      color: #fff;
+      font-family: inherit;
+    }
+    .modal-body {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+    }
     .modal-body video { width: 100%; height: 100%; object-fit: contain; }
     
-    #remoteRequestModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); z-index: 99998; justify-content: center; align-items: center; padding: 20px; }
+    #remoteRequestModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 99998;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
     #remoteRequestModal.active { display: flex; }
-    .remote-request-card { background: #16213e; padding: 40px; border-radius: 15px; max-width: 420px; width: 100%; border: 2px solid #f59e0b; text-align: center; }
+    .remote-request-card {
+      background: #16213e;
+      padding: 40px;
+      border-radius: 15px;
+      max-width: 420px;
+      width: 100%;
+      border: 2px solid #f59e0b;
+      text-align: center;
+    }
     .remote-request-card h2 { color: #f59e0b; margin-bottom: 15px; }
     .remote-request-card p { color: #cbd5e1; margin-bottom: 20px; font-size: 14px; }
-    .remote-request-card button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; margin-bottom: 10px; font-family: inherit; }
+    .remote-request-card button {
+      padding: 14px 30px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-bottom: 10px;
+      font-family: inherit;
+    }
     .btn-approve { background: #10b981; color: #fff; }
+    .btn-approve:hover { background: #059669; }
     .btn-reject { background: #ef4444; color: #fff; }
+    .btn-reject:hover { background: #dc2626; }
     
-    #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 99999; display: none; justify-content: center; align-items: center; flex-direction: column; gap: 20px; }
+    /* LOADING OVERLAY */
+    #loadingOverlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 99999;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      gap: 20px;
+    }
     #loadingOverlay.active { display: flex; }
-    #loadingOverlay .spinner { width: 60px; height: 60px; border: 5px solid rgba(72, 202, 228, 0.2); border-top-color: #48cae4; border-radius: 50%; animation: spin 1s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    #loadingOverlay .loading-text { color: #48cae4; font-size: 18px; font-weight: 600; }
+    #loadingOverlay .spinner {
+      width: 60px;
+      height: 60px;
+      border: 5px solid rgba(72, 202, 228, 0.2);
+      border-top-color: #48cae4;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    #loadingOverlay .loading-text {
+      color: #48cae4;
+      font-size: 18px;
+      font-weight: 600;
+    }
     
-    #remoteControlPanel { position: fixed; bottom: 20px; right: 20px; background: #16213e; border: 2px solid #10b981; border-radius: 12px; padding: 15px 20px; z-index: 99999; display: none; box-shadow: 0 10px 40px rgba(16, 185, 129, 0.3); max-width: 320px; }
+    /* REMOTE CONTROL PANEL */
+    #remoteControlPanel {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #16213e;
+      border: 2px solid #10b981;
+      border-radius: 12px;
+      padding: 15px 20px;
+      z-index: 99999;
+      display: none;
+      box-shadow: 0 10px 40px rgba(16, 185, 129, 0.3);
+      max-width: 320px;
+    }
     #remoteControlPanel.active { display: block; }
-    #remoteControlPanel .panel-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-    #remoteControlPanel .panel-header .icon { font-size: 24px; }
-    #remoteControlPanel .panel-header .title { color: #48cae4; font-weight: bold; font-size: 14px; }
-    #remoteControlPanel .panel-header .subtitle { color: #94a3b8; font-size: 12px; }
-    #remoteControlPanel .panel-actions { display: flex; gap: 8px; }
-    #remoteControlPanel .panel-actions button { flex: 1; padding: 8px 12px; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    #remoteControlPanel .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    #remoteControlPanel .panel-header .icon {
+      font-size: 24px;
+    }
+    #remoteControlPanel .panel-header .title {
+      color: #48cae4;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    #remoteControlPanel .panel-header .subtitle {
+      color: #94a3b8;
+      font-size: 12px;
+    }
+    #remoteControlPanel .panel-actions {
+      display: flex;
+      gap: 8px;
+    }
+    #remoteControlPanel .panel-actions button {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
     
-    #beingControlledIndicator { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(239, 68, 68, 0.95); color: white; padding: 12px 25px; border-radius: 10px; font-weight: bold; z-index: 999999; box-shadow: 0 4px 20px rgba(239, 68, 68, 0.6); display: flex; align-items: center; gap: 10px; animation: pulseRed 1.5s ease-in-out infinite; }
-    @keyframes pulseRed { 0%, 100% { box-shadow: 0 4px 20px rgba(239, 68, 68, 0.6); } 50% { box-shadow: 0 4px 30px rgba(239, 68, 68, 1); } }
+    /* BEING CONTROLLED INDICATOR */
+    #beingControlledIndicator {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(239, 68, 68, 0.95);
+      color: white;
+      padding: 12px 25px;
+      border-radius: 10px;
+      font-weight: bold;
+      z-index: 999999;
+      box-shadow: 0 4px 20px rgba(239, 68, 68, 0.6);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: pulseRed 1.5s ease-in-out infinite;
+    }
+    @keyframes pulseRed {
+      0%, 100% { box-shadow: 0 4px 20px rgba(239, 68, 68, 0.6); }
+      50% { box-shadow: 0 4px 30px rgba(239, 68, 68, 1); }
+    }
     
-    #screenShareContextMenu { animation: menuFadeIn 0.15s ease; }
-    @keyframes menuFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-    .menu-item { transition: background 0.15s; }
+    /* CONTEXT MENU */
+    #screenShareContextMenu {
+      animation: menuFadeIn 0.15s ease;
+    }
+    @keyframes menuFadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .menu-item {
+      transition: background 0.15s;
+    }
     
     @media (max-width: 768px) {
       .screen-grid, .video-grid { grid-template-columns: 1fr; }
@@ -137,35 +563,49 @@
       .controls { width: 100%; }
       .controls button { flex: 1; padding: 10px; font-size: 12px; }
       body { padding: 10px; }
-      #remoteControlPanel { right: 10px; bottom: 10px; padding: 10px 15px; }
+      #remoteControlPanel {
+        right: 10px;
+        bottom: 10px;
+        padding: 10px 15px;
+      }
     }
   </style>
 </head>
 <body>
 
+  <!-- AUDIO UNLOCK PROMPT -->
   <div id="audioUnlockPrompt">
     <div style="background: #16213e; padding: 40px; border-radius: 15px; text-align: center; max-width: 400px; border: 2px solid #48cae4;">
       <div style="font-size: 60px; margin-bottom: 20px;">🔊</div>
       <h2 style="color: #48cae4; margin-bottom: 15px;">ចុចដើម្បីបើកសំឡេង</h2>
       <p style="color: #94a3b8; margin-bottom: 20px; font-size: 14px;">ដើម្បីលឺសំឡេងជូនដំណឹង ពេលមានអ្នកចូល/ចេញបន្ទប់</p>
-      <button onclick="enableAudioAndClose()" style="padding: 15px 40px; background: #10b981; color: #fff; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; font-family: inherit; width: 100%;">🔊 បើកសំឡេង</button>
+      <button onclick="enableAudioAndClose()" style="
+        padding: 15px 40px; background: #10b981; color: #fff;
+        border: none; border-radius: 8px; font-size: 16px;
+        font-weight: bold; cursor: pointer; font-family: inherit;
+        width: 100%;
+      ">🔊 បើកសំឡេង</button>
     </div>
   </div>
 
+  <!-- LOGIN -->
   <div id="login-screen">
     <div class="login-card">
       <h1>🔐 ចូលប្រើប្រាស់</h1>
       <div id="login-error" class="error-message"></div>
       <input type="text" id="loginUsername" placeholder="ឈ្មោះអ្នកប្រើ">
       <input type="password" id="loginPassword" placeholder="លេខសម្ងាត់">
+      
       <label>🚪 ជ្រើសរើសបន្ទប់:</label>
       <select id="roomSelect">
         <option value="">-- កំពុងផ្ទុក... --</option>
       </select>
+      
       <button id="loginBtn" onclick="login()">🔑 ចូល</button>
     </div>
   </div>
 
+  <!-- OTP MODAL -->
   <div id="otp-modal">
     <div class="otp-card">
       <h2>🔐 ផ្ទៀងផ្ទាត់ 2FA</h2>
@@ -176,6 +616,7 @@
     </div>
   </div>
 
+  <!-- MAIN APP -->
   <div id="app">
     <div class="header">
       <div>
@@ -208,6 +649,7 @@
     </div>
   </div>
 
+  <!-- FULLSCREEN MODAL -->
   <div id="fullscreenModal">
     <div class="modal-header">
       <div class="modal-title" id="modalTitle">📺 Video</div>
@@ -216,6 +658,7 @@
     <div class="modal-body" id="modalBody"></div>
   </div>
 
+  <!-- REMOTE REQUEST MODAL -->
   <div id="remoteRequestModal">
     <div class="remote-request-card">
       <h2>🖥️ សំណើរ Remote Control</h2>
@@ -225,6 +668,7 @@
     </div>
   </div>
 
+  <!-- REMOTE CONTROL PANEL -->
   <div id="remoteControlPanel">
     <div class="panel-header">
       <div class="icon">🎮</div>
@@ -239,6 +683,7 @@
     </div>
   </div>
 
+  <!-- LOADING OVERLAY -->
   <div id="loadingOverlay">
     <div class="spinner"></div>
     <div class="loading-text" id="loadingText">⏳ កំពុងភ្ជាប់...</div>
@@ -262,6 +707,7 @@
     let deferredPrompt = null;
     let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
+    // Remote Control
     let socket = null;
     let socketConnected = false;
     let isRemoteControlling = false;
@@ -270,10 +716,14 @@
     let remoteControllerSocketId = null;
     let remotePointer = null;
 
+    // ✅ Room presence tracking (for join/leave sound broadcast)
     let currentRoomId = null;
 
+    // Audio
+    let audioContext = null;
+
     // ✅ FORCE UPDATE VERSION
-    const APP_VERSION = 'v18';
+    const APP_VERSION = 'v16';
     if (localStorage.getItem('appVersion') !== APP_VERSION) {
       localStorage.clear();
       sessionStorage.clear();
@@ -284,101 +734,163 @@
     }
 
     // ============================================================
-    // ✅ AUDIO - GLOBAL UNLOCKED AUDIOCONTEXT
+    // ✅ AUDIO FUNCTIONS (កែឱ្យដំណើរការសម្រាប់ ADMIN)
     // ============================================================
-    window.vcAudioCtx = null;
-    window.vcAudioUnlocked = false;
-
-    function unlockGlobalAudio() {
+    function initAudioContext() {
       try {
-        if (!window.vcAudioCtx) {
-          window.vcAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (!audioContext) {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
         }
-        if (window.vcAudioCtx.state === 'suspended') {
-          window.vcAudioCtx.resume().then(() => {
-            window.vcAudioUnlocked = true;
-            console.log('🔊 Global Audio Unlocked');
-          }).catch(() => {});
-        } else if (window.vcAudioCtx.state === 'running') {
-          window.vcAudioUnlocked = true;
+        
+        if (audioContext.state === 'suspended') {
+          audioContext.resume().then(() => {
+            console.log('🔊 AudioContext resumed');
+          }).catch(err => {
+            console.log('❌ Cannot resume:', err);
+          });
         }
+        
+        return audioContext;
       } catch (e) {
-        console.log('AudioContext error:', e);
+        console.error('❌ AudioContext error:', e);
+        return null;
       }
     }
 
-    // Attach to all user gestures
-    ['click', 'touchstart', 'keydown', 'pointerdown'].forEach(evt => {
-      document.addEventListener(evt, unlockGlobalAudio, { passive: true });
-    });
-
-    function playPianoNotes(type) {
+    // ✅ លេងសំឡេង Piano ពេលចូល (C-E-G)
+    function playJoinSound() {
       try {
-        if (!window.vcAudioCtx) {
-          window.vcAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const ctx = initAudioContext();
+        if (!ctx) return;
+        
+        if (ctx.state !== 'running') {
+          ctx.resume().then(() => playJoinSoundNotes(ctx)).catch(() => {});
+          return;
         }
-        const ctx = window.vcAudioCtx;
-
-        if (ctx.state === 'suspended') {
-          ctx.resume().then(() => {
-            window.vcAudioUnlocked = true;
-            actuallyPlayPiano(ctx, type);
-          }).catch(() => {
-            console.log('⚠️ Cannot play - needs user interaction');
-          });
-        } else {
-          actuallyPlayPiano(ctx, type);
-        }
+        
+        playJoinSoundNotes(ctx);
       } catch (e) {
         console.log('Sound error:', e);
       }
     }
 
-    function actuallyPlayPiano(ctx, type) {
+    function playJoinSoundNotes(ctx) {
       const now = ctx.currentTime;
-      const notes = (type === 'join')
-        ? [
-            { freq: 523.25, time: 0.00, duration: 0.25 },
-            { freq: 659.25, time: 0.12, duration: 0.25 },
-            { freq: 783.99, time: 0.24, duration: 0.40 }
-          ]
-        : [
-            { freq: 783.99, time: 0.00, duration: 0.25 },
-            { freq: 659.25, time: 0.14, duration: 0.25 },
-            { freq: 523.25, time: 0.28, duration: 0.50 }
-          ];
-
-      notes.forEach(n => {
+      const notes = [
+        { freq: 523.25, time: 0.0, duration: 0.20 },
+        { freq: 659.25, time: 0.10, duration: 0.20 },
+        { freq: 783.99, time: 0.20, duration: 0.35 }
+      ];
+      
+      notes.forEach(note => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
+        
         osc.type = 'sine';
-        osc.frequency.value = n.freq;
-        gain.gain.setValueAtTime(0, now + n.time);
-        gain.gain.linearRampToValueAtTime(0.35, now + n.time + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + n.time + n.duration);
+        osc.frequency.value = note.freq;
+        
+        gain.gain.setValueAtTime(0, now + note.time);
+        gain.gain.linearRampToValueAtTime(0.3, now + note.time + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + note.time + note.duration);
+        
         osc.connect(gain);
         gain.connect(ctx.destination);
-        osc.start(now + n.time);
-        osc.stop(now + n.time + n.duration);
+        
+        osc.start(now + note.time);
+        osc.stop(now + note.time + note.duration);
       });
-
-      console.log('🎹 Played ' + type + ' sound');
+      
+      console.log('🎹 Join sound played');
     }
 
-    function playJoinSound() { playPianoNotes('join'); }
-    function playLeaveSound() { playPianoNotes('leave'); }
-
-    function enableAudioAndClose() {
-      unlockGlobalAudio();
-      setTimeout(() => {
-        if (window.vcAudioCtx && window.vcAudioCtx.state === 'running') {
-          playPianoNotes('join');
+    // ✅ លេងសំឡេង Piano ពេលចេញ (G-E-C)
+    function playLeaveSound() {
+      try {
+        const ctx = initAudioContext();
+        if (!ctx) return;
+        
+        if (ctx.state !== 'running') {
+          ctx.resume().then(() => playLeaveSoundNotes(ctx)).catch(() => {});
+          return;
         }
-      }, 200);
-      const popup = document.getElementById('audioUnlockPrompt');
-      if (popup) popup.classList.remove('active');
-      localStorage.setItem('audioUnlocked', 'true');
+        
+        playLeaveSoundNotes(ctx);
+      } catch (e) {
+        console.log('Sound error:', e);
+      }
     }
+
+    function playLeaveSoundNotes(ctx) {
+      const now = ctx.currentTime;
+      const notes = [
+        { freq: 783.99, time: 0.0, duration: 0.20 },
+        { freq: 659.25, time: 0.12, duration: 0.20 },
+        { freq: 523.25, time: 0.24, duration: 0.40 }
+      ];
+      
+      notes.forEach(note => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.value = note.freq;
+        
+        gain.gain.setValueAtTime(0, now + note.time);
+        gain.gain.linearRampToValueAtTime(0.3, now + note.time + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + note.time + note.duration);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc.start(now + note.time);
+        osc.stop(now + note.time + note.duration);
+      });
+      
+      console.log('🎹 Leave sound played');
+    }
+
+    // ✅ Enable Audio Button
+    function enableAudioAndClose() {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      
+      audioContext.resume().then(() => {
+        document.getElementById('audioUnlockPrompt').classList.remove('active');
+        localStorage.setItem('audioUnlocked', 'true');
+        console.log('🔊 Audio enabled');
+        
+        // លេងសំឡេង Test
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        gain.gain.value = 0.1;
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        osc.frequency.value = 523.25;
+        osc.start();
+        osc.stop(audioContext.currentTime + 0.1);
+      }).catch(err => {
+        console.log('❌ Cannot enable audio:', err);
+      });
+    }
+
+    // ✅ Unlock Audio on User Interaction
+    function unlockAudio() {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      
+      if (audioContext.state === 'suspended') {
+        audioContext.resume().then(() => {
+          console.log('🔊 Audio unlocked');
+          localStorage.setItem('audioUnlocked', 'true');
+        });
+      }
+    }
+
+    document.addEventListener('click', unlockAudio);
+    document.addEventListener('touchstart', unlockAudio);
+    document.addEventListener('keydown', unlockAudio);
 
     // ============================================================
     // LOADING
@@ -396,33 +908,37 @@
     // INIT
     // ============================================================
     window.addEventListener('DOMContentLoaded', async () => {
-      // ✅ បង្កើត Global AudioContext ភ្លាម
-      unlockGlobalAudio();
-
       const urlParams = new URLSearchParams(window.location.search);
       const urlRoom = urlParams.get('autoJoin');
-
+      
       if (urlRoom) {
         localStorage.setItem('autoJoinRoom', urlRoom);
         window.history.replaceState({}, '', '/');
       }
-
+      
       const savedToken = localStorage.getItem('authToken');
       const savedUser = localStorage.getItem('currentUser');
       const autoJoinRoom = localStorage.getItem('autoJoinRoom');
-
+      
+      // ✅ Unlock Audio ពេល Load
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      
       if (autoJoinRoom && savedToken && savedUser) {
         authToken = savedToken;
         currentUser = JSON.parse(savedUser);
         localStorage.removeItem('autoJoinRoom');
+        
         showLoading('⏳ កំពុងចូលបន្ទប់ ' + autoJoinRoom + '...');
         await joinRoom(autoJoinRoom);
+        
         if ('serviceWorker' in navigator) {
           navigator.serviceWorker.register('/sw.js').catch(() => {});
         }
         return;
       }
-
+      
       if (savedToken && savedUser) {
         authToken = savedToken;
         currentUser = JSON.parse(savedUser);
@@ -431,7 +947,7 @@
         showLogin();
         await loadPublicRooms();
       }
-
+      
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js').catch(() => {});
       }
@@ -442,6 +958,7 @@
     // ============================================================
     function connectSocket() {
       if (socket && socket.connected) {
+        // ✅ Socket already connected — make sure room presence is (re)announced
         if (currentRoomId && currentUser) {
           socket.emit('room-joined', {
             roomId: currentRoomId,
@@ -451,7 +968,7 @@
         }
         return;
       }
-
+      
       socket = io({
         transports: ['polling', 'websocket'],
         reconnection: true,
@@ -461,9 +978,12 @@
       socket.on('connect', () => {
         console.log('✅ Socket.IO connected:', socket.id);
         socketConnected = true;
+        
         if (currentUser) {
           socket.emit('register-user', { username: currentUser.username });
         }
+
+        // ✅ ប្រកាសថាកំពុងនៅបន្ទប់នេះ (គ្របដណ្តប់ករណី admin auto-join / reconnect)
         if (currentRoomId && currentUser) {
           socket.emit('room-joined', {
             roomId: currentRoomId,
@@ -473,8 +993,11 @@
         }
       });
 
-      socket.on('disconnect', () => { socketConnected = false; });
+      socket.on('disconnect', () => {
+        socketConnected = false;
+      });
 
+      // ✅ Broadcast join/leave សំឡេង តាមបន្ទប់ (server-side room broadcast)
       socket.on('room-user-joined', ({ roomId, username, displayName }) => {
         if (roomId === currentRoomId && currentUser && username !== currentUser.username) {
           playJoinSound();
@@ -498,7 +1021,9 @@
       socket.on('remote-approved-notify', ({ targetUsername, targetSocketId }) => {
         isRemoteControlling = true;
         remoteTargetSocketId = targetSocketId;
+        
         showStatus('✅ អ្នកអាចបញ្ជា Screen បានហើយ!');
+        
         document.getElementById('remoteControlPanel').classList.add('active');
         document.getElementById('remoteTargetName').textContent = targetUsername;
       });
@@ -516,33 +1041,56 @@
 
       socket.on('remote-mouse-click-received', ({ x, y, button }) => {
         if (!isBeingControlled) return;
-        const sx = x * window.innerWidth;
-        const sy = y * window.innerHeight;
-        showRemoteClick(sx, sy);
-        const el = document.elementFromPoint(sx, sy);
-        if (el) {
-          el.click();
+        const screenX = x * window.innerWidth;
+        const screenY = y * window.innerHeight;
+        
+        showRemoteClick(screenX, screenY);
+        
+        const element = document.elementFromPoint(screenX, screenY);
+        if (element) {
+          const clickEvent = new MouseEvent('click', {
+            view: window, bubbles: true, cancelable: true,
+            clientX: screenX, clientY: screenY, button: button || 0
+          });
+          element.dispatchEvent(clickEvent);
         }
       });
 
       socket.on('remote-keyboard-received', ({ key }) => {
         if (!isBeingControlled) return;
-        const ae = document.activeElement;
-        if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) {
-          if (key === 'Backspace') ae.value = ae.value.slice(0, -1);
-          else if (key.length === 1) ae.value += key;
+        
+        const activeElement = document.activeElement;
+        if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+          const keyEvent = new KeyboardEvent('keydown', { key: key, bubbles: true });
+          activeElement.dispatchEvent(keyEvent);
+          
+          if (key === 'Backspace') {
+            activeElement.value = activeElement.value.slice(0, -1);
+          } else if (key.length === 1) {
+            activeElement.value += key;
+          }
+          
+          const inputEvent = new InputEvent('input', { bubbles: true });
+          activeElement.dispatchEvent(inputEvent);
         }
       });
 
       socket.on('remote-ended-notify', () => {
         showStatus('🛑 Remote Control បានបញ្ចប់');
+        
         isBeingControlled = false;
         isRemoteControlling = false;
         remoteTargetSocketId = null;
         remoteControllerSocketId = null;
-        if (remotePointer) { remotePointer.remove(); remotePointer = null; }
-        const ind = document.getElementById('beingControlledIndicator');
-        if (ind) ind.remove();
+        
+        if (remotePointer) {
+          remotePointer.remove();
+          remotePointer = null;
+        }
+        
+        const indicator = document.getElementById('beingControlledIndicator');
+        if (indicator) indicator.remove();
+        
         document.getElementById('remoteControlPanel').classList.remove('active');
         document.getElementById('remoteRequestModal').classList.remove('active');
       });
@@ -554,7 +1102,15 @@
     function showRemotePointer(x, y) {
       if (!remotePointer) {
         remotePointer = document.createElement('div');
-        remotePointer.style.cssText = `position: fixed; width: 24px; height: 24px; border: 3px solid #ef4444; border-radius: 50%; background: rgba(239, 68, 68, 0.4); pointer-events: none; z-index: 999999; transform: translate(-50%, -50%); transition: left 0.05s linear, top 0.05s linear; box-shadow: 0 0 20px rgba(239, 68, 68, 0.9);`;
+        remotePointer.style.cssText = `
+          position: fixed; width: 24px; height: 24px;
+          border: 3px solid #ef4444; border-radius: 50%;
+          background: rgba(239, 68, 68, 0.4);
+          pointer-events: none; z-index: 999999;
+          transform: translate(-50%, -50%);
+          transition: left 0.05s linear, top 0.05s linear;
+          box-shadow: 0 0 20px rgba(239, 68, 68, 0.9);
+        `;
         document.body.appendChild(remotePointer);
       }
       remotePointer.style.left = x + 'px';
@@ -562,46 +1118,64 @@
     }
 
     function showRemoteClick(x, y) {
-      const e = document.createElement('div');
-      e.style.cssText = `position: fixed; width: 40px; height: 40px; border: 4px solid #10b981; border-radius: 50%; background: rgba(16, 185, 129, 0.3); pointer-events: none; z-index: 999999; transform: translate(-50%, -50%); left: ${x}px; top: ${y}px; animation: remoteClickPulse 0.6s ease-out forwards;`;
-      document.body.appendChild(e);
-      setTimeout(() => e.remove(), 600);
+      const clickEffect = document.createElement('div');
+      clickEffect.style.cssText = `
+        position: fixed; width: 40px; height: 40px;
+        border: 4px solid #10b981; border-radius: 50%;
+        background: rgba(16, 185, 129, 0.3);
+        pointer-events: none; z-index: 999999;
+        transform: translate(-50%, -50%);
+        animation: remoteClickPulse 0.6s ease-out forwards;
+      `;
+      clickEffect.style.left = x + 'px';
+      clickEffect.style.top = y + 'px';
+      document.body.appendChild(clickEffect);
+      setTimeout(() => clickEffect.remove(), 600);
     }
 
-    const rs = document.createElement('style');
-    rs.textContent = `@keyframes remoteClickPulse { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; } }`;
-    document.head.appendChild(rs);
+    const remoteStyle = document.createElement('style');
+    remoteStyle.textContent = `@keyframes remoteClickPulse { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; } }`;
+    document.head.appendChild(remoteStyle);
 
-    function requestRemote(name) {
+    function requestRemote(targetName) {
       if (!socketConnected) return showStatus('⚠️ កំពុងភ្ជាប់ Socket...');
-      const target = name.replace(' (អ្នក)', '').trim();
-      if (!confirm(`ស្នើសុំគ្រប់គ្រង Screen របស់ "${target}"?`)) return;
+      
+      const targetUsername = targetName.replace(' (អ្នក)', '').trim();
+      if (!confirm(`ស្នើសុំគ្រប់គ្រង Screen របស់ "${targetUsername}"?`)) return;
+      
       socket.emit('remote-request', {
-        targetUsername: target,
+        targetUsername: targetUsername,
         controllerName: currentUser.displayName || currentUser.username
       });
+      
       showStatus('📨 ស្នើសុំរួច!');
     }
 
     function approveRemote() {
       if (!remoteControllerSocketId) return;
       isBeingControlled = true;
+      
       socket.emit('remote-approved', {
         controllerSocketId: remoteControllerSocketId,
         targetUsername: currentUser.username
       });
+      
       document.getElementById('remoteRequestModal').classList.remove('active');
       showStatus('✅ អ្នកបានអនុញ្ញាត!');
       showBeingControlledIndicator();
     }
 
     function showBeingControlledIndicator() {
-      let ind = document.getElementById('beingControlledIndicator');
-      if (!ind) {
-        ind = document.createElement('div');
-        ind.id = 'beingControlledIndicator';
-        ind.innerHTML = `<span>🔴</span><span>កំពុងត្រូវបានគ្រប់គ្រងពីចម្ងាយ</span><button onclick="stopBeingControlled()" style="background: white; color: #ef4444; border: none; padding: 5px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-left: 10px; font-family: inherit;">បញ្ចប់</button>`;
-        document.body.appendChild(ind);
+      let indicator = document.getElementById('beingControlledIndicator');
+      if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'beingControlledIndicator';
+        indicator.innerHTML = `
+          <span>🔴</span>
+          <span>កំពុងត្រូវបានគ្រប់គ្រងពីចម្ងាយ</span>
+          <button onclick="stopBeingControlled()" style="background: white; color: #ef4444; border: none; padding: 5px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-left: 10px; font-family: inherit;">បញ្ចប់</button>
+        `;
+        document.body.appendChild(indicator);
       }
     }
 
@@ -610,8 +1184,8 @@
       if (remoteControllerSocketId) {
         socket.emit('remote-end', { targetSocketId: remoteControllerSocketId });
       }
-      const ind = document.getElementById('beingControlledIndicator');
-      if (ind) ind.remove();
+      const indicator = document.getElementById('beingControlledIndicator');
+      if (indicator) indicator.remove();
       if (remotePointer) { remotePointer.remove(); remotePointer = null; }
       showStatus('🛑 បានបញ្ចប់');
     }
@@ -627,53 +1201,63 @@
 
     function startRemoteControl() {
       if (!isRemoteControlling || !remoteTargetSocketId) return showStatus('⚠️ មិនទាន់មានការអនុញ្ញាត!');
-      let c = document.getElementById('remoteScreenContainer');
-      if (!c) c = createRemoteScreenContainer();
-      c.style.display = 'flex';
-      const v = document.getElementById('remoteScreenVideo');
-      let track = null;
-      room.remoteParticipants.forEach(p => {
-        if (p.identity === document.getElementById('remoteTargetName').textContent) {
-          p.videoTrackPublications.forEach(pub => {
-            if (pub.source === 'screen_share' && pub.track) track = pub.track;
+      
+      let container = document.getElementById('remoteScreenContainer');
+      if (!container) container = createRemoteScreenContainer();
+      container.style.display = 'flex';
+      
+      const video = document.getElementById('remoteScreenVideo');
+      
+      let targetScreenTrack = null;
+      room.remoteParticipants.forEach(participant => {
+        if (participant.identity === document.getElementById('remoteTargetName').textContent) {
+          participant.videoTrackPublications.forEach(pub => {
+            if (pub.source === 'screen_share' && pub.track) targetScreenTrack = pub.track;
           });
         }
       });
-      if (track) v.srcObject = new MediaStream([track.mediaStreamTrack]);
-      v.onmousemove = (e) => {
+      
+      if (targetScreenTrack) {
+        video.srcObject = new MediaStream([targetScreenTrack.mediaStreamTrack]);
+      }
+      
+      video.onmousemove = (e) => {
         if (!isRemoteControlling) return;
-        const r = v.getBoundingClientRect();
+        const rect = video.getBoundingClientRect();
         socket.emit('remote-mouse-move', {
           targetSocketId: remoteTargetSocketId,
-          x: (e.clientX - r.left) / r.width,
-          y: (e.clientY - r.top) / r.height
+          x: (e.clientX - rect.left) / rect.width,
+          y: (e.clientY - rect.top) / rect.height
         });
       };
-      v.onclick = (e) => {
+      
+      video.onclick = (e) => {
         if (!isRemoteControlling) return;
-        const r = v.getBoundingClientRect();
+        const rect = video.getBoundingClientRect();
         socket.emit('remote-mouse-click', {
           targetSocketId: remoteTargetSocketId,
-          x: (e.clientX - r.left) / r.width,
-          y: (e.clientY - r.top) / r.height,
+          x: (e.clientX - rect.left) / rect.width,
+          y: (e.clientY - rect.top) / rect.height,
           button: e.button
         });
       };
-      v.tabIndex = 0;
-      v.onkeydown = (e) => {
+      
+      video.tabIndex = 0;
+      video.onkeydown = (e) => {
         if (!isRemoteControlling) return;
         e.preventDefault();
         socket.emit('remote-keyboard', { targetSocketId: remoteTargetSocketId, key: e.key });
       };
-      v.focus();
+      
+      video.focus();
       showStatus('🎮 ចាប់ផ្ដើមបញ្ជា!');
     }
 
     function createRemoteScreenContainer() {
-      const c = document.createElement('div');
-      c.id = 'remoteScreenContainer';
-      c.style.cssText = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 99998; display: none; flex-direction: column; padding: 20px;`;
-      c.innerHTML = `
+      const container = document.createElement('div');
+      container.id = 'remoteScreenContainer';
+      container.style.cssText = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 99998; display: none; flex-direction: column; padding: 20px;`;
+      container.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; padding:15px 20px; background:#16213e; border-radius:12px; margin-bottom:20px;">
           <div style="color:#48cae4; font-size:18px; font-weight:600;">🖥️ កំពុងបញ្ជា: <span id="remoteTargetNameDisplay">-</span></div>
           <button onclick="endRemoteControl()" style="background:#ef4444; color:#fff; border:none; padding:10px 20px; border-radius:8px; font-weight:600; cursor:pointer; font-family: inherit;">🛑 បញ្ចប់</button>
@@ -683,9 +1267,9 @@
           <div style="position:absolute; bottom:15px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.8); padding:8px 20px; border-radius:8px; color:#fff; font-size:13px; pointer-events: none;">💡 ចុចលើ Screen ដើម្បីបញ្ជា Mouse</div>
         </div>
       `;
-      document.body.appendChild(c);
+      document.body.appendChild(container);
       document.getElementById('remoteTargetNameDisplay').textContent = document.getElementById('remoteTargetName').textContent;
-      return c;
+      return container;
     }
 
     function endRemoteControl() {
@@ -694,8 +1278,8 @@
       }
       isRemoteControlling = false;
       remoteTargetSocketId = null;
-      const c = document.getElementById('remoteScreenContainer');
-      if (c) c.style.display = 'none';
+      const container = document.getElementById('remoteScreenContainer');
+      if (container) container.style.display = 'none';
       document.getElementById('remoteControlPanel').classList.remove('active');
       showStatus('🛑 បញ្ចប់ការបញ្ជា');
     }
@@ -705,60 +1289,93 @@
     // ============================================================
     function showScreenShareContextMenu(event, videoElement, name) {
       event.preventDefault();
-      const old = document.getElementById('screenShareContextMenu');
-      if (old) old.remove();
-      const isSelf = name.includes('អ្នក');
+      const oldMenu = document.getElementById('screenShareContextMenu');
+      if (oldMenu) oldMenu.remove();
+      
+      const isSelfScreen = name.includes('អ្នក');
       const menu = document.createElement('div');
       menu.id = 'screenShareContextMenu';
       menu.style.cssText = `position: fixed; left: ${event.clientX}px; top: ${event.clientY}px; background: #16213e; border: 1px solid #2d2d44; border-radius: 8px; padding: 8px 0; z-index: 999999; min-width: 220px; box-shadow: 0 10px 40px rgba(0,0,0,0.7);`;
-
-      let html = '';
-      if (isSelf) {
-        html = `
+      
+      let menuHTML = '';
+      if (isSelfScreen) {
+        menuHTML = `
           <div style="padding: 8px 15px; color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #2d2d44;">🖥️ Screen Share Options</div>
-          <div class="menu-item" onclick="changeMyScreenShare()" style="padding: 12px 15px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 14px; color: #fff;" onmouseover="this.style.background='#0b132b'" onmouseout="this.style.background='transparent'"><span style="font-size: 18px;">🔄</span><div><div style="font-weight: 600;">ប្តូរ Screen</div><div style="font-size: 11px; color: #94a3b8;">ជ្រើសរើស Screen ថ្មី</div></div></div>
-          <div class="menu-item" onclick="stopMyScreenShare()" style="padding: 12px 15px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 14px; color: #fff; border-top: 1px solid #2d2d44;" onmouseover="this.style.background='#0b132b'" onmouseout="this.style.background='transparent'"><span style="font-size: 18px;">🛑</span><div><div style="font-weight: 600;">ឈប់ Share</div><div style="font-size: 11px; color: #94a3b8;">បញ្ចប់ការចែកអេក្រង់</div></div></div>
-          <div class="menu-item" onclick="openScreenFullscreen('${videoElement.id}')" style="padding: 12px 15px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 14px; color: #fff; border-top: 1px solid #2d2d44;" onmouseover="this.style.background='#0b132b'" onmouseout="this.style.background='transparent'"><span style="font-size: 18px;">⛶</span><div><div style="font-weight: 600;">មើលពេញអេក្រង់</div><div style="font-size: 11px; color: #94a3b8;">Fullscreen</div></div></div>
+          <div class="menu-item" onclick="changeMyScreenShare()" style="padding: 12px 15px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 14px; color: #fff;" onmouseover="this.style.background='#0b132b'" onmouseout="this.style.background='transparent'">
+            <span style="font-size: 18px;">🔄</span>
+            <div><div style="font-weight: 600;">ប្តូរ Screen</div><div style="font-size: 11px; color: #94a3b8;">ជ្រើសរើស Screen ថ្មី</div></div>
+          </div>
+          <div class="menu-item" onclick="stopMyScreenShare()" style="padding: 12px 15px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 14px; color: #fff; border-top: 1px solid #2d2d44;" onmouseover="this.style.background='#0b132b'" onmouseout="this.style.background='transparent'">
+            <span style="font-size: 18px;">🛑</span>
+            <div><div style="font-weight: 600;">ឈប់ Share</div><div style="font-size: 11px; color: #94a3b8;">បញ្ចប់ការចែកអេក្រង់</div></div>
+          </div>
+          <div class="menu-item" onclick="openScreenFullscreen('${videoElement.id}')" style="padding: 12px 15px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 14px; color: #fff; border-top: 1px solid #2d2d44;" onmouseover="this.style.background='#0b132b'" onmouseout="this.style.background='transparent'">
+            <span style="font-size: 18px;">⛶</span>
+            <div><div style="font-weight: 600;">មើលពេញអេក្រង់</div><div style="font-size: 11px; color: #94a3b8;">Fullscreen</div></div>
+          </div>
         `;
       } else {
-        html = `
+        menuHTML = `
           <div style="padding: 8px 15px; color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #2d2d44;">🖥️ Screen Share</div>
-          <div class="menu-item" onclick="openScreenFullscreen('${videoElement.id}')" style="padding: 12px 15px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 14px; color: #fff;" onmouseover="this.style.background='#0b132b'" onmouseout="this.style.background='transparent'"><span style="font-size: 18px;">⛶</span><div><div style="font-weight: 600;">មើលពេញអេក្រង់</div><div style="font-size: 11px; color: #94a3b8;">Fullscreen</div></div></div>
-          <div class="menu-item" onclick="requestRemoteFromMenu('${name}')" style="padding: 12px 15px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 14px; color: #fff; border-top: 1px solid #2d2d44;" onmouseover="this.style.background='#0b132b'" onmouseout="this.style.background='transparent'"><span style="font-size: 18px;">🎮</span><div><div style="font-weight: 600;">ស្នើសុំ Remote</div><div style="font-size: 11px; color: #94a3b8;">គ្រប់គ្រងពីចម្ងាយ</div></div></div>
+          <div class="menu-item" onclick="openScreenFullscreen('${videoElement.id}')" style="padding: 12px 15px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 14px; color: #fff;" onmouseover="this.style.background='#0b132b'" onmouseout="this.style.background='transparent'">
+            <span style="font-size: 18px;">⛶</span>
+            <div><div style="font-weight: 600;">មើលពេញអេក្រង់</div><div style="font-size: 11px; color: #94a3b8;">Fullscreen</div></div>
+          </div>
+          <div class="menu-item" onclick="requestRemoteFromMenu('${name}')" style="padding: 12px 15px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 14px; color: #fff; border-top: 1px solid #2d2d44;" onmouseover="this.style.background='#0b132b'" onmouseout="this.style.background='transparent'">
+            <span style="font-size: 18px;">🎮</span>
+            <div><div style="font-weight: 600;">ស្នើសុំ Remote</div><div style="font-size: 11px; color: #94a3b8;">គ្រប់គ្រងពីចម្ងាយ</div></div>
+          </div>
         `;
       }
-      html += `<div class="menu-item" onclick="closeScreenShareMenu()" style="padding: 8px 15px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #94a3b8; border-top: 1px solid #2d2d44; justify-content: center;" onmouseover="this.style.background='#0b132b'" onmouseout="this.style.background='transparent'">✕ បិទ</div>`;
-      menu.innerHTML = html;
+      
+      menuHTML += `<div class="menu-item" onclick="closeScreenShareMenu()" style="padding: 8px 15px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #94a3b8; border-top: 1px solid #2d2d44; justify-content: center;" onmouseover="this.style.background='#0b132b'" onmouseout="this.style.background='transparent'">✕ បិទ</div>`;
+      
+      menu.innerHTML = menuHTML;
       document.body.appendChild(menu);
-      const close = (e) => { if (!menu.contains(e.target)) { menu.remove(); document.removeEventListener('click', close); } };
-      setTimeout(() => document.addEventListener('click', close), 100);
+      
+      const closeMenu = (e) => {
+        if (!menu.contains(e.target)) {
+          menu.remove();
+          document.removeEventListener('click', closeMenu);
+        }
+      };
+      setTimeout(() => document.addEventListener('click', closeMenu), 100);
     }
 
     function closeScreenShareMenu() {
-      const m = document.getElementById('screenShareContextMenu');
-      if (m) m.remove();
+      const menu = document.getElementById('screenShareContextMenu');
+      if (menu) menu.remove();
     }
 
     async function changeMyScreenShare() {
       closeScreenShareMenu();
       if (!localParticipant || !isScreenSharing) return showStatus('⚠️ អ្នកមិនទាន់ Share Screen!');
+      
       try {
         showStatus('🔄 កំពុងប្តូរ Screen...');
         await localParticipant.setScreenShareEnabled(false);
         isScreenSharing = false;
         await new Promise(r => setTimeout(r, 500));
-        await localParticipant.setScreenShareEnabled(true, { audio: true, video: { resolution: LivekitClient.VideoPresets.h1080.resolution } });
+        await localParticipant.setScreenShareEnabled(true, {
+          audio: true,
+          video: { resolution: LivekitClient.VideoPresets.h1080.resolution }
+        });
         isScreenSharing = true;
         const btn = document.getElementById('btnScreen');
         btn.innerHTML = '🛑 ឈប់';
         btn.className = 'btn-danger';
         showStatus('✅ ប្តូរ Screen ជោគជ័យ!');
-      } catch (e) { isScreenSharing = false; showStatus('❌ បោះបង់ការប្តូរ Screen'); }
+      } catch (error) {
+        console.error('Change screen error:', error);
+        showStatus('❌ បោះបង់ការប្តូរ Screen');
+        isScreenSharing = false;
+      }
     }
 
     async function stopMyScreenShare() {
       closeScreenShareMenu();
       if (!localParticipant) return;
+      
       try {
         await localParticipant.setScreenShareEnabled(false);
         isScreenSharing = false;
@@ -766,32 +1383,38 @@
         btn.innerHTML = '🖥️ ចែកអេក្រង់';
         btn.className = 'btn-warning';
         showStatus('🛑 ឈប់ Share Screen');
-      } catch (e) {}
+      } catch (error) {}
     }
 
     function openScreenFullscreen(videoId) {
       closeScreenShareMenu();
-      const v = document.getElementById(videoId);
-      if (v) { if (v.requestFullscreen) v.requestFullscreen(); else if (v.webkitRequestFullscreen) v.webkitRequestFullscreen(); }
+      const video = document.getElementById(videoId);
+      if (video) {
+        if (video.requestFullscreen) video.requestFullscreen();
+        else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen();
+      }
     }
 
-    function requestRemoteFromMenu(name) {
+    function requestRemoteFromMenu(targetName) {
       closeScreenShareMenu();
-      requestRemote(name);
+      requestRemote(targetName);
     }
 
-    function addScreenShareContextMenu(v, name, isSelf) {
-      v.addEventListener('contextmenu', (e) => {
+    function addScreenShareContextMenu(videoElement, name, isSelf) {
+      videoElement.addEventListener('contextmenu', (e) => {
         e.preventDefault();
-        showScreenShareContextMenu(e, v, isSelf ? name + ' (អ្នក)' : name);
+        showScreenShareContextMenu(e, videoElement, isSelf ? name + ' (អ្នក)' : name);
       });
-      v.title = '🖱️ Right-Click ដើម្បីមើល Menu';
+      videoElement.title = '🖱️ Right-Click ដើម្បីមើល Menu';
     }
 
     // ============================================================
     // PWA
     // ============================================================
-    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+    });
 
     async function loadPublicRooms() {
       try {
@@ -805,7 +1428,7 @@
           opt.textContent = `🚪 ${room.roomName || room.roomId}`;
           select.appendChild(opt);
         });
-      } catch (e) {}
+      } catch (error) {}
     }
 
     function showLogin() {
@@ -815,9 +1438,6 @@
     }
 
     async function login() {
-      // ✅ Unlock Audio ជាមុនបំផុត
-      unlockGlobalAudio();
-
       const username = document.getElementById('loginUsername').value.trim();
       const password = document.getElementById('loginPassword').value;
       const selectedRoom = document.getElementById('roomSelect').value;
@@ -825,8 +1445,18 @@
       const errorDiv = document.getElementById('login-error');
 
       errorDiv.classList.remove('show');
-      if (!username || !password) { errorDiv.textContent = 'សូមបំពេញឈ្មោះ និងលេខសម្ងាត់!'; errorDiv.classList.add('show'); return; }
-      if (!selectedRoom) { errorDiv.textContent = 'សូមជ្រើសរើសបន្ទប់!'; errorDiv.classList.add('show'); return; }
+
+      if (!username || !password) {
+        errorDiv.textContent = 'សូមបំពេញឈ្មោះ និងលេខសម្ងាត់!';
+        errorDiv.classList.add('show');
+        return;
+      }
+
+      if (!selectedRoom) {
+        errorDiv.textContent = 'សូមជ្រើសរើសបន្ទប់!';
+        errorDiv.classList.add('show');
+        return;
+      }
 
       loginBtn.disabled = true;
       loginBtn.textContent = '⏳ កំពុងចូល...';
@@ -837,13 +1467,16 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password, deviceId: getDeviceId(), selectedRoom })
         });
+
         const data = await response.json();
+
         if (data.requires2FA) {
           pendingLoginData = { username, password, selectedRoom };
           document.getElementById('otp-modal').classList.add('active');
           document.getElementById('otpInput').focus();
           return;
         }
+
         if (!response.ok) throw new Error(data.error);
 
         authToken = data.token;
@@ -852,8 +1485,11 @@
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
         localStorage.setItem('deviceId', getDeviceId());
 
-        unlockGlobalAudio();
+        // Unlock Audio
+        unlockAudio();
+
         await handlePostLogin(data.selectedRoom || selectedRoom);
+
       } catch (error) {
         errorDiv.textContent = error.message;
         errorDiv.classList.add('show');
@@ -864,39 +1500,48 @@
     }
 
     function getDeviceId() {
-      let d = localStorage.getItem('deviceId');
-      if (!d) { d = 'device-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now(); localStorage.setItem('deviceId', d); }
-      return d;
+      let deviceId = localStorage.getItem('deviceId');
+      if (!deviceId) {
+        deviceId = 'device-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now();
+        localStorage.setItem('deviceId', deviceId);
+      }
+      return deviceId;
     }
 
     async function handlePostLogin(selectedRoom) {
       const autoJoinRoom = localStorage.getItem('autoJoinRoom');
+      
       if (autoJoinRoom) {
         localStorage.removeItem('autoJoinRoom');
         showLoading('⏳ កំពុងចូលបន្ទប់...');
         await joinRoom(autoJoinRoom);
         return;
       }
+      
       if (currentUser.role === 'admin' || currentUser.role === 'supervisor') {
         showStatus('✅ ចូលជោគជ័យ! កំពុងបើក Dashboard...');
         setTimeout(() => { window.location.href = '/admin.html'; }, 800);
         return;
       }
+      
       if (selectedRoom) {
         await joinRoom(selectedRoom);
       } else {
         try {
-          const res = await fetch('/api/rooms/my-rooms', { headers: { 'Authorization': `Bearer ${authToken}` } });
+          const res = await fetch('/api/rooms/my-rooms', {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+          });
           const data = await res.json();
           if (data.rooms.length > 0) await joinRoom(data.rooms[0].roomId);
           else { showLogin(); showStatus('⚠️ អ្នកគ្មានបន្ទប់ទេ!'); }
-        } catch (e) { showLogin(); }
+        } catch (error) { showLogin(); }
       }
     }
 
     async function verifyOTP() {
       const otp = document.getElementById('otpInput').value.trim();
       if (!otp || otp.length !== 6) return alert('បញ្ចូល ៦ ខ្ទង់!');
+
       try {
         const response = await fetch('/api/auth/verify-otp', {
           method: 'POST',
@@ -908,18 +1553,24 @@
             selectedRoom: pendingLoginData.selectedRoom
           })
         });
+
         const data = await response.json();
         if (!response.ok) throw new Error(data.error);
+
         authToken = data.token;
         currentUser = data.user;
         localStorage.setItem('authToken', authToken);
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
         document.getElementById('otp-modal').classList.remove('active');
         document.getElementById('otpInput').value = '';
         pendingLoginData = null;
-        unlockGlobalAudio();
+
+        unlockAudio();
         await handlePostLogin(data.selectedRoom);
-      } catch (error) { alert('❌ ' + error.message); }
+      } catch (error) {
+        alert('❌ ' + error.message);
+      }
     }
 
     function cancelOTP() {
@@ -930,28 +1581,35 @@
 
     async function logout() {
       if (!confirm('ចាកចេញពីគណនីទេ?')) return;
+      
       try {
         await fetch('/api/auth/logout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }
         });
       } catch (e) {}
+      
       if (room) await leaveRoom(false);
+      
       authToken = null;
       currentUser = null;
       localStorage.removeItem('authToken');
       localStorage.removeItem('currentUser');
       localStorage.removeItem('deviceId');
       localStorage.removeItem('autoJoinRoom');
+      
       document.getElementById('loginUsername').value = '';
       document.getElementById('loginPassword').value = '';
       document.getElementById('roomSelect').value = '';
+      
       showLogin();
       await loadPublicRooms();
       showStatus('🚪 បានចាកចេញពីគណនី');
     }
 
-    function openAdmin() { window.location.href = '/admin.html'; }
+    function openAdmin() {
+      window.location.href = '/admin.html';
+    }
 
     async function joinRoom(roomName) {
       console.log('📞 joinRoom called:', roomName);
@@ -967,7 +1625,7 @@
 
       try {
         const controller = new AbortController();
-        const ft = setTimeout(() => controller.abort(), 12000);
+        const fetchTimeout = setTimeout(() => controller.abort(), 12000);
 
         const response = await fetch('/api/get-token', {
           method: 'POST',
@@ -975,8 +1633,10 @@
           body: JSON.stringify({ roomName }),
           signal: controller.signal
         });
-        clearTimeout(ft);
+        
+        clearTimeout(fetchTimeout);
         const data = await response.json();
+        
         if (!response.ok) {
           clearTimeout(timeoutId);
           hideLoading();
@@ -989,18 +1649,28 @@
         }
 
         if (data.url) LIVEKIT_URL = data.url;
+
         room = new LivekitClient.Room({ adaptiveStream: true, dynacast: true });
         setupRoomEvents();
+
         await room.connect(LIVEKIT_URL, data.token);
         clearTimeout(timeoutId);
 
         console.log('✅ Connected:', roomName);
+        
         localParticipant = room.localParticipant;
 
-        try { await localParticipant.setMicrophoneEnabled(true); isMicOn = true; } catch (e) { isMicOn = false; }
+        try {
+          await localParticipant.setMicrophoneEnabled(true);
+          isMicOn = true;
+        } catch (e) { isMicOn = false; }
 
         displayLocalTracks(currentUser.displayName || currentUser.username);
-        room.remoteParticipants.forEach(p => { addParticipantToList(p.identity); displayRemoteTracks(p); });
+
+        room.remoteParticipants.forEach(participant => {
+          addParticipantToList(participant.identity);
+          displayRemoteTracks(participant);
+        });
 
         try {
           await fetch('/api/online/join', {
@@ -1014,16 +1684,17 @@
         document.getElementById('app').classList.add('active');
         document.getElementById('currentRoom').textContent = roomName;
         document.getElementById('currentUser').textContent = currentUser.displayName || currentUser.username;
-
+        
         if (currentUser.role === 'admin' || currentUser.role === 'supervisor') {
           document.getElementById('adminBtn').style.display = 'inline-block';
         }
-
+        
         updateParticipantCount();
         updateMediaButtons();
         hideLoading();
         showStatus('✅ ភ្ជាប់ជោគជ័យ!');
-
+        
+        // ✅ កំណត់បន្ទប់បច្ចុប្បន្ន រួចប្រកាសតាម Socket (សំឡេង Join សម្រាប់អ្នកផ្សេងក្នុងបន្ទប់)
         currentRoomId = roomName;
         connectSocket();
         if (socketConnected && socket) {
@@ -1035,14 +1706,21 @@
         }
 
         // ✅ Unlock Audio ក្រោយចូលបន្ទប់
-        unlockGlobalAudio();
+        if (!audioContext) {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioContext.state === 'suspended') {
+          audioContext.resume().catch(() => {});
+        }
 
       } catch (error) {
         clearTimeout(timeoutId);
         console.error('❌ Error:', error);
         hideLoading();
+        
         if (error.name === 'AbortError') showStatus('⏱️ ការភ្ជាប់យឺតពេក!');
         else showStatus('❌ ' + error.message);
+        
         if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'supervisor')) {
           setTimeout(() => window.location.href = '/admin.html', 1500);
         } else {
@@ -1054,73 +1732,105 @@
 
     function displayLocalTracks(username) {
       try {
-        Array.from(localParticipant.videoTrackPublications.values()).forEach(pub => {
+        const videoPublications = Array.from(localParticipant.videoTrackPublications.values());
+        videoPublications.forEach(pub => {
           if (pub.track) attachVideoTrack(pub.track, username + ' (អ្នក)', pub.source === 'screen_share');
         });
-        Array.from(localParticipant.audioTrackPublications.values()).forEach(pub => { if (pub.track) pub.track.attach(); });
-      } catch (e) {}
+
+        const audioPublications = Array.from(localParticipant.audioTrackPublications.values());
+        audioPublications.forEach(pub => { if (pub.track) pub.track.attach(); });
+      } catch (error) {}
     }
 
     function displayRemoteTracks(participant) {
       try {
-        Array.from(participant.videoTrackPublications.values()).forEach(pub => {
+        const videoPublications = Array.from(participant.videoTrackPublications.values());
+        videoPublications.forEach(pub => {
           if (pub.isSubscribed && pub.track) attachVideoTrack(pub.track, participant.identity, pub.source === 'screen_share');
         });
-        Array.from(participant.audioTrackPublications.values()).forEach(pub => { if (pub.isSubscribed && pub.track) pub.track.attach(); });
-      } catch (e) {}
+
+        const audioPublications = Array.from(participant.audioTrackPublications.values());
+        audioPublications.forEach(pub => { if (pub.isSubscribed && pub.track) pub.track.attach(); });
+      } catch (error) {}
     }
 
     function setupRoomEvents() {
-      room.on('participantConnected', (p) => {
-        addParticipantToList(p.identity);
+      room.on('participantConnected', (participant) => {
+        addParticipantToList(participant.identity);
         updateParticipantCount();
-        showStatus('👤 ' + p.identity + ' បានចូល');
-        setTimeout(() => displayRemoteTracks(p), 500);
+        showStatus('👤 ' + participant.identity + ' បានចូល');
+        
+        // ℹ️ សំឡេង Join/Leave ឥឡូវប្រើ Socket.IO room broadcast (មើល connectSocket())
+        // ដើម្បីធានាថាលឺទាំង admin និង user ធម្មតា ទោះបីជា LiveKit event delay ក៏ដោយ។
+        
+        setTimeout(() => displayRemoteTracks(participant), 500);
       });
-      room.on('participantDisconnected', (p) => {
-        removeParticipantFromList(p.identity);
-        removeVideoByParticipant(p.identity, false);
-        removeVideoByParticipant(p.identity, true);
+
+      room.on('participantDisconnected', (participant) => {
+        removeParticipantFromList(participant.identity);
+        removeVideoByParticipant(participant.identity, false);
+        removeVideoByParticipant(participant.identity, true);
         updateParticipantCount();
+        
+        // ℹ️ សំឡេង Join/Leave ឥឡូវប្រើ Socket.IO room broadcast (មើល connectSocket())
       });
-      room.on('trackSubscribed', (track, pub, p) => {
-        if (track.kind === 'video') attachVideoTrack(track, p.identity, pub.source === 'screen_share');
-        else if (track.kind === 'audio') track.attach();
+
+      room.on('trackSubscribed', (track, publication, participant) => {
+        if (track.kind === 'video') {
+          attachVideoTrack(track, participant.identity, publication.source === 'screen_share');
+        } else if (track.kind === 'audio') {
+          track.attach();
+        }
       });
-      room.on('trackUnsubscribed', (track, pub, p) => {
+
+      room.on('trackUnsubscribed', (track, publication, participant) => {
         track.detach();
-        if (pub.source === 'screen_share') removeVideoByParticipant(p.identity, true);
+        if (publication.source === 'screen_share') removeVideoByParticipant(participant.identity, true);
       });
-      room.on('localTrackPublished', (pub) => {
-        if (pub.source === 'screen_share' && pub.track) attachVideoTrack(pub.track, localParticipant.identity + ' (អ្នក)', true);
-        else if (pub.kind === 'video' && pub.track) attachVideoTrack(pub.track, localParticipant.identity + ' (អ្នក)', false);
+
+      room.on('localTrackPublished', (publication) => {
+        if (publication.source === 'screen_share' && publication.track) {
+          attachVideoTrack(publication.track, localParticipant.identity + ' (អ្នក)', true);
+        } else if (publication.kind === 'video' && publication.track) {
+          attachVideoTrack(publication.track, localParticipant.identity + ' (អ្នក)', false);
+        }
       });
-      room.on('localTrackUnpublished', (pub) => {
-        if (pub.source === 'screen_share') removeVideoByParticipant(localParticipant.identity + ' (អ្នក)', true);
+
+      room.on('localTrackUnpublished', (publication) => {
+        if (publication.source === 'screen_share') removeVideoByParticipant(localParticipant.identity + ' (អ្នក)', true);
       });
+
       room.on('disconnected', () => leaveRoom(false));
     }
 
     function attachVideoTrack(track, name, isScreen = false) {
       if (!track) return;
+      
       const safeName = name.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
       const boxId = (isScreen ? 'screen-' : 'video-') + safeName;
       const gridId = isScreen ? 'screenGrid' : 'videoGrid';
+      
       let box = document.getElementById(boxId);
       if (box) {
-        const ov = box.querySelector('video');
-        if (ov && ov.srcObject && ov.srcObject.id === track.mediaStreamTrack.id) return;
-        if (ov) ov.remove();
-        const v = track.attach();
-        v.autoplay = true; v.playsInline = true;
-        if (name.includes('អ្នក')) v.muted = true;
-        box.insertBefore(v, box.firstChild);
-        if (isScreen) addScreenShareContextMenu(v, name, name.includes('អ្នក'));
+        const oldVideo = box.querySelector('video');
+        if (oldVideo && oldVideo.srcObject && oldVideo.srcObject.id === track.mediaStreamTrack.id) return;
+        if (oldVideo) oldVideo.remove();
+        
+        const videoElement = track.attach();
+        videoElement.autoplay = true;
+        videoElement.playsInline = true;
+        if (name.includes('អ្នក')) videoElement.muted = true;
+        box.insertBefore(videoElement, box.firstChild);
+        
+        if (isScreen) addScreenShareContextMenu(videoElement, name, name.includes('អ្នក'));
         return;
       }
-      const v = track.attach();
-      v.autoplay = true; v.playsInline = true;
-      if (name.includes('អ្នក')) v.muted = true;
+
+      const videoElement = track.attach();
+      videoElement.autoplay = true;
+      videoElement.playsInline = true;
+      if (name.includes('អ្នក')) videoElement.muted = true;
+
       box = document.createElement('div');
       box.className = 'video-box' + (isScreen ? ' screen-share' : '');
       box.id = boxId;
@@ -1129,24 +1839,30 @@
         <div class="status-tag">🟢 Live</div>
         <div class="expand-icon">${isScreen ? '🖱️ Right-Click សម្រាប់ Menu' : '🔍 ចុចមើលធំ'}</div>
       `;
-      box.insertBefore(v, box.firstChild);
+      box.insertBefore(videoElement, box.firstChild);
       document.getElementById(gridId).appendChild(box);
-      box.onclick = () => openFullscreen(v, name, isScreen);
-      if (isScreen) addScreenShareContextMenu(v, name, name.includes('អ្នក'));
+      
+      box.onclick = () => openFullscreen(videoElement, name, isScreen);
+      
+      if (isScreen) addScreenShareContextMenu(videoElement, name, name.includes('អ្នក'));
+      
       if (isScreen) document.getElementById('screenTitle').style.display = 'flex';
       updateVideoCounts();
     }
 
     function openFullscreen(videoElement, name, isScreen) {
       const modal = document.getElementById('fullscreenModal');
-      const body = document.getElementById('modalBody');
+      const modalBody = document.getElementById('modalBody');
       document.getElementById('modalTitle').textContent = (isScreen ? '🖥️ ' : '👤 ') + name;
-      body.innerHTML = '';
-      const nv = document.createElement('video');
-      nv.autoplay = true; nv.playsInline = true;
-      nv.muted = videoElement.muted;
-      nv.srcObject = videoElement.srcObject;
-      body.appendChild(nv);
+      modalBody.innerHTML = '';
+      
+      const newVideo = document.createElement('video');
+      newVideo.autoplay = true;
+      newVideo.playsInline = true;
+      newVideo.muted = videoElement.muted;
+      newVideo.srcObject = videoElement.srcObject;
+      
+      modalBody.appendChild(newVideo);
       modal.classList.add('active');
     }
 
@@ -1164,8 +1880,11 @@
       const safeName = name.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
       const box = document.getElementById((isScreen ? 'screen-' : 'video-') + safeName);
       if (box) box.remove();
-      if (isScreen && document.getElementById('screenGrid').children.length === 0) {
-        document.getElementById('screenTitle').style.display = 'none';
+      
+      if (isScreen) {
+        if (document.getElementById('screenGrid').children.length === 0) {
+          document.getElementById('screenTitle').style.display = 'none';
+        }
       }
       updateVideoCounts();
     }
@@ -1176,17 +1895,22 @@
     }
 
     function updateMediaButtons() {
-      const bm = document.getElementById('btnMic');
-      bm.innerHTML = isMicOn ? '🎤 បើកមេក្រូ' : '🔇 បិទមេក្រូ';
-      bm.className = isMicOn ? 'btn-primary' : 'btn-primary off';
-      const bc = document.getElementById('btnCam');
-      bc.innerHTML = isCameraOn ? '📹 បើកកាមេរ៉ា' : '📷 បិទកាមេរ៉ា';
-      bc.className = isCameraOn ? 'btn-primary' : 'btn-primary off';
+      const btnMic = document.getElementById('btnMic');
+      btnMic.innerHTML = isMicOn ? '🎤 បើកមេក្រូ' : '🔇 បិទមេក្រូ';
+      btnMic.className = isMicOn ? 'btn-primary' : 'btn-primary off';
+      
+      const btnCam = document.getElementById('btnCam');
+      btnCam.innerHTML = isCameraOn ? '📹 បើកកាមេរ៉ា' : '📷 បិទកាមេរ៉ា';
+      btnCam.className = isCameraOn ? 'btn-primary' : 'btn-primary off';
     }
 
     async function toggleMic() {
       if (!localParticipant) return;
-      try { isMicOn = !isMicOn; await localParticipant.setMicrophoneEnabled(isMicOn); updateMediaButtons(); } catch (e) {}
+      try {
+        isMicOn = !isMicOn;
+        await localParticipant.setMicrophoneEnabled(isMicOn);
+        updateMediaButtons();
+      } catch (error) {}
     }
 
     async function toggleCamera() {
@@ -1196,20 +1920,31 @@
         await localParticipant.setCameraEnabled(isCameraOn);
         updateMediaButtons();
         if (!isCameraOn) removeVideoByParticipant(localParticipant.identity + ' (អ្នក)', false);
-      } catch (e) {}
+      } catch (error) {}
     }
 
     async function toggleScreenShare() {
       if (!localParticipant) return;
-      if (isMobile && !navigator.mediaDevices.getDisplayMedia) return showStatus('⚠️ ទូរស័ព្ទមិនអាចចែកអេក្រង់បានទេ!');
+      
+      if (isMobile && !navigator.mediaDevices.getDisplayMedia) {
+        return showStatus('⚠️ ទូរស័ព្ទមិនអាចចែកអេក្រង់បានទេ!');
+      }
+      
       try {
         isScreenSharing = !isScreenSharing;
-        await localParticipant.setScreenShareEnabled(isScreenSharing, { audio: true, video: { resolution: LivekitClient.VideoPresets.h1080.resolution } });
+        await localParticipant.setScreenShareEnabled(isScreenSharing, {
+          audio: true,
+          video: { resolution: LivekitClient.VideoPresets.h1080.resolution }
+        });
+        
         const btn = document.getElementById('btnScreen');
         btn.innerHTML = isScreenSharing ? '🛑 ឈប់' : '🖥️ ចែកអេក្រង់';
         btn.className = isScreenSharing ? 'btn-danger' : 'btn-warning';
+        
         if (!isScreenSharing) removeVideoByParticipant(localParticipant.identity + ' (អ្នក)', true);
-      } catch (e) { isScreenSharing = false; }
+      } catch (error) {
+        isScreenSharing = false;
+      }
     }
 
     function addParticipantToList(name) {
@@ -1217,12 +1952,18 @@
       const safeName = name.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
       const itemId = 'p-' + safeName;
       if (document.getElementById(itemId)) return;
+      
       const item = document.createElement('div');
       item.className = 'participant-item';
       item.id = itemId;
+      
       const isSelf = name.includes('អ្នក') || name === currentUser.username;
       const remoteBtn = (!isSelf) ? `<button class="remote-btn" onclick="requestRemote('${name}')">🖥️ Remote</button>` : '';
-      item.innerHTML = `<div class="info"><div class="dot"></div> ${name}</div>${remoteBtn}`;
+      
+      item.innerHTML = `
+        <div class="info"><div class="dot"></div> ${name}</div>
+        ${remoteBtn}
+      `;
       list.appendChild(item);
     }
 
@@ -1234,11 +1975,13 @@
 
     function updateParticipantCount() {
       if (!room) return;
-      document.getElementById('participantCount').textContent = room.remoteParticipants.size + 1;
+      const count = room.remoteParticipants.size + 1;
+      document.getElementById('participantCount').textContent = count;
       if (localParticipant) addParticipantToList(localParticipant.identity + ' (អ្នក)');
     }
 
     async function leaveRoom(showLobby = true) {
+      // ✅ ប្រកាសចាកចេញតាម Socket មុនពេល disconnect ដើម្បីអោយអ្នកផ្សេងក្នុងបន្ទប់លឺសំឡេង
       if (socket && socketConnected && currentRoomId && currentUser) {
         socket.emit('room-left', { roomId: currentRoomId, username: currentUser.username });
       }
@@ -1246,32 +1989,36 @@
 
       if (isBeingControlled) stopBeingControlled();
       if (isRemoteControlling) endRemoteControl();
-
-      if (room) { try { await room.disconnect(); } catch (e) {} room = null; localParticipant = null; }
-
+      
+      if (room) {
+        try { await room.disconnect(); } catch (e) {}
+        room = null;
+        localParticipant = null;
+      }
+      
       try {
         await fetch('/api/online/leave', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }
         });
       } catch (e) {}
-
+      
       document.getElementById('videoGrid').innerHTML = '';
       document.getElementById('screenGrid').innerHTML = '';
       document.getElementById('participantsList').innerHTML = '';
       document.getElementById('screenTitle').style.display = 'none';
       document.getElementById('app').classList.remove('active');
-
+      
       isMicOn = false;
       isCameraOn = false;
       isScreenSharing = false;
-
+      
       if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'supervisor')) {
         showStatus('🚪 ត្រឡប់ទៅ Dashboard...');
         setTimeout(() => window.location.href = '/admin.html', 800);
         return;
       }
-
+      
       if (showLobby) {
         showLogin();
         await loadPublicRooms();
@@ -1280,11 +2027,11 @@
     }
 
     function showStatus(message) {
-      const s = document.getElementById('status');
-      s.textContent = message;
-      s.classList.add('show');
-      clearTimeout(s.timeout);
-      s.timeout = setTimeout(() => s.classList.remove('show'), 4000);
+      const status = document.getElementById('status');
+      status.textContent = message;
+      status.classList.add('show');
+      clearTimeout(status.timeout);
+      status.timeout = setTimeout(() => status.classList.remove('show'), 4000);
     }
 
     document.getElementById('loginPassword').addEventListener('keypress', (e) => {
