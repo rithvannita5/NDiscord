@@ -1,4 +1,6 @@
 const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 const { AccessToken } = require('livekit-server-sdk');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
@@ -6,6 +8,14 @@ const jwt = require('jsonwebtoken');
 const path = require('path');
 
 const app = express();
+const server = http.createServer(app);
+
+// ✅ Socket.IO សម្រាប់ Remote Control
+const io = new Server(server, {
+  cors: { origin: "*" },
+  transports: ['polling', 'websocket']
+});
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -24,7 +34,7 @@ if (!MONGO_URI) {
 }
 
 // ============================================================
-// SCHEMAS
+// MONGODB SCHEMAS
 // ============================================================
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true, trim: true },
@@ -68,7 +78,7 @@ const Room = mongoose.model('Room', roomSchema);
 const RemoteRequest = mongoose.model('RemoteRequest', remoteRequestSchema);
 
 // ============================================================
-// OTP + ONLINE
+// OTP + ONLINE TRACKING
 // ============================================================
 const otpStore = new Map();
 const onlineUsers = new Map();
@@ -149,7 +159,7 @@ function verifyAdminOrSupervisor(req, res, next) {
 }
 
 // ============================================================
-// API: GET PUBLIC ROOMS (មិនត្រូវការ Login - សម្រាប់ Login Screen)
+// API: GET PUBLIC ROOMS
 // ============================================================
 app.get('/api/rooms/public', async (req, res) => {
   try {
@@ -161,7 +171,7 @@ app.get('/api/rooms/public', async (req, res) => {
 });
 
 // ============================================================
-// API: LOGIN (មានការជ្រើសបន្ទប់)
+// API: LOGIN
 // ============================================================
 app.post('/api/auth/login', async (req, res) => {
   const { username, password, deviceId, selectedRoom } = req.body;
@@ -186,9 +196,7 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'ឈ្មោះ ឬលេខសម្ងាត់មិនត្រឹមត្រូវ!' });
     }
 
-    // ============================================================
-    // ✅ ពិនិត្យសិទ្ធិចូលបន្ទប់ (សម្រាប់ User ធម្មតា)
-    // ============================================================
+    // ✅ ពិនិត្យសិទ្ធិចូលបន្ទប់
     if (user.role === 'user' && selectedRoom) {
       const canJoin = user.assignedRooms.includes('*') || 
                       user.assignedRooms.includes(selectedRoom);
@@ -200,9 +208,7 @@ app.post('/api/auth/login', async (req, res) => {
       }
     }
 
-    // ============================================================
     // 2FA CHECK
-    // ============================================================
     const hasOtherDevice = user.currentDeviceId && 
                            user.currentDeviceId !== 'null' &&
                            user.currentDeviceId !== deviceId &&
@@ -242,7 +248,7 @@ app.post('/api/auth/login', async (req, res) => {
       { expiresIn: '7d' }
     );
 
-    console.log(`✅ Login: ${username} (${user.role})` + (selectedRoom ? ` → ${selectedRoom}` : ''));
+    console.log(`✅ Login: ${username} (${user.role})`);
     
     res.json({
       success: true,
@@ -333,7 +339,7 @@ app.post('/api/auth/verify-otp', async (req, res) => {
 });
 
 // ============================================================
-// API: REGISTER (Admin only)
+// API: REGISTER USER (Admin only)
 // ============================================================
 app.post('/api/auth/register', verifyToken, verifyAdmin, async (req, res) => {
   const { username, password, displayName, role, assignedRooms } = req.body;
@@ -446,7 +452,7 @@ app.delete('/api/admin/rooms/:roomId', verifyToken, verifyAdmin, async (req, res
 });
 
 // ============================================================
-// API: GET USERS (Admin/Supervisor)
+// API: GET USERS
 // ============================================================
 app.get('/api/admin/users', verifyToken, verifyAdminOrSupervisor, async (req, res) => {
   try {
@@ -458,7 +464,7 @@ app.get('/api/admin/users', verifyToken, verifyAdminOrSupervisor, async (req, re
 });
 
 // ============================================================
-// API: UPDATE USER (Admin + Supervisor)
+// API: UPDATE USER
 // ============================================================
 app.put('/api/admin/users/:id', verifyToken, verifyAdminOrSupervisor, async (req, res) => {
   const { displayName, role, assignedRooms, isActive, newPassword } = req.body;
@@ -467,24 +473,14 @@ app.put('/api/admin/users/:id', verifyToken, verifyAdminOrSupervisor, async (req
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // ✅ Supervisor មិនអាចកែ Admin បានទេ
     if (req.user.role === 'supervisor' && user.role === 'admin') {
       return res.status(403).json({ error: 'Supervisor មិនអាចកែ Admin បានទេ!' });
     }
 
     if (displayName) user.displayName = displayName;
-    
-    // ✅ Supervisor មិនអាចកែ Role បានទេ
-    if (role && user.username !== 'admin' && req.user.role === 'admin') {
-      user.role = role;
-    }
-    
+    if (role && user.username !== 'admin' && req.user.role === 'admin') user.role = role;
     if (assignedRooms) user.assignedRooms = assignedRooms;
-    
-    // ✅ Supervisor មិនអាចផ្អាក Admin បានទេ
-    if (typeof isActive === 'boolean' && req.user.role === 'admin') {
-      user.isActive = isActive;
-    }
+    if (typeof isActive === 'boolean' && req.user.role === 'admin') user.isActive = isActive;
     
     if (newPassword && newPassword.length >= 4) {
       user.password = await bcrypt.hash(newPassword, 10);
@@ -521,7 +517,7 @@ app.put('/api/admin/users/:id/toggle', verifyToken, verifyAdmin, async (req, res
 });
 
 // ============================================================
-// API: DELETE USER (Admin only)
+// API: DELETE USER
 // ============================================================
 app.delete('/api/admin/users/:id', verifyToken, verifyAdmin, async (req, res) => {
   try {
@@ -560,144 +556,6 @@ app.get('/api/admin/stats', verifyToken, verifyAdminOrSupervisor, async (req, re
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
   }
-});
-
-// ============================================================
-// API: REMOTE CONTROL
-// ============================================================
-app.post('/api/remote/request', verifyToken, async (req, res) => {
-  const { targetId, targetName, roomId } = req.body;
-
-  try {
-    const request = await RemoteRequest.create({
-      controllerId: req.user.username,
-      controllerName: req.user.displayName || req.user.username,
-      targetId,
-      targetName,
-      roomId,
-      status: 'pending'
-    });
-
-    res.json({ success: true, request });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to create request' });
-  }
-});
-
-app.get('/api/remote/requests/:username', verifyToken, async (req, res) => {
-  try {
-    const requests = await RemoteRequest.find({
-      targetId: req.params.username,
-      status: 'pending'
-    });
-    res.json({ requests });
-  } catch (error) {
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-app.put('/api/remote/requests/:id', verifyToken, async (req, res) => {
-  const { status } = req.body;
-  try {
-    const request = await RemoteRequest.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      { new: true }
-    );
-    res.json({ success: true, request });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to update request' });
-  }
-});
-
-// ============================================================
-// SOCKET.IO - REMOTE CONTROL SIGNALING
-// ============================================================
-const http = require('http');
-const { Server } = require('socket.io');
-
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: { origin: "*" },
-  transports: ['polling', 'websocket']
-});
-
-// ✅ រក្សាទុក User ↔ Socket ID
-const userSockets = new Map(); // { username: socketId }
-
-io.on('connection', (socket) => {
-  console.log('🔌 Socket connected:', socket.id);
-
-  // ចុះឈ្មោះ User
-  socket.on('register-user', ({ username }) => {
-    userSockets.set(username, socket.id);
-    socket.username = username;
-    console.log(`✅ Registered: ${username} → ${socket.id}`);
-  });
-
-  // ✅ Controller ផ្ញើសំណើ Remote Control
-  socket.on('remote-request', ({ targetUsername, controllerName }) => {
-    const targetSocketId = userSockets.get(targetUsername);
-    if (targetSocketId) {
-      io.to(targetSocketId).emit('remote-request-received', {
-        controllerName,
-        controllerSocketId: socket.id
-      });
-      console.log(`📨 Remote request: ${controllerName} → ${targetUsername}`);
-    }
-  });
-
-  // ✅ Target អនុញ្ញាត
-  socket.on('remote-approved', ({ controllerSocketId, targetUsername }) => {
-    io.to(controllerSocketId).emit('remote-approved-notify', {
-      targetUsername,
-      targetSocketId: socket.id
-    });
-    console.log(`✅ Remote approved: ${targetUsername}`);
-  });
-
-  // ✅ Target បដិសេធ
-  socket.on('remote-rejected', ({ controllerSocketId }) => {
-    io.to(controllerSocketId).emit('remote-rejected-notify');
-    console.log(`❌ Remote rejected`);
-  });
-
-  // ✅ Controller ផ្ញើ Mouse Move
-  socket.on('remote-mouse-move', ({ targetSocketId, x, y }) => {
-    io.to(targetSocketId).emit('remote-mouse-move-received', { x, y });
-  });
-
-  // ✅ Controller ផ្ញើ Mouse Click
-  socket.on('remote-mouse-click', ({ targetSocketId, x, y, button }) => {
-    io.to(targetSocketId).emit('remote-mouse-click-received', { x, y, button });
-  });
-
-  // ✅ Controller ផ្ញើ Keyboard
-  socket.on('remote-keyboard', ({ targetSocketId, key }) => {
-    io.to(targetSocketId).emit('remote-keyboard-received', { key });
-  });
-
-  // ✅ បញ្ចប់ Remote Control
-  socket.on('remote-end', ({ targetSocketId }) => {
-    io.to(targetSocketId).emit('remote-ended-notify');
-    console.log(`🛑 Remote ended`);
-  });
-
-  // Disconnect
-  socket.on('disconnect', () => {
-    if (socket.username) {
-      userSockets.delete(socket.username);
-      console.log(`🔌 Disconnected: ${socket.username}`);
-    }
-  });
-});
-
-// ⚠️ ប្តូរ `app.listen(PORT, ...)` ទៅ `server.listen(PORT, ...)`
-// រកកូដចុងក្រោយ:
-// app.listen(PORT, () => { ... });
-// ជំនួសដោយ:
-server.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
 });
 
 // ============================================================
@@ -805,9 +663,86 @@ app.get('/api/health', (req, res) => {
 });
 
 // ============================================================
-// START
+// ✅ SOCKET.IO - REMOTE CONTROL SIGNALING
+// ============================================================
+const userSockets = new Map(); // { username: socketId }
+
+io.on('connection', (socket) => {
+  console.log('🔌 Socket connected:', socket.id);
+
+  // ចុះឈ្មោះ User
+  socket.on('register-user', ({ username }) => {
+    userSockets.set(username, socket.id);
+    socket.username = username;
+    console.log(`✅ Registered: ${username} → ${socket.id}`);
+  });
+
+  // ✅ Controller ផ្ញើសំណើ
+  socket.on('remote-request', ({ targetUsername, controllerName }) => {
+    const targetSocketId = userSockets.get(targetUsername);
+    if (targetSocketId) {
+      io.to(targetSocketId).emit('remote-request-received', {
+        controllerName,
+        controllerSocketId: socket.id
+      });
+      console.log(`📨 Remote request: ${controllerName} → ${targetUsername}`);
+    } else {
+      console.log(`❌ Target not found: ${targetUsername}`);
+      io.to(socket.id).emit('remote-rejected-notify');
+    }
+  });
+
+  // ✅ Target អនុញ្ញាត
+  socket.on('remote-approved', ({ controllerSocketId, targetUsername }) => {
+    io.to(controllerSocketId).emit('remote-approved-notify', {
+      targetUsername,
+      targetSocketId: socket.id
+    });
+    console.log(`✅ Remote approved: ${targetUsername}`);
+  });
+
+  // ✅ Target បដិសេធ
+  socket.on('remote-rejected', ({ controllerSocketId }) => {
+    io.to(controllerSocketId).emit('remote-rejected-notify');
+    console.log(`❌ Remote rejected`);
+  });
+
+  // ✅ Mouse Move
+  socket.on('remote-mouse-move', ({ targetSocketId, x, y }) => {
+    io.to(targetSocketId).emit('remote-mouse-move-received', { x, y });
+  });
+
+  // ✅ Mouse Click
+  socket.on('remote-mouse-click', ({ targetSocketId, x, y, button }) => {
+    io.to(targetSocketId).emit('remote-mouse-click-received', { x, y, button });
+  });
+
+  // ✅ Keyboard
+  socket.on('remote-keyboard', ({ targetSocketId, key }) => {
+    io.to(targetSocketId).emit('remote-keyboard-received', { key });
+  });
+
+  // ✅ បញ្ចប់
+  socket.on('remote-end', ({ targetSocketId }) => {
+    io.to(targetSocketId).emit('remote-ended-notify');
+    console.log(`🛑 Remote ended`);
+  });
+
+  // Disconnect
+  socket.on('disconnect', () => {
+    if (socket.username) {
+      userSockets.delete(socket.username);
+      console.log(`🔌 Disconnected: ${socket.username}`);
+    }
+  });
+});
+
+// ============================================================
+// START SERVER (ប្រើ server មិនមែន app)
 // ============================================================
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📡 LiveKit URL: ${LIVEKIT_URL}`);
+  console.log(`🎮 Socket.IO Remote Control: Enabled`);
 });
