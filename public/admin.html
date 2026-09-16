@@ -470,12 +470,35 @@
       } catch (error) {}
     }
 
-    // ✅ ចុចលើបន្ទប់ → ចូលបន្ទប់
-    function joinRoomFromAdmin(roomId) {
-      // រក្សាទុក roomId ក្នុង localStorage រួចបញ្ជូនទៅ index.html
-      localStorage.setItem('autoJoinRoom', roomId);
-      window.location.href = '/';
-    }
+    // ✅ ចុចលើបន្ទប់ → ចូលបន្ទប់ភ្លាម (មិនត្រូវការ Redirect)
+async function joinRoomFromAdmin(roomId) {
+  console.log('🚀 Joining room from admin:', roomId);
+  
+  // បង្ហាញ Loading
+  const overlay = document.createElement('div');
+  overlay.id = 'loadingOverlay';
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    z-index: 99999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 20px;
+  `;
+  overlay.innerHTML = `
+    <div style="color:#48cae4; font-size:24px; font-weight:bold;">⏳ កំពុងចូលបន្ទប់ ${roomId}...</div>
+    <div style="color:#94a3b8; font-size:14px;">សូមរង់ចាំបន្តិច</div>
+  `;
+  document.body.appendChild(overlay);
+  
+  // បញ្ជូនទៅ index.html ជាមួយ autoJoinRoom
+  localStorage.setItem('autoJoinRoom', roomId);
+  localStorage.setItem('autoJoinFromAdmin', 'true');
+  window.location.href = '/?autoJoin=' + roomId;
+}
 
     // ============================================================
     // USERS
