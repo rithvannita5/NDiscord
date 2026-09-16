@@ -544,22 +544,38 @@
     // INIT
     // ============================================================
     window.addEventListener('DOMContentLoaded', async () => {
-      const savedToken = localStorage.getItem('authToken');
-      const savedUser = localStorage.getItem('currentUser');
-      
-      if (savedToken && savedUser) {
-        authToken = savedToken;
-        currentUser = JSON.parse(savedUser);
-        await handlePostLogin();
-      } else {
-        showLogin();
-        await loadPublicRooms();
-      }
-      
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js').catch(() => {});
-      }
-    });
+  const savedToken = localStorage.getItem('authToken');
+  const savedUser = localStorage.getItem('currentUser');
+  const autoJoinRoom = localStorage.getItem('autoJoinRoom');
+  
+  // ✅ ប្រសិនបើមាន autoJoinRoom
+  if (autoJoinRoom) {
+    // ប្រសិនបើមាន session → ចូលបន្ទប់ភ្លាម
+    if (savedToken && savedUser) {
+      authToken = savedToken;
+      currentUser = JSON.parse(savedUser);
+      localStorage.removeItem('autoJoinRoom');
+      await joinRoom(autoJoinRoom);
+      return;
+    } else {
+      // បើគ្មាន session → បង្ហាញ Login
+      localStorage.removeItem('autoJoinRoom');
+    }
+  }
+  
+  if (savedToken && savedUser) {
+    authToken = savedToken;
+    currentUser = JSON.parse(savedUser);
+    await handlePostLogin();
+  } else {
+    showLogin();
+    await loadPublicRooms();
+  }
+  
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
+});
 
     // ============================================================
     // PWA
@@ -683,44 +699,50 @@
     }
 
     // ============================================================
-    // ✅ POST LOGIN HANDLER (Admin/Supervisor vs User)
-    // ============================================================
-    async function handlePostLogin(selectedRoom) {
-      // ✅ Admin/Supervisor → បើក Dashboard
-      if (currentUser.role === 'admin' || currentUser.role === 'supervisor') {
-        showStatus('✅ ចូលជោគជ័យ! កំពុងបើក Dashboard...');
-        
-        // រង់ចាំ ១ វិនាទី រួចបើក Admin Dashboard
-        setTimeout(() => {
-          window.location.href = '/admin.html';
-        }, 800);
-        
-        return;
-      }
+// ✅ POST LOGIN HANDLER (មាន Auto-Join Room)
+// ============================================================
+async function handlePostLogin(selectedRoom) {
+  // ✅ ពិនិត្យ autoJoinRoom ជាមុន (Admin ចុចចូលបន្ទប់)
+  const autoJoin = localStorage.getItem('autoJoinRoom');
+  
+  if (autoJoin) {
+    localStorage.removeItem('autoJoinRoom');
+    console.log('🚀 Auto-joining room:', autoJoin);
+    await joinRoom(autoJoin);
+    return;
+  }
+  
+  // ✅ Admin/Supervisor → បើក Dashboard
+  if (currentUser.role === 'admin' || currentUser.role === 'supervisor') {
+    showStatus('✅ ចូលជោគជ័យ! កំពុងបើក Dashboard...');
+    setTimeout(() => {
+      window.location.href = '/admin.html';
+    }, 800);
+    return;
+  }
+  
+  // ✅ User ធម្មតា → ចូលបន្ទប់ដែលបានជ្រើស
+  if (selectedRoom) {
+    await joinRoom(selectedRoom);
+  } else {
+    try {
+      const res = await fetch('/api/rooms/my-rooms', {
+        headers: { 'Authorization': `Bearer ${authToken}` }
+      });
+      const data = await res.json();
       
-      // ✅ User ធម្មតា → ចូលបន្ទប់ដែលបានជ្រើស
-      if (selectedRoom) {
-        await joinRoom(selectedRoom);
+      if (data.rooms.length > 0) {
+        await joinRoom(data.rooms[0].roomId);
       } else {
-        // ប្រសិនបើគ្មាន selectedRoom → ទៅបន្ទប់ដំបូងដែលមាន
-        try {
-          const res = await fetch('/api/rooms/my-rooms', {
-            headers: { 'Authorization': `Bearer ${authToken}` }
-          });
-          const data = await res.json();
-          
-          if (data.rooms.length > 0) {
-            await joinRoom(data.rooms[0].roomId);
-          } else {
-            showLogin();
-            showStatus('⚠️ អ្នកគ្មានបន្ទប់ទេ!');
-          }
-        } catch (error) {
-          showLogin();
-          showStatus('❌ មានបញ្ហា!');
-        }
+        showLogin();
+        showStatus('⚠️ អ្នកគ្មានបន្ទប់ទេ!');
       }
+    } catch (error) {
+      showLogin();
+      showStatus('❌ មានបញ្ហា!');
     }
+  }
+}
 
     async function verifyOTP() {
       const otp = document.getElementById('otpInput').value.trim();
