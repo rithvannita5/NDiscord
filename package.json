@@ -1,6 +1,7 @@
 {
   "name": "livekit-meeting",
   "version": "2.0.0",
+  "description": "Video Conference with LiveKit + Remote Control",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -10,7 +11,8 @@
     "livekit-server-sdk": "^2.6.0",
     "mongoose": "^8.4.0",
     "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "socket.io": "^4.7.5"
   },
   "engines": {
     "node": ">=18.x"
