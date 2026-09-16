@@ -24,7 +24,7 @@ if (!MONGO_URI) {
 }
 
 // ============================================================
-// MONGODB SCHEMAS
+// SCHEMAS
 // ============================================================
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true, trim: true },
@@ -68,21 +68,18 @@ const Room = mongoose.model('Room', roomSchema);
 const RemoteRequest = mongoose.model('RemoteRequest', remoteRequestSchema);
 
 // ============================================================
-// OTP STORAGE
+// OTP + ONLINE
 // ============================================================
 const otpStore = new Map();
+const onlineUsers = new Map();
+const roomOnlineCount = {};
+
 setInterval(() => {
   const now = Date.now();
   for (const [key, value] of otpStore.entries()) {
     if (value.expiresAt < now) otpStore.delete(key);
   }
 }, 5 * 60 * 1000);
-
-// ============================================================
-// ONLINE TRACKING
-// ============================================================
-const onlineUsers = new Map();
-const roomOnlineCount = {};
 
 // ============================================================
 // MONGODB CONNECTION
@@ -152,10 +149,22 @@ function verifyAdminOrSupervisor(req, res, next) {
 }
 
 // ============================================================
-// API: LOGIN
+// API: GET PUBLIC ROOMS (មិនត្រូវការ Login - សម្រាប់ Login Screen)
+// ============================================================
+app.get('/api/rooms/public', async (req, res) => {
+  try {
+    const rooms = await Room.find({}, 'roomId roomName');
+    res.json({ rooms });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ============================================================
+// API: LOGIN (មានការជ្រើសបន្ទប់)
 // ============================================================
 app.post('/api/auth/login', async (req, res) => {
-  const { username, password, deviceId } = req.body;
+  const { username, password, deviceId, selectedRoom } = req.body;
 
   if (!username || !password) {
     return res.status(400).json({ error: 'Username and password required' });
@@ -178,7 +187,21 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     // ============================================================
-    // ✅ 2FA CHECK - កែឱ្យឆ្លាតជាងនេះ
+    // ✅ ពិនិត្យសិទ្ធិចូលបន្ទប់ (សម្រាប់ User ធម្មតា)
+    // ============================================================
+    if (user.role === 'user' && selectedRoom) {
+      const canJoin = user.assignedRooms.includes('*') || 
+                      user.assignedRooms.includes(selectedRoom);
+      
+      if (!canJoin) {
+        return res.status(403).json({ 
+          error: `អ្នកគ្មានសិទ្ធិចូលបន្ទប់ "${selectedRoom}" ទេ!` 
+        });
+      }
+    }
+
+    // ============================================================
+    // 2FA CHECK
     // ============================================================
     const hasOtherDevice = user.currentDeviceId && 
                            user.currentDeviceId !== 'null' &&
@@ -203,7 +226,6 @@ app.post('/api/auth/login', async (req, res) => {
       });
     }
 
-    // ✅ Login ជោគជ័យ - Update Device ID
     user.currentDeviceId = deviceId || 'unknown';
     user.lastLogin = new Date();
     await user.save();
@@ -220,7 +242,8 @@ app.post('/api/auth/login', async (req, res) => {
       { expiresIn: '7d' }
     );
 
-    console.log(`✅ User logged in: ${username} (${user.role})`);
+    console.log(`✅ Login: ${username} (${user.role})` + (selectedRoom ? ` → ${selectedRoom}` : ''));
+    
     res.json({
       success: true,
       token,
@@ -230,7 +253,8 @@ app.post('/api/auth/login', async (req, res) => {
         displayName: user.displayName,
         role: user.role,
         assignedRooms: user.assignedRooms
-      }
+      },
+      selectedRoom: selectedRoom || null
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -239,15 +263,15 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // ============================================================
-// ✅ API: LOGOUT (Reset Device ID)
+// API: LOGOUT
 // ============================================================
 app.post('/api/auth/logout', verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (user) {
-      user.currentDeviceId = null; // ✅ Null Value ត្រឹមត្រូវ
+      user.currentDeviceId = null;
       await user.save();
-      console.log(`🚪 User logged out: ${user.username}`);
+      console.log(`🚪 Logout: ${user.username}`);
     }
     res.json({ success: true });
   } catch (error) {
@@ -260,7 +284,7 @@ app.post('/api/auth/logout', verifyToken, async (req, res) => {
 // API: VERIFY OTP
 // ============================================================
 app.post('/api/auth/verify-otp', async (req, res) => {
-  const { username, password, otp, deviceId } = req.body;
+  const { username, password, otp, deviceId, selectedRoom } = req.body;
 
   try {
     const storedOtp = otpStore.get(username);
@@ -300,7 +324,8 @@ app.post('/api/auth/verify-otp', async (req, res) => {
         displayName: user.displayName,
         role: user.role,
         assignedRooms: user.assignedRooms
-      }
+      },
+      selectedRoom: selectedRoom || null
     });
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
@@ -308,7 +333,7 @@ app.post('/api/auth/verify-otp', async (req, res) => {
 });
 
 // ============================================================
-// API: REGISTER USER (Admin only)
+// API: REGISTER (Admin only)
 // ============================================================
 app.post('/api/auth/register', verifyToken, verifyAdmin, async (req, res) => {
   const { username, password, displayName, role, assignedRooms } = req.body;
@@ -343,20 +368,7 @@ app.post('/api/auth/register', verifyToken, verifyAdmin, async (req, res) => {
 });
 
 // ============================================================
-// API: GET CURRENT USER
-// ============================================================
-app.get('/api/auth/me', verifyToken, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id, '-password');
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    res.json({ user });
-  } catch (error) {
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// ============================================================
-// API: GET ROOMS (for user's assigned rooms)
+// API: GET MY ROOMS
 // ============================================================
 app.get('/api/rooms/my-rooms', verifyToken, async (req, res) => {
   try {
@@ -377,7 +389,7 @@ app.get('/api/rooms/my-rooms', verifyToken, async (req, res) => {
 });
 
 // ============================================================
-// API: GET ALL ROOMS (Admin/Supervisor)
+// API: ADMIN ROOMS
 // ============================================================
 app.get('/api/admin/rooms', verifyToken, verifyAdminOrSupervisor, async (req, res) => {
   try {
@@ -434,7 +446,7 @@ app.delete('/api/admin/rooms/:roomId', verifyToken, verifyAdmin, async (req, res
 });
 
 // ============================================================
-// API: GET ALL USERS (Admin/Supervisor)
+// API: GET USERS (Admin/Supervisor)
 // ============================================================
 app.get('/api/admin/users', verifyToken, verifyAdminOrSupervisor, async (req, res) => {
   try {
@@ -446,19 +458,34 @@ app.get('/api/admin/users', verifyToken, verifyAdminOrSupervisor, async (req, re
 });
 
 // ============================================================
-// API: UPDATE USER (Admin only)
+// API: UPDATE USER (Admin + Supervisor)
 // ============================================================
-app.put('/api/admin/users/:id', verifyToken, verifyAdmin, async (req, res) => {
+app.put('/api/admin/users/:id', verifyToken, verifyAdminOrSupervisor, async (req, res) => {
   const { displayName, role, assignedRooms, isActive, newPassword } = req.body;
 
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
+    // ✅ Supervisor មិនអាចកែ Admin បានទេ
+    if (req.user.role === 'supervisor' && user.role === 'admin') {
+      return res.status(403).json({ error: 'Supervisor មិនអាចកែ Admin បានទេ!' });
+    }
+
     if (displayName) user.displayName = displayName;
-    if (role && user.username !== 'admin') user.role = role;
+    
+    // ✅ Supervisor មិនអាចកែ Role បានទេ
+    if (role && user.username !== 'admin' && req.user.role === 'admin') {
+      user.role = role;
+    }
+    
     if (assignedRooms) user.assignedRooms = assignedRooms;
-    if (typeof isActive === 'boolean') user.isActive = isActive;
+    
+    // ✅ Supervisor មិនអាចផ្អាក Admin បានទេ
+    if (typeof isActive === 'boolean' && req.user.role === 'admin') {
+      user.isActive = isActive;
+    }
+    
     if (newPassword && newPassword.length >= 4) {
       user.password = await bcrypt.hash(newPassword, 10);
       user.currentDeviceId = null;
@@ -472,7 +499,7 @@ app.put('/api/admin/users/:id', verifyToken, verifyAdmin, async (req, res) => {
 });
 
 // ============================================================
-// API: TOGGLE USER STATUS
+// API: TOGGLE USER
 // ============================================================
 app.put('/api/admin/users/:id/toggle', verifyToken, verifyAdmin, async (req, res) => {
   try {
@@ -513,7 +540,7 @@ app.delete('/api/admin/users/:id', verifyToken, verifyAdmin, async (req, res) =>
 });
 
 // ============================================================
-// API: ADMIN STATS
+// API: STATS
 // ============================================================
 app.get('/api/admin/stats', verifyToken, verifyAdminOrSupervisor, async (req, res) => {
   try {
@@ -536,7 +563,7 @@ app.get('/api/admin/stats', verifyToken, verifyAdminOrSupervisor, async (req, re
 });
 
 // ============================================================
-// API: REMOTE CONTROL REQUESTS
+// API: REMOTE CONTROL
 // ============================================================
 app.post('/api/remote/request', verifyToken, async (req, res) => {
   const { targetId, targetName, roomId } = req.body;
@@ -584,7 +611,7 @@ app.put('/api/remote/requests/:id', verifyToken, async (req, res) => {
 });
 
 // ============================================================
-// API: GENERATE LIVEKIT TOKEN
+// API: GET TOKEN
 // ============================================================
 app.post('/api/get-token', verifyToken, async (req, res) => {
   const { roomName } = req.body;
@@ -631,16 +658,13 @@ app.post('/api/get-token', verifyToken, async (req, res) => {
 });
 
 // ============================================================
-// ONLINE TRACKING APIs
+// ONLINE TRACKING
 // ============================================================
 app.post('/api/online/join', verifyToken, async (req, res) => {
   const { roomId } = req.body;
   const username = req.user.username;
 
-  onlineUsers.set(username, {
-    roomId,
-    lastSeen: Date.now()
-  });
+  onlineUsers.set(username, { roomId, lastSeen: Date.now() });
 
   if (!roomOnlineCount[roomId]) roomOnlineCount[roomId] = 0;
   roomOnlineCount[roomId]++;
@@ -684,17 +708,16 @@ app.get('/api/online/rooms-status', verifyToken, async (req, res) => {
 });
 
 // ============================================================
-// HEALTH CHECK
+// HEALTH
 // ============================================================
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // ============================================================
-// START SERVER
+// START
 // ============================================================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📡 LiveKit URL: ${LIVEKIT_URL}`);
 });
