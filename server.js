@@ -611,6 +611,96 @@ app.put('/api/remote/requests/:id', verifyToken, async (req, res) => {
 });
 
 // ============================================================
+// SOCKET.IO - REMOTE CONTROL SIGNALING
+// ============================================================
+const http = require('http');
+const { Server } = require('socket.io');
+
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: "*" },
+  transports: ['polling', 'websocket']
+});
+
+// ✅ រក្សាទុក User ↔ Socket ID
+const userSockets = new Map(); // { username: socketId }
+
+io.on('connection', (socket) => {
+  console.log('🔌 Socket connected:', socket.id);
+
+  // ចុះឈ្មោះ User
+  socket.on('register-user', ({ username }) => {
+    userSockets.set(username, socket.id);
+    socket.username = username;
+    console.log(`✅ Registered: ${username} → ${socket.id}`);
+  });
+
+  // ✅ Controller ផ្ញើសំណើ Remote Control
+  socket.on('remote-request', ({ targetUsername, controllerName }) => {
+    const targetSocketId = userSockets.get(targetUsername);
+    if (targetSocketId) {
+      io.to(targetSocketId).emit('remote-request-received', {
+        controllerName,
+        controllerSocketId: socket.id
+      });
+      console.log(`📨 Remote request: ${controllerName} → ${targetUsername}`);
+    }
+  });
+
+  // ✅ Target អនុញ្ញាត
+  socket.on('remote-approved', ({ controllerSocketId, targetUsername }) => {
+    io.to(controllerSocketId).emit('remote-approved-notify', {
+      targetUsername,
+      targetSocketId: socket.id
+    });
+    console.log(`✅ Remote approved: ${targetUsername}`);
+  });
+
+  // ✅ Target បដិសេធ
+  socket.on('remote-rejected', ({ controllerSocketId }) => {
+    io.to(controllerSocketId).emit('remote-rejected-notify');
+    console.log(`❌ Remote rejected`);
+  });
+
+  // ✅ Controller ផ្ញើ Mouse Move
+  socket.on('remote-mouse-move', ({ targetSocketId, x, y }) => {
+    io.to(targetSocketId).emit('remote-mouse-move-received', { x, y });
+  });
+
+  // ✅ Controller ផ្ញើ Mouse Click
+  socket.on('remote-mouse-click', ({ targetSocketId, x, y, button }) => {
+    io.to(targetSocketId).emit('remote-mouse-click-received', { x, y, button });
+  });
+
+  // ✅ Controller ផ្ញើ Keyboard
+  socket.on('remote-keyboard', ({ targetSocketId, key }) => {
+    io.to(targetSocketId).emit('remote-keyboard-received', { key });
+  });
+
+  // ✅ បញ្ចប់ Remote Control
+  socket.on('remote-end', ({ targetSocketId }) => {
+    io.to(targetSocketId).emit('remote-ended-notify');
+    console.log(`🛑 Remote ended`);
+  });
+
+  // Disconnect
+  socket.on('disconnect', () => {
+    if (socket.username) {
+      userSockets.delete(socket.username);
+      console.log(`🔌 Disconnected: ${socket.username}`);
+    }
+  });
+});
+
+// ⚠️ ប្តូរ `app.listen(PORT, ...)` ទៅ `server.listen(PORT, ...)`
+// រកកូដចុងក្រោយ:
+// app.listen(PORT, () => { ... });
+// ជំនួសដោយ:
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
+
+// ============================================================
 // API: GET TOKEN
 // ============================================================
 app.post('/api/get-token', verifyToken, async (req, res) => {
