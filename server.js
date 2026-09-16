@@ -35,7 +35,7 @@ const userSchema = new mongoose.Schema({
     enum: ['admin', 'supervisor', 'user'], 
     default: 'user' 
   },
-  assignedRooms: [{ type: String }], // ✅ បន្ទប់ដែលអនុញ្ញាត
+  assignedRooms: [{ type: String }],
   isActive: { type: Boolean, default: true },
   currentDeviceId: { type: String, default: null },
   lastLogin: { type: Date },
@@ -81,8 +81,8 @@ setInterval(() => {
 // ============================================================
 // ONLINE TRACKING
 // ============================================================
-const onlineUsers = new Map(); // { username: { roomId, socketId, lastSeen } }
-const roomOnlineCount = {}; // { roomId: count }
+const onlineUsers = new Map();
+const roomOnlineCount = {};
 
 // ============================================================
 // MONGODB CONNECTION
@@ -91,7 +91,6 @@ mongoose.connect(MONGO_URI)
   .then(async () => {
     console.log('✅ Connected to MongoDB!');
     
-    // បង្កើត Admin Default
     const adminExists = await User.findOne({ username: 'admin' });
     if (!adminExists) {
       const hashedPassword = await bcrypt.hash('admin123', 10);
@@ -101,12 +100,12 @@ mongoose.connect(MONGO_URI)
         displayName: 'Administrator',
         role: 'admin',
         assignedRooms: ['*'],
-        isActive: true
+        isActive: true,
+        currentDeviceId: null
       });
       console.log('✅ Created default admin: admin / admin123');
     }
     
-    // បង្កើតបន្ទប់ Default
     const room1 = await Room.findOne({ roomId: 'meeting-1' });
     if (!room1) {
       await Room.create({ roomId: 'meeting-1', roomName: 'បន្ទប់ទី ១' });
@@ -179,33 +178,84 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     // ============================================================
-// 2FA Check - កែឱ្យឆ្លាតជាងនេះ
+    // ✅ 2FA CHECK - កែឱ្យឆ្លាតជាងនេះ
+    // ============================================================
+    const hasOtherDevice = user.currentDeviceId && 
+                           user.currentDeviceId !== 'null' &&
+                           user.currentDeviceId !== deviceId &&
+                           user.lastLogin && 
+                           (Date.now() - new Date(user.lastLogin).getTime()) < (30 * 60 * 1000);
+
+    if (hasOtherDevice) {
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      otpStore.set(username, {
+        otp: otp,
+        expiresAt: Date.now() + (5 * 60 * 1000),
+        deviceId: deviceId
+      });
+
+      console.log(`🔐 2FA Required for ${username}. OTP: ${otp}`);
+      
+      return res.json({
+        requires2FA: true,
+        message: 'គណនីកំពុង Online នៅឧបករណ៍ផ្សេង!',
+        debugOtp: otp
+      });
+    }
+
+    // ✅ Login ជោគជ័យ - Update Device ID
+    user.currentDeviceId = deviceId || 'unknown';
+    user.lastLogin = new Date();
+    await user.save();
+
+    const token = jwt.sign(
+      {
+        id: user._id,
+        username: user.username,
+        displayName: user.displayName,
+        role: user.role,
+        assignedRooms: user.assignedRooms
+      },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    console.log(`✅ User logged in: ${username} (${user.role})`);
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        displayName: user.displayName,
+        role: user.role,
+        assignedRooms: user.assignedRooms
+      }
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // ============================================================
-// ពិនិត្យថាតើមាន Device ផ្សេងកំពុង Online ពិតប្រាកដឬអត់
-const isOtherDeviceOnline = user.currentDeviceId && 
-                            user.currentDeviceId !== deviceId &&
-                            user.lastLogin && 
-                            (Date.now() - new Date(user.lastLogin).getTime()) < (30 * 60 * 1000); // 30 នាទី
+// ✅ API: LOGOUT (Reset Device ID)
+// ============================================================
+app.post('/api/auth/logout', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (user) {
+      user.currentDeviceId = null; // ✅ Null Value ត្រឹមត្រូវ
+      await user.save();
+      console.log(`🚪 User logged out: ${user.username}`);
+    }
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
-if (isOtherDeviceOnline) {
-  // មាន Device ផ្សេងកំពុង Online ក្នុងរយៈពេល 30 នាទីចុងក្រោយ
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  otpStore.set(username, {
-    otp: otp,
-    expiresAt: Date.now() + (5 * 60 * 1000),
-    deviceId: deviceId
-  });
-
-  console.log(`🔐 2FA Required for ${username}. OTP: ${otp}`);
-  
-  return res.json({
-    requires2FA: true,
-    message: 'គណនីកំពុង Online នៅឧបករណ៍ផ្សេង!',
-    debugOtp: otp
-  });
-}
-
-// ✅ ប្រសិនបើគ្មាន Device ផ្សេង Online → Login បានភ្លាម
 // ============================================================
 // API: VERIFY OTP
 // ============================================================
@@ -258,24 +308,6 @@ app.post('/api/auth/verify-otp', async (req, res) => {
 });
 
 // ============================================================
-// API: LOGOUT (Reset Device ID)
-// ============================================================
-app.post('/api/auth/logout', verifyToken, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id);
-    if (user) {
-      user.currentDeviceId = null; // ✅ Reset Device
-      await user.save();
-      console.log(`🚪 User logged out: ${user.username}`);
-    }
-    res.json({ success: true });
-  } catch (error) {
-    console.error('Logout error:', error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// ============================================================
 // API: REGISTER USER (Admin only)
 // ============================================================
 app.post('/api/auth/register', verifyToken, verifyAdmin, async (req, res) => {
@@ -298,7 +330,8 @@ app.post('/api/auth/register', verifyToken, verifyAdmin, async (req, res) => {
       displayName: displayName || username,
       role: role || 'user',
       assignedRooms: assignedRooms || [],
-      isActive: true
+      isActive: true,
+      currentDeviceId: null
     });
 
     console.log(`✅ User created: ${username} (${role})`);
@@ -428,7 +461,7 @@ app.put('/api/admin/users/:id', verifyToken, verifyAdmin, async (req, res) => {
     if (typeof isActive === 'boolean') user.isActive = isActive;
     if (newPassword && newPassword.length >= 4) {
       user.password = await bcrypt.hash(newPassword, 10);
-      user.currentDeviceId = null; // Force re-login
+      user.currentDeviceId = null;
     }
 
     await user.save();
@@ -561,7 +594,6 @@ app.post('/api/get-token', verifyToken, async (req, res) => {
     return res.status(400).json({ error: 'Room name required' });
   }
 
-  // ✅ ពិនិត្យសិទ្ធិចូលបន្ទប់
   const dbUser = await User.findById(user.id);
   if (!dbUser) return res.status(404).json({ error: 'User not found' });
 
@@ -640,7 +672,6 @@ app.get('/api/online/rooms-status', verifyToken, async (req, res) => {
       users: []
     }));
 
-    // បន្ថែម Users ក្នុងបន្ទប់
     for (const [username, data] of onlineUsers.entries()) {
       const room = status.find(r => r.roomId === data.roomId);
       if (room) room.users.push(username);
