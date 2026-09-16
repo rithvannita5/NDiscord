@@ -8,6 +8,7 @@
   <meta name="theme-color" content="#00b4d8">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2300b4d8'/%3E%3Ctext x='32' y='44' font-family='Arial' font-size='36' font-weight='bold' fill='white' text-anchor='middle'%3EVC%3C/text%3E%3C/svg%3E" type="image/svg+xml">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -248,7 +249,9 @@
     .lobby-card button.admin-btn { background: #8b5cf6; }
     .lobby-card button.admin-btn:hover { background: #7c3aed; }
     .lobby-card button.logout-btn { background: #475569; font-size: 14px; padding: 10px; }
+    .lobby-card button.logout-btn:hover { background: #334155; }
     .lobby-card button.install-btn { background: #10b981; font-size: 14px; padding: 10px; }
+    .lobby-card button.install-btn:hover { background: #059669; }
     
     /* MAIN APP */
     #app { display: none; }
@@ -287,8 +290,11 @@
       font-family: inherit;
     }
     .btn-primary { background: #00b4d8; color: #fff; }
+    .btn-primary:hover { background: #0096c7; }
     .btn-danger { background: #ef4444; color: #fff; }
+    .btn-danger:hover { background: #dc2626; }
     .btn-warning { background: #f59e0b; color: #000; }
+    .btn-warning:hover { background: #d97706; }
     .btn-purple { background: #8b5cf6; color: #fff; }
     .btn-success { background: #10b981; color: #fff; }
     .btn-secondary { background: #475569; color: #fff; }
@@ -369,7 +375,6 @@
     }
     .video-box:hover .expand-icon { opacity: 1; }
     
-    /* PARTICIPANTS */
     .participants-list {
       background: #16213e;
       padding: 20px;
@@ -426,7 +431,6 @@
     }
     #status.show { display: block; }
     
-    /* FULLSCREEN */
     #fullscreenModal {
       display: none;
       position: fixed;
@@ -469,7 +473,6 @@
     }
     .modal-body video { width: 100%; height: 100%; object-fit: contain; }
     
-    /* REMOTE REQUEST MODAL */
     #remoteRequestModal {
       display: none;
       position: fixed;
@@ -630,8 +633,8 @@
     let currentRemoteRequest = null;
     let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-    // ✅ FORCE UPDATE VERSION
-    const APP_VERSION = 'v10';
+    // ✅ FORCE UPDATE
+    const APP_VERSION = 'v11';
     if (localStorage.getItem('appVersion') !== APP_VERSION) {
       localStorage.clear();
       sessionStorage.clear();
@@ -704,17 +707,15 @@
       roleEl.textContent = currentUser.role.toUpperCase();
       roleEl.className = 'role-badge role-' + currentUser.role;
       
-      // ✅ បង្ហាញ Admin Button
       if (currentUser.role === 'admin' || currentUser.role === 'supervisor') {
         document.getElementById('adminBtn').style.display = 'block';
       }
       
-      // ✅ Load rooms
       await loadMyRooms();
     }
 
     // ============================================================
-    // ✅ LOAD ROOMS (Assigned only)
+    // LOAD ROOMS
     // ============================================================
     async function loadMyRooms() {
       try {
@@ -731,7 +732,6 @@
           return;
         }
         
-        // ទាញ Online Status
         const statusRes = await fetch('/api/online/rooms-status', {
           headers: { 'Authorization': `Bearer ${authToken}` }
         });
@@ -878,40 +878,47 @@
       pendingLoginData = null;
     }
 
+    // ============================================================
+    // ✅ LOGOUT - កែតម្រូវឱ្យ Reset Device
+    // ============================================================
     async function logout() {
-  if (!confirm('ចាកចេញពីគណនីទេ?')) return;
-  
-  // ✅ ជូនដំណឹង Server ដើម្បី Reset Device
-  try {
-    await fetch('/api/auth/logout', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authToken}`
+      if (!confirm('ចាកចេញពីគណនីទេ?')) return;
+      
+      // ✅ ជូនដំណឹង Server ដើម្បី Reset Device
+      try {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+      } catch (e) {
+        console.log('Logout API error:', e);
       }
-    });
-  } catch (e) {
-    console.log('Logout API error:', e);
-  }
-  
-  if (room) leaveRoom();
-  
-  // ✅ Clear ទាំងអស់ រួមទាំង deviceId
-  authToken = null;
-  currentUser = null;
-  localStorage.removeItem('authToken');
-  localStorage.removeItem('currentUser');
-  localStorage.removeItem('deviceId'); // ✅ សំខាន់!
-  
-  document.getElementById('loginUsername').value = '';
-  document.getElementById('loginPassword').value = '';
-  
-  showLogin();
-  showStatus('🚪 បានចាកចេញពីគណនី');
-}
+      
+      if (room) leaveRoom();
+      
+      // ✅ Clear ទាំងអស់
+      authToken = null;
+      currentUser = null;
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('deviceId'); // ✅ សំខាន់!
+      
+      document.getElementById('loginUsername').value = '';
+      document.getElementById('loginPassword').value = '';
+      
+      showLogin();
+      showStatus('🚪 បានចាកចេញពីគណនី');
+    }
+
+    function openAdmin() {
+      window.open('/admin.html', '_blank');
+    }
 
     // ============================================================
-    // ✅ JOIN ROOM (Auto-enable screen share for users)
+    // JOIN ROOM
     // ============================================================
     async function joinRoom(roomName) {
       showStatus('⏳ កំពុងភ្ជាប់...');
@@ -943,7 +950,6 @@
         
         localParticipant = room.localParticipant;
 
-        // ✅ Auto-enable Mic
         try {
           await localParticipant.setMicrophoneEnabled(true);
           isMicOn = true;
@@ -956,7 +962,6 @@
           displayRemoteTracks(participant);
         });
 
-        // ✅ Notify Server
         await fetch('/api/online/join', {
           method: 'POST',
           headers: { 
@@ -975,7 +980,6 @@
         updateMediaButtons();
         showStatus('✅ ភ្ជាប់ជោគជ័យ!');
         
-        // ✅ Check for pending remote requests
         setTimeout(checkRemoteRequests, 2000);
 
       } catch (error) {
@@ -984,11 +988,6 @@
       }
     }
 
-    // ============================================================
-    // ✅ AUTO SCREEN SHARE FOR NORMAL USER
-    // ============================================================
-    // (Called after joining - user can click button)
-    
     function displayLocalTracks(username) {
       try {
         const videoPublications = Array.from(localParticipant.videoTrackPublications.values());
@@ -1081,7 +1080,7 @@
       if (box) {
         const oldVideo = box.querySelector('video');
         if (oldVideo && oldVideo.srcObject && oldVideo.srcObject.id === track.mediaStreamTrack.id) {
-          return; // Same track - skip
+          return;
         }
         if (oldVideo) oldVideo.remove();
         
@@ -1248,7 +1247,7 @@
     }
 
     // ============================================================
-    // ✅ REMOTE CONTROL
+    // REMOTE CONTROL
     // ============================================================
     async function requestRemote(targetName) {
       if (!confirm(`ស្នើសុំគ្រប់គ្រង Screen របស់ ${targetName}?`)) return;
@@ -1268,7 +1267,7 @@
         });
         
         if (res.ok) {
-          showStatus('📨 ស្នើសុំរួចរាល់! រង់ចាំការអនុញ្ញាត...');
+          showStatus('📨 ស្នើសុំរួចរាល់!');
         }
       } catch (error) {
         showStatus('❌ មិនអាចស្នើសុំបានទេ');
@@ -1328,7 +1327,6 @@
       } catch (error) {}
     }
 
-    // Check for remote requests every 5 seconds
     setInterval(() => {
       if (room && currentUser) checkRemoteRequests();
     }, 5000);
@@ -1343,7 +1341,6 @@
         localParticipant = null;
       }
       
-      // Notify server
       try {
         await fetch('/api/online/leave', {
           method: 'POST',
@@ -1377,7 +1374,6 @@
       status.timeout = setTimeout(() => status.classList.remove('show'), 4000);
     }
 
-    // Enter shortcuts
     document.getElementById('loginPassword').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') login();
     });
