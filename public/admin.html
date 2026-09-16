@@ -352,7 +352,6 @@
 
     <!-- Tab: Create -->
     <div id="tab-create" class="tab-content">
-      <!-- Create User -->
       <div class="card">
         <h2>➕ បង្កើតអ្នកប្រើថ្មី</h2>
         <div class="form-grid">
@@ -372,7 +371,6 @@
         <button class="btn btn-success" onclick="createUser()">➕ បង្កើត User</button>
       </div>
 
-      <!-- Create Room -->
       <div class="card">
         <h2>➕ បង្កើតបន្ទប់ថ្មី</h2>
         <div class="form-grid">
@@ -396,7 +394,6 @@
     document.getElementById('adminName').textContent = user.displayName || user.username;
     document.getElementById('adminRole').innerHTML = `<span class="badge badge-${user.role}">${user.role.toUpperCase()}</span>`;
 
-    // ✅ Supervisor មិនអាចបង្កើត User បានទេ
     if (user.role === 'supervisor') {
       document.getElementById('createTabBtn').style.display = 'none';
     }
@@ -435,7 +432,7 @@
     }
 
     // ============================================================
-    // ROOMS MONITOR - ✅ អាចចុចចូលបន្ទប់
+    // ROOMS MONITOR
     // ============================================================
     async function loadRoomsMonitor() {
       try {
@@ -470,58 +467,60 @@
       } catch (error) {}
     }
 
-    // ✅ ចុចលើបន្ទប់ → ចូលបន្ទប់ភ្លាម (មិនត្រូវការ Redirect)
-async function joinRoomFromAdmin(roomId) {
-  console.log('🚀 Joining room from admin:', roomId);
-  
-  // ✅ Unlock Audio មុនពេល Redirect
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    if (ctx.state === 'suspended') {
-      await ctx.resume();
+    // ✅ ចុចលើបន្ទប់ → ចូលបន្ទប់ភ្លាម
+    async function joinRoomFromAdmin(roomId) {
+      console.log('🚀 Joining room from admin:', roomId);
+      
+      // ✅ Unlock Audio មុនពេល Redirect
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (ctx.state === 'suspended') {
+          await ctx.resume();
+        }
+        
+        // លេងសំឡេង Silent ដើម្បី Unlock
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        gain.gain.value = 0;
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.01);
+        
+        console.log('🔊 Audio unlocked from admin');
+      } catch (e) {
+        console.log('Audio unlock error:', e);
+      }
+      
+      // បង្ហាញ Loading
+      const overlay = document.createElement('div');
+      overlay.style.cssText = `
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.9);
+        z-index: 99999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        gap: 20px;
+      `;
+      overlay.innerHTML = `
+        <div style="width:60px; height:60px; border:5px solid rgba(72,202,228,0.2); border-top-color:#48cae4; border-radius:50%; animation: spin 1s linear infinite;"></div>
+        <div style="color:#48cae4; font-size:18px; font-weight:600;">⏳ កំពុងចូលបន្ទប់ ${roomId}...</div>
+        <div style="color:#94a3b8; font-size:14px;">សូមរង់ចាំបន្តិច</div>
+        <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+      `;
+      document.body.appendChild(overlay);
+      
+      // ✅ Save autoJoinRoom + audioUnlocked
+      localStorage.setItem('autoJoinRoom', roomId);
+      localStorage.setItem('audioUnlocked', 'true');
+      
+      setTimeout(() => {
+        window.location.href = '/?autoJoin=' + roomId;
+      }, 500);
     }
-    
-    // លេងសំឡេង Silent ដើម្បី Unlock
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    gain.gain.value = 0; // សំឡេងស្ងាត់
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.01);
-    
-    console.log('🔊 Audio unlocked from admin');
-  } catch (e) {
-    console.log('Audio unlock error:', e);
-  }
-  
-  // បង្ហាញ Loading
-  const overlay = document.createElement('div');
-  overlay.style.cssText = `
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.85);
-    z-index: 99999;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    gap: 20px;
-  `;
-  overlay.innerHTML = `
-    <div style="width:60px; height:60px; border:5px solid rgba(72,202,228,0.2); border-top-color:#48cae4; border-radius:50%; animation: spin 1s linear infinite;"></div>
-    <div style="color:#48cae4; font-size:18px; font-weight:600;">⏳ កំពុងចូលបន្ទប់ ${roomId}...</div>
-  `;
-  document.body.appendChild(overlay);
-  
-  // ✅ បញ្ជូនទៅ index.html ជាមួយ autoJoin
-  localStorage.setItem('autoJoinRoom', roomId);
-  localStorage.setItem('audioUnlocked', 'true'); // ✅ Save ថា Audio Unlocked
-  
-  setTimeout(() => {
-    window.location.href = '/?autoJoin=' + roomId;
-  }, 500);
-}
 
     // ============================================================
     // USERS
@@ -540,7 +539,6 @@ async function joinRoomFromAdmin(roomId) {
           const tr = document.createElement('tr');
           const roomsText = u.assignedRooms.includes('*') ? 'ទាំងអស់' : (u.assignedRooms.join(', ') || 'គ្មាន');
           
-          // ✅ Supervisor មិនអាចកែ Admin បានទេ
           const canEdit = !(user.role === 'supervisor' && u.role === 'admin');
           
           let actions = '';
@@ -598,10 +596,7 @@ async function joinRoomFromAdmin(roomId) {
       try {
         const res = await fetch(`/api/admin/users/${id}`, {
           method: 'PUT',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}` 
-          },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ newPassword })
         });
         if (!res.ok) throw new Error('Failed');
@@ -685,10 +680,7 @@ async function joinRoomFromAdmin(roomId) {
       try {
         const res = await fetch('/api/auth/register', {
           method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}` 
-          },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ username, password, displayName, role, assignedRooms })
         });
         const data = await res.json();
@@ -717,10 +709,7 @@ async function joinRoomFromAdmin(roomId) {
       try {
         const res = await fetch('/api/admin/rooms', {
           method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}` 
-          },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ roomId, roomName })
         });
         const data = await res.json();
@@ -745,10 +734,7 @@ async function joinRoomFromAdmin(roomId) {
       try {
         await fetch('/api/auth/logout', {
           method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
         });
       } catch (e) {}
       
@@ -758,9 +744,7 @@ async function joinRoomFromAdmin(roomId) {
       window.location.href = '/';
     }
 
-    // ============================================================
     // INITIAL LOAD
-    // ============================================================
     loadStats();
     loadRoomsMonitor();
     
