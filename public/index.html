@@ -702,13 +702,26 @@
 // ✅ POST LOGIN HANDLER (មាន Auto-Join Room)
 // ============================================================
 async function handlePostLogin(selectedRoom) {
-  // ✅ ពិនិត្យ autoJoinRoom ជាមុន (Admin ចុចចូលបន្ទប់)
-  const autoJoin = localStorage.getItem('autoJoinRoom');
+  // ✅ ជាដំបូង: ពិនិត្យ autoJoinRoom ឬ URL parameter
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlRoom = urlParams.get('autoJoin');
+  const autoJoinRoom = urlRoom || localStorage.getItem('autoJoinRoom');
   
-  if (autoJoin) {
+  if (autoJoinRoom) {
+    console.log('🚀 Auto-joining room:', autoJoinRoom);
+    
+    // ✅ លុប autoJoinRoom ចេញបន្ទាប់ពីប្រើរួច
     localStorage.removeItem('autoJoinRoom');
-    console.log('🚀 Auto-joining room:', autoJoin);
-    await joinRoom(autoJoin);
+    localStorage.removeItem('autoJoinFromAdmin');
+    
+    // ✅ ចូលបន្ទប់ភ្លាម ដោយមិនពិនិត្យ Role
+    await joinRoom(autoJoinRoom);
+    
+    // ✅ លុប URL parameter
+    if (urlRoom) {
+      window.history.replaceState({}, '', '/');
+    }
+    
     return;
   }
   
@@ -743,7 +756,6 @@ async function handlePostLogin(selectedRoom) {
     }
   }
 }
-
     async function verifyOTP() {
       const otp = document.getElementById('otpInput').value.trim();
       if (!otp || otp.length !== 6) return alert('បញ្ចូល ៦ ខ្ទង់!');
