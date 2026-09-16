@@ -1,7 +1,6 @@
 {
   "name": "livekit-meeting",
-  "version": "1.0.0",
-  "description": "Video Conference with LiveKit and User Management",
+  "version": "2.0.0",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
