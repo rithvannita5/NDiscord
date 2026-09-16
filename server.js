@@ -178,58 +178,34 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'ឈ្មោះ ឬលេខសម្ងាត់មិនត្រឹមត្រូវ!' });
     }
 
-    // 2FA Check
-    if (user.currentDeviceId && user.currentDeviceId !== deviceId) {
-      const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      otpStore.set(username, {
-        otp: otp,
-        expiresAt: Date.now() + (5 * 60 * 1000),
-        deviceId: deviceId
-      });
+    // ============================================================
+// 2FA Check - កែឱ្យឆ្លាតជាងនេះ
+// ============================================================
+// ពិនិត្យថាតើមាន Device ផ្សេងកំពុង Online ពិតប្រាកដឬអត់
+const isOtherDeviceOnline = user.currentDeviceId && 
+                            user.currentDeviceId !== deviceId &&
+                            user.lastLogin && 
+                            (Date.now() - new Date(user.lastLogin).getTime()) < (30 * 60 * 1000); // 30 នាទី
 
-      console.log(`🔐 2FA Required for ${username}. OTP: ${otp}`);
-      
-      return res.json({
-        requires2FA: true,
-        message: 'គណនីកំពុង Online នៅឧបករណ៍ផ្សេង!',
-        debugOtp: otp
-      });
-    }
+if (isOtherDeviceOnline) {
+  // មាន Device ផ្សេងកំពុង Online ក្នុងរយៈពេល 30 នាទីចុងក្រោយ
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  otpStore.set(username, {
+    otp: otp,
+    expiresAt: Date.now() + (5 * 60 * 1000),
+    deviceId: deviceId
+  });
 
-    user.currentDeviceId = deviceId || 'unknown';
-    user.lastLogin = new Date();
-    await user.save();
+  console.log(`🔐 2FA Required for ${username}. OTP: ${otp}`);
+  
+  return res.json({
+    requires2FA: true,
+    message: 'គណនីកំពុង Online នៅឧបករណ៍ផ្សេង!',
+    debugOtp: otp
+  });
+}
 
-    const token = jwt.sign(
-      {
-        id: user._id,
-        username: user.username,
-        displayName: user.displayName,
-        role: user.role,
-        assignedRooms: user.assignedRooms
-      },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-
-    console.log(`✅ User logged in: ${username} (${user.role})`);
-    res.json({
-      success: true,
-      token,
-      user: {
-        id: user._id,
-        username: user.username,
-        displayName: user.displayName,
-        role: user.role,
-        assignedRooms: user.assignedRooms
-      }
-    });
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
+// ✅ ប្រសិនបើគ្មាន Device ផ្សេង Online → Login បានភ្លាម
 // ============================================================
 // API: VERIFY OTP
 // ============================================================
@@ -277,6 +253,24 @@ app.post('/api/auth/verify-otp', async (req, res) => {
       }
     });
   } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ============================================================
+// API: LOGOUT (Reset Device ID)
+// ============================================================
+app.post('/api/auth/logout', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (user) {
+      user.currentDeviceId = null; // ✅ Reset Device
+      await user.save();
+      console.log(`🚪 User logged out: ${user.username}`);
+    }
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Logout error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
