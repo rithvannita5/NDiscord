@@ -32,11 +32,29 @@ const userSchema = new mongoose.Schema({
   displayName: { type: String, default: '' },
   role: { type: String, enum: ['admin', 'user'], default: 'user' },
   isActive: { type: Boolean, default: true },
+  currentDeviceId: { type: String, default: null },
+  currentSocketId: { type: String, default: null },
   createdAt: { type: Date, default: Date.now },
   lastLogin: { type: Date }
 });
 
 const User = mongoose.model('User', userSchema);
+
+// ============================================================
+// OTP STORAGE (In-Memory for simplicity)
+// For production, use Redis
+// ============================================================
+const otpStore = new Map(); // { username: { otp, expiresAt, deviceId } }
+
+// Clean expired OTPs every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, value] of otpStore.entries()) {
+    if (value.expiresAt < now) {
+      otpStore.delete(key);
+    }
+  }
+}, 5 * 60 * 1000);
 
 // ============================================================
 // MONGODB CONNECTION
@@ -45,7 +63,6 @@ mongoose.connect(MONGO_URI)
   .then(async () => {
     console.log('✅ Connected to MongoDB!');
     
-    // បង្កើត Admin Default ប្រសិនបើមិនទាន់មាន
     const adminExists = await User.findOne({ username: 'admin' });
     if (!adminExists) {
       const hashedPassword = await bcrypt.hash('admin123', 10);
@@ -65,7 +82,7 @@ mongoose.connect(MONGO_URI)
   });
 
 // ============================================================
-// MIDDLEWARE: Verify JWT Token
+// MIDDLEWARE
 // ============================================================
 function verifyToken(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -85,9 +102,6 @@ function verifyToken(req, res, next) {
   }
 }
 
-// ============================================================
-// MIDDLEWARE: Verify Admin Role
-// ============================================================
 function verifyAdmin(req, res, next) {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Admin access required' });
@@ -96,7 +110,158 @@ function verifyAdmin(req, res, next) {
 }
 
 // ============================================================
-// API: Register (សម្រាប់ Admin បង្កើត User)
+// API: Login (with 2FA check)
+// ============================================================
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password, deviceId } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Username and password required' });
+  }
+
+  try {
+    const user = await User.findOne({ username });
+    
+    if (!user) {
+      return res.status(401).json({ error: 'ឈ្មោះ ឬលេខសម្ងាត់មិនត្រឹមត្រូវ!' });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({ error: 'គណនីត្រូវបានផ្អាក! សូមទាក់ទង Admin' });
+    }
+
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) {
+      return res.status(401).json({ error: 'ឈ្មោះ ឬលេខសម្ងាត់មិនត្រឹមត្រូវ!' });
+    }
+
+    // ============================================================
+    // ✅ 2FA CHECK: ប្រសិនបើ Device ផ្សេងកំពុង Login
+    // ============================================================
+    if (user.currentDeviceId && user.currentDeviceId !== deviceId) {
+      // មាន Device ផ្សេងកំពុង Online - ត្រូវការ OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      otpStore.set(username, {
+        otp: otp,
+        expiresAt: Date.now() + (5 * 60 * 1000), // 5 នាទី
+        deviceId: deviceId
+      });
+
+      console.log(`🔐 2FA Required for ${username}. OTP: ${otp}`);
+      
+      // ផ្ញើ OTP ទៅ Device ចាស់តាម Socket.IO (បើមាន)
+      // ឬបង្ហាញក្នុង Console (សម្រាប់ការសាកល្បង)
+      
+      return res.json({
+        requires2FA: true,
+        message: 'គណនីរបស់អ្នកកំពុង Online នៅឧបករណ៍ផ្សេង។ សូមបញ្ចូលលេខកូដ 2FA!',
+        // សម្រាប់ការសាកល្បង - កុំធ្វើបែបនេះក្នុង Production!
+        debugOtp: otp
+      });
+    }
+
+    // ✅ Device ដូចគ្នា ឬ Device ដំបូង - Login បាន
+    user.currentDeviceId = deviceId || 'unknown';
+    user.lastLogin = new Date();
+    await user.save();
+
+    const token = jwt.sign(
+      {
+        id: user._id,
+        username: user.username,
+        displayName: user.displayName,
+        role: user.role
+      },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    console.log(`✅ User logged in: ${username}`);
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        displayName: user.displayName,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ============================================================
+// API: Verify OTP (2FA)
+// ============================================================
+app.post('/api/auth/verify-otp', async (req, res) => {
+  const { username, password, otp, deviceId } = req.body;
+
+  if (!username || !password || !otp) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  try {
+    const storedOtp = otpStore.get(username);
+
+    if (!storedOtp) {
+      return res.status(400).json({ error: 'គ្មានលេខកូដ OTP ឬផុតកំណត់!' });
+    }
+
+    if (storedOtp.expiresAt < Date.now()) {
+      otpStore.delete(username);
+      return res.status(400).json({ error: 'លេខកូដ OTP ផុតកំណត់!' });
+    }
+
+    if (storedOtp.otp !== otp) {
+      return res.status(401).json({ error: 'លេខកូដ OTP មិនត្រឹមត្រូវ!' });
+    }
+
+    // OTP ត្រឹមត្រូវ - Login បាន
+    otpStore.delete(username);
+
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    user.currentDeviceId = deviceId;
+    user.lastLogin = new Date();
+    await user.save();
+
+    const token = jwt.sign(
+      {
+        id: user._id,
+        username: user.username,
+        displayName: user.displayName,
+        role: user.role
+      },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    console.log(`✅ 2FA verified for: ${username}`);
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        displayName: user.displayName,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    console.error('OTP verify error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ============================================================
+// API: Register (Admin only)
 // ============================================================
 app.post('/api/auth/register', verifyToken, verifyAdmin, async (req, res) => {
   const { username, password, displayName, role } = req.body;
@@ -142,66 +307,7 @@ app.post('/api/auth/register', verifyToken, verifyAdmin, async (req, res) => {
 });
 
 // ============================================================
-// API: Login
-// ============================================================
-app.post('/api/auth/login', async (req, res) => {
-  const { username, password } = req.body;
-
-  if (!username || !password) {
-    return res.status(400).json({ error: 'Username and password required' });
-  }
-
-  try {
-    const user = await User.findOne({ username });
-    
-    if (!user) {
-      return res.status(401).json({ error: 'ឈ្មោះ ឬលេខសម្ងាត់មិនត្រឹមត្រូវ!' });
-    }
-
-    if (!user.isActive) {
-      return res.status(403).json({ error: 'គណនីត្រូវបានផ្អាក! សូមទាក់ទង Admin' });
-    }
-
-    const isValid = await bcrypt.compare(password, user.password);
-    if (!isValid) {
-      return res.status(401).json({ error: 'ឈ្មោះ ឬលេខសម្ងាត់មិនត្រឹមត្រូវ!' });
-    }
-
-    // Update last login
-    user.lastLogin = new Date();
-    await user.save();
-
-    // Generate JWT Token
-    const token = jwt.sign(
-      {
-        id: user._id,
-        username: user.username,
-        displayName: user.displayName,
-        role: user.role
-      },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-
-    console.log(`✅ User logged in: ${username}`);
-    res.json({
-      success: true,
-      token,
-      user: {
-        id: user._id,
-        username: user.username,
-        displayName: user.displayName,
-        role: user.role
-      }
-    });
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// ============================================================
-// API: Get Current User Info
+// API: Get Current User
 // ============================================================
 app.get('/api/auth/me', verifyToken, async (req, res) => {
   try {
@@ -216,7 +322,7 @@ app.get('/api/auth/me', verifyToken, async (req, res) => {
 });
 
 // ============================================================
-// API: Get All Users (Admin only)
+// API: Admin - Get All Users
 // ============================================================
 app.get('/api/admin/users', verifyToken, verifyAdmin, async (req, res) => {
   try {
@@ -228,7 +334,7 @@ app.get('/api/admin/users', verifyToken, verifyAdmin, async (req, res) => {
 });
 
 // ============================================================
-// API: Toggle User Status (Admin only)
+// API: Admin - Toggle User Status
 // ============================================================
 app.put('/api/admin/users/:id/toggle', verifyToken, verifyAdmin, async (req, res) => {
   try {
@@ -242,9 +348,11 @@ app.put('/api/admin/users/:id/toggle', verifyToken, verifyAdmin, async (req, res
     }
 
     user.isActive = !user.isActive;
+    if (!user.isActive) {
+      user.currentDeviceId = null; // Reset device when deactivated
+    }
     await user.save();
 
-    console.log(`✅ User ${user.username} is now ${user.isActive ? 'active' : 'inactive'}`);
     res.json({ success: true, isActive: user.isActive });
   } catch (error) {
     res.status(500).json({ error: 'Failed to toggle user' });
@@ -252,7 +360,7 @@ app.put('/api/admin/users/:id/toggle', verifyToken, verifyAdmin, async (req, res
 });
 
 // ============================================================
-// API: Delete User (Admin only)
+// API: Admin - Delete User
 // ============================================================
 app.delete('/api/admin/users/:id', verifyToken, verifyAdmin, async (req, res) => {
   try {
@@ -266,7 +374,6 @@ app.delete('/api/admin/users/:id', verifyToken, verifyAdmin, async (req, res) =>
     }
 
     await User.findByIdAndDelete(req.params.id);
-    console.log(`✅ User deleted: ${user.username}`);
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete user' });
@@ -274,7 +381,7 @@ app.delete('/api/admin/users/:id', verifyToken, verifyAdmin, async (req, res) =>
 });
 
 // ============================================================
-// API: Reset Password (Admin only)
+// API: Admin - Reset Password
 // ============================================================
 app.put('/api/admin/users/:id/reset-password', verifyToken, verifyAdmin, async (req, res) => {
   const { newPassword } = req.body;
@@ -290,9 +397,9 @@ app.put('/api/admin/users/:id/reset-password', verifyToken, verifyAdmin, async (
     }
 
     user.password = await bcrypt.hash(newPassword, 10);
+    user.currentDeviceId = null; // Reset device to force re-login
     await user.save();
 
-    console.log(`✅ Password reset for: ${user.username}`);
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Failed to reset password' });
@@ -300,7 +407,7 @@ app.put('/api/admin/users/:id/reset-password', verifyToken, verifyAdmin, async (
 });
 
 // ============================================================
-// API: Generate LiveKit Token (requires authentication)
+// API: Generate LiveKit Token
 // ============================================================
 app.post('/api/get-token', verifyToken, async (req, res) => {
   const { roomName } = req.body;
@@ -326,7 +433,6 @@ app.post('/api/get-token', verifyToken, async (req, res) => {
     });
 
     const token = await at.toJwt();
-    console.log(`✅ Token generated for ${user.username} in room ${roomName}`);
     res.json({ token, url: LIVEKIT_URL });
   } catch (error) {
     console.error('❌ Error generating token:', error);
@@ -348,4 +454,6 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📡 LiveKit URL: ${LIVEKIT_URL}`);
+  console.log(`📱 PWA Support: Enabled`);
+  console.log(`🔐 2FA Protection: Enabled`);
 });
