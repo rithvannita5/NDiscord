@@ -11,6 +11,9 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Kantumruy Pro', 'Segoe UI', sans-serif; }
     body { background: #1a1a2e; color: #fff; min-height: 100vh; padding: 20px; }
     
+    /* ============================================================
+       LOGIN SCREEN
+       ============================================================ */
     #login-screen {
       display: flex;
       flex-direction: column;
@@ -19,8 +22,22 @@
       min-height: 100vh;
       gap: 15px;
     }
-    #login-screen h1 { color: #48cae4; margin-bottom: 20px; font-size: 32px; text-align: center; }
-    #login-screen input {
+    .login-card {
+      background: #16213e;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      width: 100%;
+      max-width: 420px;
+      border: 1px solid #2d2d44;
+    }
+    .login-card h1 { 
+      color: #48cae4; 
+      margin-bottom: 25px; 
+      font-size: 28px;
+      text-align: center;
+    }
+    .login-card input {
       padding: 14px 20px;
       border-radius: 8px;
       border: 1px solid #3a506b;
@@ -28,11 +45,11 @@
       color: #fff;
       font-size: 16px;
       width: 100%;
-      max-width: 400px;
       outline: none;
+      margin-bottom: 15px;
     }
-    #login-screen input:focus { border-color: #48cae4; }
-    #login-screen button {
+    .login-card input:focus { border-color: #48cae4; }
+    .login-card button {
       padding: 14px 40px;
       background: #00b4d8;
       color: #fff;
@@ -43,11 +60,92 @@
       cursor: pointer;
       transition: 0.2s;
       width: 100%;
-      max-width: 400px;
+      margin-top: 10px;
     }
-    #login-screen button:hover { background: #0096c7; }
-    #login-screen button:disabled { background: #475569; cursor: not-allowed; }
+    .login-card button:hover { background: #0096c7; }
+    .login-card button:disabled { background: #475569; cursor: not-allowed; }
+    .error-message {
+      color: #ef4444;
+      font-size: 14px;
+      text-align: center;
+      padding: 10px;
+      background: rgba(239, 68, 68, 0.1);
+      border-radius: 8px;
+      display: none;
+      margin-bottom: 15px;
+    }
+    .error-message.show { display: block; }
     
+    /* ============================================================
+       LOBBY SCREEN (បន្ទាប់ពី Login)
+       ============================================================ */
+    #lobby-screen {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      gap: 20px;
+    }
+    .lobby-card {
+      background: #16213e;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      width: 100%;
+      max-width: 420px;
+      border: 1px solid #2d2d44;
+      text-align: center;
+    }
+    .lobby-card h1 { color: #48cae4; margin-bottom: 15px; font-size: 24px; }
+    .user-info {
+      background: #0b132b;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+    .user-info strong { color: #48cae4; }
+    .lobby-card input {
+      padding: 14px 20px;
+      border-radius: 8px;
+      border: 1px solid #3a506b;
+      background: #0b132b;
+      color: #fff;
+      font-size: 16px;
+      width: 100%;
+      outline: none;
+      margin-bottom: 15px;
+    }
+    .lobby-card input:focus { border-color: #48cae4; }
+    .lobby-card button {
+      padding: 14px 40px;
+      background: #00b4d8;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+    .lobby-card button:hover { background: #0096c7; }
+    .lobby-card button.admin-btn {
+      background: #8b5cf6;
+    }
+    .lobby-card button.admin-btn:hover { background: #7c3aed; }
+    .lobby-card button.logout-btn {
+      background: #475569;
+      font-size: 14px;
+      padding: 10px;
+    }
+    .lobby-card button.logout-btn:hover { background: #334155; }
+    
+    /* ============================================================
+       MAIN APP
+       ============================================================ */
     #app { display: none; }
     #app.active { display: block; }
     
@@ -63,6 +161,13 @@
       gap: 15px;
     }
     .header h2 { color: #48cae4; font-size: 18px; }
+    .header .user-badge {
+      background: #0b132b;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #94a3b8;
+    }
     
     .controls { display: flex; gap: 10px; flex-wrap: wrap; }
     .controls button {
@@ -81,8 +186,8 @@
     .btn-danger:hover { background: #dc2626; }
     .btn-warning { background: #f59e0b; color: #000; }
     .btn-warning:hover { background: #d97706; }
-    .btn-success { background: #10b981; color: #fff; }
-    .btn-success:hover { background: #059669; }
+    .btn-purple { background: #8b5cf6; color: #fff; }
+    .btn-purple:hover { background: #7c3aed; }
     .controls button.off { background: #ef4444; color: #fff; }
     
     .section-title {
@@ -199,22 +304,50 @@
       .header { flex-direction: column; align-items: flex-start; }
       .controls { width: 100%; }
       .controls button { flex: 1; padding: 10px; font-size: 12px; }
-      #login-screen h1 { font-size: 24px; }
+      .login-card, .lobby-card { padding: 25px; }
     }
   </style>
 </head>
 <body>
 
+  <!-- ============================================================
+       LOGIN SCREEN
+       ============================================================ -->
   <div id="login-screen">
-    <h1>🎥 Video Conference</h1>
-    <input type="text" id="roomNameInput" placeholder="ឈ្មោះបន្ទប់ (ឧ. meeting-1)" value="meeting-1">
-    <input type="text" id="usernameInput" placeholder="ឈ្មោះរបស់អ្នក">
-    <button id="joinBtn" onclick="joinRoom()">🚀 ចូលបន្ទប់</button>
+    <div class="login-card">
+      <h1>🔐 ចូលប្រើប្រាស់</h1>
+      <div id="login-error" class="error-message"></div>
+      <input type="text" id="loginUsername" placeholder="ឈ្មោះអ្នកប្រើ (Username)">
+      <input type="password" id="loginPassword" placeholder="លេខសម្ងាត់ (Password)">
+      <button id="loginBtn" onclick="login()">🔑 ចូល</button>
+    </div>
   </div>
 
+  <!-- ============================================================
+       LOBBY SCREEN
+       ============================================================ -->
+  <div id="lobby-screen">
+    <div class="lobby-card">
+      <h1>🎥 Video Conference</h1>
+      <div class="user-info">
+        👤 សូមស្វាគមន៍ <strong id="lobbyUsername">-</strong>
+      </div>
+      <input type="text" id="roomNameInput" placeholder="ឈ្មោះបន្ទប់ (ឧ. meeting-1)" value="meeting-1">
+      <button onclick="joinRoom()">🚀 ចូលបន្ទប់</button>
+      <button id="adminBtn" class="admin-btn" onclick="openAdmin()" style="display:none;">👑 គ្រប់គ្រង Users</button>
+      <button class="logout-btn" onclick="logout()">🚪 ចាកចេញពីគណនី</button>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MAIN APP
+       ============================================================ -->
   <div id="app">
     <div class="header">
-      <h2>🎥 បន្ទប់: <span id="currentRoom">-</span></h2>
+      <div>
+        <h2>🎥 បន្ទប់: <span id="currentRoom">-</span></h2>
+        <span class="user-badge">👤 <span id="currentUser">-</span></span>
+      </div>
       <div class="controls">
         <button id="btnMic" class="btn-primary" onclick="toggleMic()">🎤 Mic On</button>
         <button id="btnCam" class="btn-primary" onclick="toggleCamera()">📹 Camera On</button>
@@ -247,34 +380,152 @@
     let isCameraOn = false;
     let isScreenSharing = false;
     let LIVEKIT_URL = 'wss://meeting-86lp77zt.livekit.cloud';
+    let authToken = null;
+    let currentUser = null;
+
+    // ============================================================
+    // CHECK SESSION ON LOAD
+    // ============================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedToken = localStorage.getItem('authToken');
+      const savedUser = localStorage.getItem('currentUser');
+      
+      if (savedToken && savedUser) {
+        authToken = savedToken;
+        currentUser = JSON.parse(savedUser);
+        showLobby();
+      } else {
+        showLogin();
+      }
+    });
+
+    // ============================================================
+    // SHOW/HIDE SCREENS
+    // ============================================================
+    function showLogin() {
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('lobby-screen').style.display = 'none';
+      document.getElementById('app').classList.remove('active');
+    }
+
+    function showLobby() {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('lobby-screen').style.display = 'flex';
+      document.getElementById('app').classList.remove('active');
+      
+      document.getElementById('lobbyUsername').textContent = currentUser.displayName || currentUser.username;
+      
+      // បង្ហាញ Admin Button ប្រសិនបើជា Admin
+      if (currentUser.role === 'admin') {
+        document.getElementById('adminBtn').style.display = 'block';
+      } else {
+        document.getElementById('adminBtn').style.display = 'none';
+      }
+    }
+
+    // ============================================================
+    // LOGIN
+    // ============================================================
+    async function login() {
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const loginBtn = document.getElementById('loginBtn');
+      const errorDiv = document.getElementById('login-error');
+
+      errorDiv.classList.remove('show');
+
+      if (!username || !password) {
+        errorDiv.textContent = 'សូមបំពេញឈ្មោះ និងលេខសម្ងាត់!';
+        errorDiv.classList.add('show');
+        return;
+      }
+
+      loginBtn.disabled = true;
+      loginBtn.textContent = '⏳ កំពុងចូល...';
+
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Login failed');
+        }
+
+        // Save session
+        authToken = data.token;
+        currentUser = data.user;
+        localStorage.setItem('authToken', authToken);
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+        console.log('✅ Login successful:', currentUser);
+        showLobby();
+
+      } catch (error) {
+        console.error('Login error:', error);
+        errorDiv.textContent = error.message;
+        errorDiv.classList.add('show');
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.textContent = '🔑 ចូល';
+      }
+    }
+
+    // ============================================================
+    // LOGOUT
+    // ============================================================
+    function logout() {
+      if (!confirm('តើអ្នកចង់ចាកចេញពីគណនីទេ?')) return;
+      
+      authToken = null;
+      currentUser = null;
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('currentUser');
+      
+      document.getElementById('loginUsername').value = '';
+      document.getElementById('loginPassword').value = '';
+      
+      showLogin();
+      showStatus('🚪 បានចាកចេញពីគណនី');
+    }
+
+    // ============================================================
+    // OPEN ADMIN DASHBOARD
+    // ============================================================
+    function openAdmin() {
+      window.open('/admin.html', '_blank');
+    }
 
     // ============================================================
     // JOIN ROOM
     // ============================================================
     async function joinRoom() {
       const roomName = document.getElementById('roomNameInput').value.trim();
-      const username = document.getElementById('usernameInput').value.trim();
-      const joinBtn = document.getElementById('joinBtn');
       
-      if (!roomName || !username) {
-        return alert('សូមបំពេញឈ្មោះបន្ទប់ និងឈ្មោះរបស់អ្នក!');
+      if (!roomName) {
+        return alert('សូមបំពេញឈ្មោះបន្ទប់!');
       }
 
-      joinBtn.disabled = true;
-      joinBtn.textContent = '⏳ កំពុងភ្ជាប់...';
       showStatus('⏳ កំពុងភ្ជាប់...');
 
       try {
-        // ទាញយក Token ពី Backend
+        // ទាញយក Token ពី Backend (មាន Authentication)
         const response = await fetch('/api/get-token', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ roomName, participantName: username })
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({ roomName })
         });
         
         const data = await response.json();
         
-        if (!data.token) {
+        if (!response.ok) {
           throw new Error(data.error || 'Failed to get token');
         }
 
@@ -294,15 +545,11 @@
         
         localParticipant = room.localParticipant;
 
-        // ============================================================
         // ព្យាយាមបើកកាមេរ៉ា និងមេក្រូ
-        // ============================================================
         try {
           await localParticipant.enableCameraAndMicrophone();
           isCameraOn = true;
           isMicOn = true;
-          console.log('✅ Camera and microphone enabled');
-          showStatus('✅ កាមេរ៉ា និងមេក្រូ បានបើក');
         } catch (deviceError) {
           console.warn('⚠️ Camera/Mic not available:', deviceError.message);
           showStatus('⚠️ គ្មានកាមេរ៉ា/មេក្រូ - អ្នកអាច Share Screen បាន');
@@ -310,22 +557,16 @@
           try {
             await localParticipant.setMicrophoneEnabled(true);
             isMicOn = true;
-          } catch (micError) {
-            console.warn('⚠️ Microphone not available');
-            isMicOn = false;
-          }
+          } catch (e) { isMicOn = false; }
           
           try {
             await localParticipant.setCameraEnabled(true);
             isCameraOn = true;
-          } catch (camError) {
-            console.warn('⚠️ Camera not available');
-            isCameraOn = false;
-          }
+          } catch (e) { isCameraOn = false; }
         }
         
         // បង្ហាញ Local Video
-        displayLocalTracks(username);
+        displayLocalTracks(currentUser.displayName || currentUser.username);
 
         // បង្ហាញអ្នកចូលរួមផ្សេងទៀត
         room.remoteParticipants.forEach(participant => {
@@ -334,9 +575,10 @@
         });
 
         // បង្ហាញ UI
-        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('lobby-screen').style.display = 'none';
         document.getElementById('app').classList.add('active');
         document.getElementById('currentRoom').textContent = roomName;
+        document.getElementById('currentUser').textContent = currentUser.displayName || currentUser.username;
         
         updateParticipantCount();
         updateMediaButtons();
@@ -345,22 +587,14 @@
       } catch (error) {
         console.error('❌ Error joining room:', error);
         showStatus('❌ មិនអាចភ្ជាប់បានទេ: ' + error.message);
-        
-        setTimeout(() => {
-          alert('មិនអាចភ្ជាប់បានទេ!\n\nមូលហេតុដែលអាចកើតឡើង:\n- ត្រូវប្រើ HTTPS ឬ localhost\n- Token មិនត្រឹមត្រូវ\n- Server មានបញ្ហា\n\nError: ' + error.message);
-        }, 500);
-      } finally {
-        joinBtn.disabled = false;
-        joinBtn.textContent = '🚀 ចូលបន្ទប់';
       }
     }
 
     // ============================================================
-    // DISPLAY LOCAL TRACKS (ប្រើ Array.from សម្រាប់ Map)
+    // DISPLAY LOCAL TRACKS
     // ============================================================
     function displayLocalTracks(username) {
       try {
-        // ប្រើ Array.from ដើម្បីបំប្លែង Map ទៅ Array
         const videoPublications = Array.from(localParticipant.videoTrackPublications.values());
         videoPublications.forEach(pub => {
           if (pub.track) {
@@ -407,8 +641,6 @@
         addParticipantToList(participant.identity);
         updateParticipantCount();
         showStatus('👤 ' + participant.identity + ' បានចូលរួម');
-        
-        // បង្ហាញ Tracks របស់អ្នកចូលថ្មី
         setTimeout(() => displayRemoteTracks(participant), 500);
       });
 
@@ -432,7 +664,6 @@
       });
 
       room.on('trackUnsubscribed', (track, publication, participant) => {
-        console.log('📺 Track unsubscribed:', track.kind, 'from', participant.identity);
         track.detach();
         if (publication.source === 'screen_share') {
           removeVideoByParticipant(participant.identity, true);
@@ -440,7 +671,6 @@
       });
 
       room.on('localTrackPublished', (publication) => {
-        console.log('📺 Local track published:', publication.kind, publication.source);
         if (publication.source === 'screen_share' && publication.track) {
           attachVideoTrack(publication.track, localParticipant.identity + ' (អ្នក)', true);
         } else if (publication.kind === 'video' && publication.track) {
@@ -449,7 +679,6 @@
       });
 
       room.on('localTrackUnpublished', (publication) => {
-        console.log('📺 Local track unpublished:', publication.kind, publication.source);
         if (publication.source === 'screen_share') {
           removeVideoByParticipant(localParticipant.identity + ' (អ្នក)', true);
         }
@@ -502,9 +731,6 @@
       }
     }
 
-    // ============================================================
-    // REMOVE VIDEO
-    // ============================================================
     function removeVideoByParticipant(name, isScreen = false) {
       const safeName = name.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
       const box = document.getElementById((isScreen ? 'screen-' : 'video-') + safeName);
@@ -518,9 +744,6 @@
       }
     }
 
-    // ============================================================
-    // UPDATE MEDIA BUTTONS
-    // ============================================================
     function updateMediaButtons() {
       const btnMic = document.getElementById('btnMic');
       btnMic.innerHTML = isMicOn ? '🎤 Mic On' : '🔇 Mic Off';
@@ -531,62 +754,44 @@
       btnCam.className = isCameraOn ? 'btn-primary' : 'btn-primary off';
     }
 
-    // ============================================================
-    // TOGGLE MICROPHONE
-    // ============================================================
     async function toggleMic() {
       if (!localParticipant) return;
-      
       try {
         isMicOn = !isMicOn;
         await localParticipant.setMicrophoneEnabled(isMicOn);
         updateMediaButtons();
         showStatus(isMicOn ? '🎤 បើកមេក្រូ' : '🔇 បិទមេក្រូ');
       } catch (error) {
-        console.error('Mic toggle error:', error);
         isMicOn = !isMicOn;
         showStatus('⚠️ មិនអាចប្តូរមេក្រូបានទេ');
         updateMediaButtons();
       }
     }
 
-    // ============================================================
-    // TOGGLE CAMERA
-    // ============================================================
     async function toggleCamera() {
       if (!localParticipant) return;
-      
       try {
         isCameraOn = !isCameraOn;
         await localParticipant.setCameraEnabled(isCameraOn);
         updateMediaButtons();
-        
         if (!isCameraOn) {
           removeVideoByParticipant(localParticipant.identity + ' (អ្នក)', false);
         }
         showStatus(isCameraOn ? '📹 បើកកាមេរ៉ា' : '📷 បិទកាមេរ៉ា');
       } catch (error) {
-        console.error('Camera toggle error:', error);
         isCameraOn = !isCameraOn;
         showStatus('⚠️ មិនអាចប្តូរកាមេរ៉ាបានទេ');
         updateMediaButtons();
       }
     }
 
-    // ============================================================
-    // TOGGLE SCREEN SHARE
-    // ============================================================
     async function toggleScreenShare() {
       if (!localParticipant) return;
-      
       try {
         isScreenSharing = !isScreenSharing;
-        
         await localParticipant.setScreenShareEnabled(isScreenSharing, {
           audio: true,
-          video: {
-            resolution: LivekitClient.VideoPresets.h1080.resolution,
-          }
+          video: { resolution: LivekitClient.VideoPresets.h1080.resolution }
         });
         
         const btn = document.getElementById('btnScreen');
@@ -599,7 +804,6 @@
           removeVideoByParticipant(localParticipant.identity + ' (អ្នក)', true);
         }
       } catch (error) {
-        console.error('Screen share error:', error);
         isScreenSharing = false;
         const btn = document.getElementById('btnScreen');
         btn.innerHTML = '🖥️ Share Screen';
@@ -608,9 +812,6 @@
       }
     }
 
-    // ============================================================
-    // PARTICIPANTS LIST
-    // ============================================================
     function addParticipantToList(name) {
       const list = document.getElementById('participantsList');
       const safeName = name.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
@@ -640,16 +841,9 @@
       }
     }
 
-    // ============================================================
-    // LEAVE ROOM
-    // ============================================================
     async function leaveRoom() {
       if (room) {
-        try {
-          await room.disconnect();
-        } catch (e) {
-          console.error('Disconnect error:', e);
-        }
+        try { await room.disconnect(); } catch (e) {}
         room = null;
         localParticipant = null;
       }
@@ -660,7 +854,6 @@
       document.getElementById('screenTitle').style.display = 'none';
       document.getElementById('participantCount').textContent = '0';
       document.getElementById('app').classList.remove('active');
-      document.getElementById('login-screen').style.display = 'flex';
       
       isMicOn = false;
       isCameraOn = false;
@@ -673,12 +866,11 @@
       document.getElementById('btnScreen').innerHTML = '🖥️ Share Screen';
       document.getElementById('btnScreen').className = 'btn-warning';
       
+      // ត្រឡប់ទៅ Lobby
+      showLobby();
       showStatus('🚪 បានចាកចេញពីបន្ទប់');
     }
 
-    // ============================================================
-    // STATUS MESSAGE
-    // ============================================================
     function showStatus(message) {
       const status = document.getElementById('status');
       status.textContent = message;
@@ -687,14 +879,12 @@
       status.timeout = setTimeout(() => status.classList.remove('show'), 4000);
     }
 
-    // ============================================================
-    // ENTER KEY SHORTCUT
-    // ============================================================
-    document.getElementById('usernameInput').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') joinRoom();
+    // Enter key shortcuts
+    document.getElementById('loginPassword').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') login();
     });
-    document.getElementById('roomNameInput').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') document.getElementById('usernameInput').focus();
+    document.getElementById('loginUsername').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') document.getElementById('loginPassword').focus();
     });
   </script>
 </body>
