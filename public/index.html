@@ -716,6 +716,9 @@
     let remoteControllerSocketId = null;
     let remotePointer = null;
 
+    // ✅ Room presence tracking (for join/leave sound broadcast)
+    let currentRoomId = null;
+
     // Audio
     let audioContext = null;
 
@@ -954,7 +957,17 @@
     // SOCKET.IO
     // ============================================================
     function connectSocket() {
-      if (socket && socket.connected) return;
+      if (socket && socket.connected) {
+        // ✅ Socket already connected — make sure room presence is (re)announced
+        if (currentRoomId && currentUser) {
+          socket.emit('room-joined', {
+            roomId: currentRoomId,
+            username: currentUser.username,
+            displayName: currentUser.displayName || currentUser.username
+          });
+        }
+        return;
+      }
       
       socket = io({
         transports: ['polling', 'websocket'],
@@ -969,10 +982,34 @@
         if (currentUser) {
           socket.emit('register-user', { username: currentUser.username });
         }
+
+        // ✅ ប្រកាសថាកំពុងនៅបន្ទប់នេះ (គ្របដណ្តប់ករណី admin auto-join / reconnect)
+        if (currentRoomId && currentUser) {
+          socket.emit('room-joined', {
+            roomId: currentRoomId,
+            username: currentUser.username,
+            displayName: currentUser.displayName || currentUser.username
+          });
+        }
       });
 
       socket.on('disconnect', () => {
         socketConnected = false;
+      });
+
+      // ✅ Broadcast join/leave សំឡេង តាមបន្ទប់ (server-side room broadcast)
+      socket.on('room-user-joined', ({ roomId, username, displayName }) => {
+        if (roomId === currentRoomId && currentUser && username !== currentUser.username) {
+          playJoinSound();
+          showStatus('👤 ' + (displayName || username) + ' បានចូល');
+        }
+      });
+
+      socket.on('room-user-left', ({ roomId, username }) => {
+        if (roomId === currentRoomId && currentUser && username !== currentUser.username) {
+          playLeaveSound();
+          showStatus('👤 ' + username + ' បានចេញ');
+        }
       });
 
       socket.on('remote-request-received', ({ controllerName, controllerSocketId }) => {
@@ -1657,7 +1694,16 @@
         hideLoading();
         showStatus('✅ ភ្ជាប់ជោគជ័យ!');
         
+        // ✅ កំណត់បន្ទប់បច្ចុប្បន្ន រួចប្រកាសតាម Socket (សំឡេង Join សម្រាប់អ្នកផ្សេងក្នុងបន្ទប់)
+        currentRoomId = roomName;
         connectSocket();
+        if (socketConnected && socket) {
+          socket.emit('room-joined', {
+            roomId: currentRoomId,
+            username: currentUser.username,
+            displayName: currentUser.displayName || currentUser.username
+          });
+        }
 
         // ✅ Unlock Audio ក្រោយចូលបន្ទប់
         if (!audioContext) {
@@ -1714,8 +1760,8 @@
         updateParticipantCount();
         showStatus('👤 ' + participant.identity + ' បានចូល');
         
-        // ✅ លេងសំឡេង Piano
-        playJoinSound();
+        // ℹ️ សំឡេង Join/Leave ឥឡូវប្រើ Socket.IO room broadcast (មើល connectSocket())
+        // ដើម្បីធានាថាលឺទាំង admin និង user ធម្មតា ទោះបីជា LiveKit event delay ក៏ដោយ។
         
         setTimeout(() => displayRemoteTracks(participant), 500);
       });
@@ -1726,8 +1772,7 @@
         removeVideoByParticipant(participant.identity, true);
         updateParticipantCount();
         
-        // ✅ លេងសំឡេង Piano
-        playLeaveSound();
+        // ℹ️ សំឡេង Join/Leave ឥឡូវប្រើ Socket.IO room broadcast (មើល connectSocket())
       });
 
       room.on('trackSubscribed', (track, publication, participant) => {
@@ -1936,6 +1981,12 @@
     }
 
     async function leaveRoom(showLobby = true) {
+      // ✅ ប្រកាសចាកចេញតាម Socket មុនពេល disconnect ដើម្បីអោយអ្នកផ្សេងក្នុងបន្ទប់លឺសំឡេង
+      if (socket && socketConnected && currentRoomId && currentUser) {
+        socket.emit('room-left', { roomId: currentRoomId, username: currentUser.username });
+      }
+      currentRoomId = null;
+
       if (isBeingControlled) stopBeingControlled();
       if (isRemoteControlling) endRemoteControl();
       
