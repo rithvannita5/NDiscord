@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Conference - LiveKit</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Kantumruy Pro', sans-serif; }
+    body { background: #1a1a2e; color: #fff; min-height: 100vh; padding: 20px; }
+    
+    /* Login Screen */
+    #login-screen {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      gap: 15px;
+    }
+    #login-screen h1 { color: #48cae4; margin-bottom: 20px; font-size: 32px; }
+    #login-screen input {
+      padding: 14px 20px;
+      border-radius: 8px;
+      border: 1px solid #3a506b;
+      background: #0b132b;
+      color: #fff;
+      font-size: 16px;
+      width: 100%;
+      max-width: 400px;
+      outline: none;
+    }
+    #login-screen input:focus { border-color: #48cae4; }
+    #login-screen button {
+      padding: 14px 40px;
+      background: #00b4d8;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+      width: 100%;
+      max-width: 400px;
+    }
+    #login-screen button:hover { background: #0096c7; }
+    
+    /* Main App */
+    #app { display: none; }
+    #app.active { display: block; }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #16213e;
+      padding: 15px 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    .header h2 { color: #48cae4; font-size: 18px; }
+    
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .controls button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+      font-family: inherit;
+    }
+    .btn-primary { background: #00b4d8; color: #fff; }
+    .btn-primary:hover { background: #0096c7; }
+    .btn-danger { background: #ef4444; color: #fff; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-warning { background: #f59e0b; color: #000; }
+    .btn-warning:hover { background: #d97706; }
+    .btn-success { background: #10b981; color: #fff; }
+    .btn-success:hover { background: #059669; }
+    .controls button.off { background: #ef4444; color: #fff; }
+    
+    /* Video Grids */
+    .section-title {
+      font-size: 14px;
+      color: #94a3b8;
+      margin: 15px 0 10px 0;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #2d2d44;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .video-box {
+      position: relative;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      aspect-ratio: 16/9;
+      border: 2px solid #2d2d44;
+    }
+    .video-box video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .video-box.screen-share {
+      border-color: #f59e0b;
+    }
+    .video-box.screen-share video { object-fit: contain; }
+    .video-box .name-tag {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.75);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #fff;
+      font-weight: 500;
+    }
+    .video-box .status-tag {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(16, 185, 129, 0.9);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      color: #fff;
+      font-weight: bold;
+    }
+    
+    .screen-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    /* Participants */
+    .participants-list {
+      background: #16213e;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    .participants-list h3 { 
+      color: #48cae4; 
+      margin-bottom: 15px; 
+      font-size: 16px; 
+    }
+    .participant-item {
+      padding: 10px 15px;
+      background: #0b132b;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+    }
+    .participant-item .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+    }
+    
+    /* Status Message */
+    #status {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 25px;
+      background: #1c2541;
+      border: 1px solid #48cae4;
+      border-radius: 10px;
+      font-size: 14px;
+      display: none;
+      z-index: 9999;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+    #status.show { display: block; }
+    
+    @media (max-width: 768px) {
+      .video-grid, .screen-grid { grid-template-columns: 1fr; }
+      .header { flex-direction: column; align-items: flex-start; }
+      .controls { width: 100%; }
+      .controls button { flex: 1; padding: 10px; font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Login Screen -->
+  <div id="login-screen">
+    <h1>🎥 Video Conference</h1>
+    <input type="text" id="roomNameInput" placeholder="ឈ្មោះបន្ទប់ (ឧ. meeting-1)" value="meeting-1">
+    <input type="text" id="usernameInput" placeholder="ឈ្មោះរបស់អ្នក" value="">
+    <button onclick="joinRoom()">🚀 ចូលបន្ទប់</button>
+  </div>
+
+  <!-- Main App -->
+  <div id="app">
+    <div class="header">
+      <h2>🎥 បន្ទប់: <span id="currentRoom">-</span></h2>
+      <div class="controls">
+        <button id="btnMic" class="btn-primary" onclick="toggleMic()">🎤 Mic On</button>
+        <button id="btnCam" class="btn-primary" onclick="toggleCamera()">📹 Camera On</button>
+        <button id="btnScreen" class="btn-warning" onclick="toggleScreenShare()">🖥️ Share Screen</button>
+        <button class="btn-danger" onclick="leaveRoom()">🚪 ចាកចេញ</button>
+      </div>
+    </div>
+
+    <h4 class="section-title" id="screenTitle" style="display:none;">🖥️ Screen Share</h4>
+    <div class="screen-grid" id="screenGrid"></div>
+
+    <h4 class="section-title">👤 Camera & Participants</h4>
+    <div class="video-grid" id="videoGrid"></div>
+
+    <div class="participants-list">
+      <h3>👥 អ្នកចូលរួម (<span id="participantCount">0</span>)</h3>
+      <div id="participantsList"></div>
+    </div>
+  </div>
+
+  <div id="status"></div>
+
+  <script>
+    let room = null;
+    let localParticipant = null;
+    let isMicOn = true;
+    let isCameraOn = true;
+    let isScreenSharing = false;
+    let LIVEKIT_URL = 'wss://meeting-86lp77zt.livekit.cloud';
+
+    // ============================================================
+    // JOIN ROOM
+    // ============================================================
+    async function joinRoom() {
+      const roomName = document.getElementById('roomNameInput').value.trim();
+      const username = document.getElementById('usernameInput').value.trim();
+      
+      if (!roomName || !username) {
+        return alert('សូមបំពេញឈ្មោះបន្ទប់ និងឈ្មោះរបស់អ្នក!');
+      }
+
+      showStatus('⏳ កំពុងភ្ជាប់...');
+
+      try {
+        // ទាញយក Token ពី Backend
+        const response = await fetch('/api/get-token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ roomName, participantName: username })
+        });
+        
+        const data = await response.json();
+        
+        if (!data.token) {
+          throw new Error(data.error || 'Failed to get token');
+        }
+
+        // ប្រើ URL ពី Server ប្រសិនបើមាន
+        if (data.url) LIVEKIT_URL = data.url;
+
+        // បង្កើត Room
+        room = new LivekitClient.Room({
+          adaptiveStream: true,
+          dynacast: true,
+          videoCaptureDefaults: {
+            resolution: LivekitClient.VideoPresets.h720.resolution,
+          },
+        });
+
+        setupRoomEvents();
+
+        // ភ្ជាប់ទៅ LiveKit
+        await room.connect(LIVEKIT_URL, data.token);
+        console.log('✅ Connected to room:', roomName);
+        
+        localParticipant = room.localParticipant;
+
+        // បើកកាមេរ៉ា និងមេក្រូ
+        await localParticipant.enableCameraAndMicrophone();
+        
+        // បង្ហាញ Local Video
+        localParticipant.videoTracks.forEach(pub => {
+          if (pub.track) {
+            attachVideoTrack(pub.track, username + ' (អ្នក)', pub.source === 'screen_share');
+          }
+        });
+        localParticipant.audioTracks.forEach(pub => {
+          if (pub.track) pub.track.attach();
+        });
+
+        // បង្ហាញអ្នកចូលរួមផ្សេងទៀត
+        room.remoteParticipants.forEach(participant => {
+          addParticipantToList(participant.identity);
+          participant.tracks.forEach(pub => {
+            if (pub.isSubscribed && pub.track) {
+              attachVideoTrack(pub.track, participant.identity, pub.source === 'screen_share');
+            }
+          });
+        });
+
+        // បង្ហាញ UI
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app').classList.add('active');
+        document.getElementById('currentRoom').textContent = roomName;
+        
+        updateParticipantCount();
+        showStatus('✅ ភ្ជាប់បានជោគជ័យ!');
+
+      } catch (error) {
+        console.error('❌ Error joining room:', error);
+        showStatus('❌ មិនអាចភ្ជាប់បានទេ: ' + error.message);
+        setTimeout(() => {
+          alert('មិនអាចភ្ជាប់បានទេ!\n\nមូលហេតុដែលអាចកើតឡើង:\n- កាមេរ៉ា/មេក្រូ មិនត្រូវបានអនុញ្ញាត\n- ត្រូវប្រើ HTTPS ឬ localhost\n- Token មិនត្រឹមត្រូវ\n\nError: ' + error.message);
+        }, 500);
+      }
+    }
+
+    // ============================================================
+    // SETUP ROOM EVENTS
+    // ============================================================
+    function setupRoomEvents() {
+      room.on('participantConnected', (participant) => {
+        console.log('👤 Connected:', participant.identity);
+        addParticipantToList(participant.identity);
+        updateParticipantCount();
+        showStatus('👤 ' + participant.identity + ' បានចូលរួម');
+      });
+
+      room.on('participantDisconnected', (participant) => {
+        console.log('👤 Disconnected:', participant.identity);
+        removeParticipantFromList(participant.identity);
+        removeVideoByParticipant(participant.identity, false);
+        removeVideoByParticipant(participant.identity, true);
+        updateParticipantCount();
+        showStatus('👤 ' + participant.identity + ' បានចាកចេញ');
+      });
+
+      room.on('trackSubscribed', (track, publication, participant) => {
+        console.log('📺 Track subscribed:', track.kind, 'from', participant.identity);
+        if (track.kind === 'video') {
+          const isScreen = publication.source === 'screen_share';
+          attachVideoTrack(track, participant.identity, isScreen);
+        } else if (track.kind === 'audio') {
+          track.attach();
+        }
+      });
+
+      room.on('trackUnsubscribed', (track, publication, participant) => {
+        console.log('📺 Track unsubscribed:', track.kind, 'from', participant.identity);
+        track.detach();
+        if (publication.source === 'screen_share') {
+          removeVideoByParticipant(participant.identity, true);
+        }
+      });
+
+      room.on('disconnected', () => {
+        console.log('🔌 Disconnected from room');
+        leaveRoom();
+      });
+    }
+
+    // ============================================================
+    // ATTACH VIDEO TRACK
+    // ============================================================
+    function attachVideoTrack(track, name, isScreen = false) {
+      const videoElement = track.attach();
+      videoElement.autoplay = true;
+      videoElement.playsInline = true;
+      videoElement.muted = name.includes('អ្នក'); // Mute own video
+
+      const boxId = (isScreen ? 'screen-' : 'video-') + name.replace(/\s+/g, '-');
+      const gridId = isScreen ? 'screenGrid' : 'videoGrid';
+      
+      let box = document.getElementById(boxId);
+      if (box) {
+        const oldVideo = box.querySelector('video');
+        if (oldVideo) oldVideo.remove();
+        box.insertBefore(videoElement, box.firstChild);
+        return;
+      }
+
+      box = document.createElement('div');
+      box.className = 'video-box' + (isScreen ? ' screen-share' : '');
+      box.id = boxId;
+      box.innerHTML = `
+        <div class="name-tag">${isScreen ? '🖥️ ' : '👤 '}${name}</div>
+        <div class="status-tag">🟢 Live</div>
+      `;
+      box.insertBefore(videoElement, box.firstChild);
+      document.getElementById(gridId).appendChild(box);
+      
+      // បង្ហាញ Screen Title ប្រសិនបើមាន Screen Share
+      if (isScreen) {
+        document.getElementById('screenTitle').style.display = 'block';
+      }
+    }
+
+    // ============================================================
+    // REMOVE VIDEO
+    // ============================================================
+    function removeVideoByParticipant(name, isScreen = false) {
+      const box = document.getElementById((isScreen ? 'screen-' : 'video-') + name.replace(/\s+/g, '-'));
+      if (box) box.remove();
+      
+      // លាក់ Screen Title ប្រសិនបើគ្មាន Screen Share ទៀត
+      if (isScreen) {
+        const screenGrid = document.getElementById('screenGrid');
+        if (screenGrid.children.length === 0) {
+          document.getElementById('screenTitle').style.display = 'none';
+        }
+      }
+    }
+
+    // ============================================================
+    // TOGGLE MICROPHONE
+    // ============================================================
+    async function toggleMic() {
+      if (!localParticipant) return;
+      
+      try {
+        isMicOn = !isMicOn;
+        await localParticipant.setMicrophoneEnabled(isMicOn);
+        
+        const btn = document.getElementById('btnMic');
+        btn.innerHTML = isMicOn ? '🎤 Mic On' : '🔇 Mic Off';
+        btn.className = isMicOn ? 'btn-primary' : 'btn-primary off';
+        showStatus(isMicOn ? '🎤 បើកមេក្រូ' : '🔇 បិទមេក្រូ');
+      } catch (error) {
+        console.error('Mic toggle error:', error);
+      }
+    }
+
+    // ============================================================
+    // TOGGLE CAMERA
+    // ============================================================
+    async function toggleCamera() {
+      if (!localParticipant) return;
+      
+      try {
+        isCameraOn = !isCameraOn;
+        await localParticipant.setCameraEnabled(isCameraOn);
+        
+        const btn = document.getElementById('btnCam');
+        btn.innerHTML = isCameraOn ? '📹 Camera On' : '📷 Camera Off';
+        btn.className = isCameraOn ? 'btn-primary' : 'btn-primary off';
+        
+        if (!isCameraOn) {
+          removeVideoByParticipant(localParticipant.identity + ' (អ្នក)', false);
+        }
+        showStatus(isCameraOn ? '📹 បើកកាមេរ៉ា' : '📷 បិទកាមេរ៉ា');
+      } catch (error) {
+        console.error('Camera toggle error:', error);
+      }
+    }
+
+    // ============================================================
+    // TOGGLE SCREEN SHARE
+    // ============================================================
+    async function toggleScreenShare() {
+      if (!localParticipant) return;
+      
+      try {
+        isScreenSharing = !isScreenSharing;
+        
+        await localParticipant.setScreenShareEnabled(isScreenSharing, {
+          audio: true,
+          video: {
+            resolution: LivekitClient.VideoPresets.h1080.resolution,
+          }
+        });
+        
+        const btn = document.getElementById('btnScreen');
+        btn.innerHTML = isScreenSharing ? '🛑 Stop Sharing' : '🖥️ Share Screen';
+        btn.className = isScreenSharing ? 'btn-danger' : 'btn-warning';
+        
+        showStatus(isScreenSharing ? '🖥️ ចាប់ផ្តើម Share Screen' : '🖥️ បញ្ចប់ Share Screen');
+        
+        if (!isScreenSharing) {
+          removeVideoByParticipant(localParticipant.identity + ' (អ្នក)', true);
+        }
+      } catch (error) {
+        console.error('Screen share error:', error);
+        isScreenSharing = false;
+        const btn = document.getElementById('btnScreen');
+        btn.innerHTML = '🖥️ Share Screen';
+        btn.className = 'btn-warning';
+        showStatus('❌ បោះបង់ការ Share Screen');
+      }
+    }
+
+    // ============================================================
+    // PARTICIPANTS LIST
+    // ============================================================
+    function addParticipantToList(name) {
+      const list = document.getElementById('participantsList');
+      const itemId = 'p-' + name.replace(/\s+/g, '-');
+      if (document.getElementById(itemId)) return;
+      
+      const item = document.createElement('div');
+      item.className = 'participant-item';
+      item.id = itemId;
+      item.innerHTML = `<div class="dot"></div> ${name}`;
+      list.appendChild(item);
+    }
+
+    function removeParticipantFromList(name) {
+      const item = document.getElementById('p-' + name.replace(/\s+/g, '-'));
+      if (item) item.remove();
+    }
+
+    function updateParticipantCount() {
+      if (!room) return;
+      const count = room.remoteParticipants.size + 1;
+      document.getElementById('participantCount').textContent = count;
+      
+      if (localParticipant) {
+        addParticipantToList(localParticipant.identity + ' (អ្នក)');
+      }
+    }
+
+    // ============================================================
+    // LEAVE ROOM
+    // ============================================================
+    async function leaveRoom() {
+      if (room) {
+        try {
+          await room.disconnect();
+        } catch (e) {
+          console.error('Disconnect error:', e);
+        }
+        room = null;
+        localParticipant = null;
+      }
+      
+      document.getElementById('videoGrid').innerHTML = '';
+      document.getElementById('screenGrid').innerHTML = '';
+      document.getElementById('participantsList').innerHTML = '';
+      document.getElementById('screenTitle').style.display = 'none';
+      document.getElementById('participantCount').textContent = '0';
+      document.getElementById('app').classList.remove('active');
+      document.getElementById('login-screen').style.display = 'flex';
+      
+      // Reset buttons
+      document.getElementById('btnMic').innerHTML = '🎤 Mic On';
+      document.getElementById('btnMic').className = 'btn-primary';
+      document.getElementById('btnCam').innerHTML = '📹 Camera On';
+      document.getElementById('btnCam').className = 'btn-primary';
+      document.getElementById('btnScreen').innerHTML = '🖥️ Share Screen';
+      document.getElementById('btnScreen').className = 'btn-warning';
+      
+      isMicOn = true;
+      isCameraOn = true;
+      isScreenSharing = false;
+      
+      showStatus('🚪 បានចាកចេញពីបន្ទប់');
+    }
+
+    // ============================================================
+    // STATUS MESSAGE
+    // ============================================================
+    function showStatus(message) {
+      const status = document.getElementById('status');
+      status.textContent = message;
+      status.classList.add('show');
+      clearTimeout(status.timeout);
+      status.timeout = setTimeout(() => status.classList.remove('show'), 3000);
+    }
+
+    // ============================================================
+    // ENTER KEY SHORTCUT
+    // ============================================================
+    document.getElementById('usernameInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') joinRoom();
+    });
+  </script>
+</body>
+</html>
