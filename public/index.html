@@ -31,12 +31,7 @@
       max-width: 420px;
       border: 1px solid #2d2d44;
     }
-    .login-card h1 { 
-      color: #48cae4; 
-      margin-bottom: 25px; 
-      font-size: 28px;
-      text-align: center;
-    }
+    .login-card h1 { color: #48cae4; margin-bottom: 25px; font-size: 28px; text-align: center; }
     .login-card input {
       padding: 14px 20px;
       border-radius: 8px;
@@ -77,7 +72,7 @@
     .error-message.show { display: block; }
     
     /* ============================================================
-       LOBBY SCREEN (បន្ទាប់ពី Login)
+       LOBBY SCREEN
        ============================================================ */
     #lobby-screen {
       display: none;
@@ -132,9 +127,7 @@
       margin-bottom: 10px;
     }
     .lobby-card button:hover { background: #0096c7; }
-    .lobby-card button.admin-btn {
-      background: #8b5cf6;
-    }
+    .lobby-card button.admin-btn { background: #8b5cf6; }
     .lobby-card button.admin-btn:hover { background: #7c3aed; }
     .lobby-card button.logout-btn {
       background: #475569;
@@ -167,6 +160,8 @@
       border-radius: 6px;
       font-size: 13px;
       color: #94a3b8;
+      margin-top: 5px;
+      display: inline-block;
     }
     
     .controls { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -186,10 +181,11 @@
     .btn-danger:hover { background: #dc2626; }
     .btn-warning { background: #f59e0b; color: #000; }
     .btn-warning:hover { background: #d97706; }
-    .btn-purple { background: #8b5cf6; color: #fff; }
-    .btn-purple:hover { background: #7c3aed; }
     .controls button.off { background: #ef4444; color: #fff; }
     
+    /* ============================================================
+       SECTION TITLES
+       ============================================================ */
     .section-title {
       font-size: 14px;
       color: #94a3b8;
@@ -198,14 +194,34 @@
       border-bottom: 1px solid #2d2d44;
       text-transform: uppercase;
       letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     
+    /* ============================================================
+       SCREEN SHARE GRID (ខាងលើ - តូចៗ)
+       ============================================================ */
+    .screen-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+    
+    /* ============================================================
+       VIDEO GRID (ខាងក្រោម - តូចៗ)
+       ============================================================ */
     .video-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
       gap: 15px;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
     }
+    
+    /* ============================================================
+       VIDEO BOX
+       ============================================================ */
     .video-box {
       position: relative;
       background: #000;
@@ -216,6 +232,20 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .video-box:hover {
+      border-color: #48cae4;
+      transform: scale(1.02);
+      box-shadow: 0 8px 25px rgba(72, 202, 228, 0.3);
+    }
+    .video-box.screen-share {
+      border-color: #f59e0b;
+    }
+    .video-box.screen-share:hover {
+      border-color: #fbbf24;
+      box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
     }
     .video-box video {
       width: 100%;
@@ -223,7 +253,6 @@
       object-fit: cover;
       display: block;
     }
-    .video-box.screen-share { border-color: #f59e0b; }
     .video-box.screen-share video { object-fit: contain; }
     .video-box .name-tag {
       position: absolute;
@@ -249,14 +278,24 @@
       font-weight: bold;
       z-index: 2;
     }
-    
-    .screen-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-      gap: 15px;
-      margin-bottom: 20px;
+    .video-box .expand-icon {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.7);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      color: #fff;
+      z-index: 2;
+      opacity: 0;
+      transition: opacity 0.2s;
     }
+    .video-box:hover .expand-icon { opacity: 1; }
     
+    /* ============================================================
+       PARTICIPANTS
+       ============================================================ */
     .participants-list {
       background: #16213e;
       padding: 20px;
@@ -281,6 +320,9 @@
       box-shadow: 0 0 8px #10b981;
     }
     
+    /* ============================================================
+       STATUS MESSAGE
+       ============================================================ */
     #status {
       position: fixed;
       bottom: 20px;
@@ -299,8 +341,74 @@
     }
     #status.show { display: block; }
     
+    /* ============================================================
+       FULLSCREEN MODAL (Discord Style)
+       ============================================================ */
+    #fullscreenModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 10000;
+      flex-direction: column;
+      padding: 20px;
+    }
+    #fullscreenModal.active {
+      display: flex;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background: #16213e;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    .modal-header .modal-title {
+      color: #48cae4;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .modal-header .modal-controls {
+      display: flex;
+      gap: 10px;
+    }
+    .modal-header button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .modal-body {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+    }
+    .modal-body video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+    }
+    
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
     @media (max-width: 768px) {
-      .video-grid, .screen-grid { grid-template-columns: 1fr; }
+      .screen-grid { grid-template-columns: 1fr; }
+      .video-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
       .header { flex-direction: column; align-items: flex-start; }
       .controls { width: 100%; }
       .controls button { flex: 1; padding: 10px; font-size: 12px; }
@@ -356,16 +464,39 @@
       </div>
     </div>
 
-    <h4 class="section-title" id="screenTitle" style="display:none;">🖥️ Screen Share</h4>
+    <!-- ============================================================
+         SCREEN SHARE (ខាងលើ)
+         ============================================================ -->
+    <h4 class="section-title" id="screenTitle" style="display:none;">
+      🖥️ SCREEN SHARE (<span id="screenCount">0</span>)
+    </h4>
     <div class="screen-grid" id="screenGrid"></div>
 
-    <h4 class="section-title">👤 Camera & Participants</h4>
+    <!-- ============================================================
+         CAMERA & PARTICIPANTS (ខាងក្រោម)
+         ============================================================ -->
+    <h4 class="section-title">
+      👤 CAMERA & PARTICIPANTS (<span id="videoCount">0</span>)
+    </h4>
     <div class="video-grid" id="videoGrid"></div>
 
     <div class="participants-list">
       <h3>👥 អ្នកចូលរួម (<span id="participantCount">0</span>)</h3>
       <div id="participantsList"></div>
     </div>
+  </div>
+
+  <!-- ============================================================
+       FULLSCREEN MODAL
+       ============================================================ -->
+  <div id="fullscreenModal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">📺 Video</div>
+      <div class="modal-controls">
+        <button class="btn-primary" onclick="closeFullscreen()">✕ បិទ</button>
+      </div>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
   </div>
 
   <div id="status"></div>
@@ -382,6 +513,7 @@
     let LIVEKIT_URL = 'wss://meeting-86lp77zt.livekit.cloud';
     let authToken = null;
     let currentUser = null;
+    let currentFullscreenTrack = null;
 
     // ============================================================
     // CHECK SESSION ON LOAD
@@ -415,7 +547,6 @@
       
       document.getElementById('lobbyUsername').textContent = currentUser.displayName || currentUser.username;
       
-      // បង្ហាញ Admin Button ប្រសិនបើជា Admin
       if (currentUser.role === 'admin') {
         document.getElementById('adminBtn').style.display = 'block';
       } else {
@@ -456,7 +587,6 @@
           throw new Error(data.error || 'Login failed');
         }
 
-        // Save session
         authToken = data.token;
         currentUser = data.user;
         localStorage.setItem('authToken', authToken);
@@ -494,7 +624,7 @@
     }
 
     // ============================================================
-    // OPEN ADMIN DASHBOARD
+    // OPEN ADMIN
     // ============================================================
     function openAdmin() {
       window.open('/admin.html', '_blank');
@@ -513,7 +643,6 @@
       showStatus('⏳ កំពុងភ្ជាប់...');
 
       try {
-        // ទាញយក Token ពី Backend (មាន Authentication)
         const response = await fetch('/api/get-token', {
           method: 'POST',
           headers: { 
@@ -531,7 +660,6 @@
 
         if (data.url) LIVEKIT_URL = data.url;
 
-        // បង្កើត Room
         room = new LivekitClient.Room({
           adaptiveStream: true,
           dynacast: true,
@@ -539,13 +667,11 @@
 
         setupRoomEvents();
 
-        // ភ្ជាប់ទៅ LiveKit
         await room.connect(LIVEKIT_URL, data.token);
         console.log('✅ Connected to room:', roomName);
         
         localParticipant = room.localParticipant;
 
-        // ព្យាយាមបើកកាមេរ៉ា និងមេក្រូ
         try {
           await localParticipant.enableCameraAndMicrophone();
           isCameraOn = true;
@@ -565,16 +691,13 @@
           } catch (e) { isCameraOn = false; }
         }
         
-        // បង្ហាញ Local Video
         displayLocalTracks(currentUser.displayName || currentUser.username);
 
-        // បង្ហាញអ្នកចូលរួមផ្សេងទៀត
         room.remoteParticipants.forEach(participant => {
           addParticipantToList(participant.identity);
           displayRemoteTracks(participant);
         });
 
-        // បង្ហាញ UI
         document.getElementById('lobby-screen').style.display = 'none';
         document.getElementById('app').classList.add('active');
         document.getElementById('currentRoom').textContent = roomName;
@@ -722,15 +845,68 @@
       box.innerHTML = `
         <div class="name-tag">${isScreen ? '🖥️ ' : '👤 '}${name}</div>
         <div class="status-tag">🟢 Live</div>
+        <div class="expand-icon">🔍 ចុចដើម្បីមើលធំ</div>
       `;
       box.insertBefore(videoElement, box.firstChild);
       document.getElementById(gridId).appendChild(box);
       
+      // ចុចដើម្បីមើលធំ
+      box.onclick = function(e) {
+        if (e.target.tagName === 'VIDEO' || e.target.tagName === 'DIV') {
+          openFullscreen(videoElement, name, isScreen);
+        }
+      };
+      
       if (isScreen) {
-        document.getElementById('screenTitle').style.display = 'block';
+        document.getElementById('screenTitle').style.display = 'flex';
       }
+      
+      updateVideoCounts();
     }
 
+    // ============================================================
+    // OPEN FULLSCREEN
+    // ============================================================
+    function openFullscreen(videoElement, name, isScreen) {
+      const modal = document.getElementById('fullscreenModal');
+      const modalBody = document.getElementById('modalBody');
+      const modalTitle = document.getElementById('modalTitle');
+      
+      modalTitle.textContent = (isScreen ? '🖥️ ' : '👤 ') + name;
+      modalBody.innerHTML = '';
+      
+      // Clone video element
+      const newVideo = document.createElement('video');
+      newVideo.autoplay = true;
+      newVideo.playsInline = true;
+      newVideo.muted = videoElement.muted;
+      newVideo.srcObject = videoElement.srcObject;
+      
+      modalBody.appendChild(newVideo);
+      modal.classList.add('active');
+    }
+
+    // ============================================================
+    // CLOSE FULLSCREEN
+    // ============================================================
+    function closeFullscreen() {
+      const modal = document.getElementById('fullscreenModal');
+      const modalBody = document.getElementById('modalBody');
+      
+      modal.classList.remove('active');
+      modalBody.innerHTML = '';
+    }
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeFullscreen();
+      }
+    });
+
+    // ============================================================
+    // REMOVE VIDEO
+    // ============================================================
     function removeVideoByParticipant(name, isScreen = false) {
       const safeName = name.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
       const box = document.getElementById((isScreen ? 'screen-' : 'video-') + safeName);
@@ -742,8 +918,24 @@
           document.getElementById('screenTitle').style.display = 'none';
         }
       }
+      
+      updateVideoCounts();
     }
 
+    // ============================================================
+    // UPDATE VIDEO COUNTS
+    // ============================================================
+    function updateVideoCounts() {
+      const screenCount = document.getElementById('screenGrid').children.length;
+      const videoCount = document.getElementById('videoGrid').children.length;
+      
+      document.getElementById('screenCount').textContent = screenCount;
+      document.getElementById('videoCount').textContent = videoCount;
+    }
+
+    // ============================================================
+    // UPDATE MEDIA BUTTONS
+    // ============================================================
     function updateMediaButtons() {
       const btnMic = document.getElementById('btnMic');
       btnMic.innerHTML = isMicOn ? '🎤 Mic On' : '🔇 Mic Off';
@@ -754,6 +946,9 @@
       btnCam.className = isCameraOn ? 'btn-primary' : 'btn-primary off';
     }
 
+    // ============================================================
+    // TOGGLE MIC
+    // ============================================================
     async function toggleMic() {
       if (!localParticipant) return;
       try {
@@ -768,6 +963,9 @@
       }
     }
 
+    // ============================================================
+    // TOGGLE CAMERA
+    // ============================================================
     async function toggleCamera() {
       if (!localParticipant) return;
       try {
@@ -785,6 +983,9 @@
       }
     }
 
+    // ============================================================
+    // TOGGLE SCREEN SHARE
+    // ============================================================
     async function toggleScreenShare() {
       if (!localParticipant) return;
       try {
@@ -812,6 +1013,9 @@
       }
     }
 
+    // ============================================================
+    // PARTICIPANTS LIST
+    // ============================================================
     function addParticipantToList(name) {
       const list = document.getElementById('participantsList');
       const safeName = name.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
@@ -841,6 +1045,9 @@
       }
     }
 
+    // ============================================================
+    // LEAVE ROOM
+    // ============================================================
     async function leaveRoom() {
       if (room) {
         try { await room.disconnect(); } catch (e) {}
@@ -853,6 +1060,8 @@
       document.getElementById('participantsList').innerHTML = '';
       document.getElementById('screenTitle').style.display = 'none';
       document.getElementById('participantCount').textContent = '0';
+      document.getElementById('screenCount').textContent = '0';
+      document.getElementById('videoCount').textContent = '0';
       document.getElementById('app').classList.remove('active');
       
       isMicOn = false;
@@ -866,11 +1075,13 @@
       document.getElementById('btnScreen').innerHTML = '🖥️ Share Screen';
       document.getElementById('btnScreen').className = 'btn-warning';
       
-      // ត្រឡប់ទៅ Lobby
       showLobby();
       showStatus('🚪 បានចាកចេញពីបន្ទប់');
     }
 
+    // ============================================================
+    // STATUS
+    // ============================================================
     function showStatus(message) {
       const status = document.getElementById('status');
       status.textContent = message;
@@ -879,7 +1090,9 @@
       status.timeout = setTimeout(() => status.classList.remove('show'), 4000);
     }
 
-    // Enter key shortcuts
+    // ============================================================
+    // ENTER KEY SHORTCUTS
+    // ============================================================
     document.getElementById('loginPassword').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') login();
     });
