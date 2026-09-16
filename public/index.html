@@ -878,21 +878,37 @@
       pendingLoginData = null;
     }
 
-    function logout() {
-      if (!confirm('ចាកចេញពីគណនីទេ?')) return;
-      if (room) leaveRoom();
-      authToken = null;
-      currentUser = null;
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('currentUser');
-      document.getElementById('loginUsername').value = '';
-      document.getElementById('loginPassword').value = '';
-      showLogin();
-    }
-
-    function openAdmin() {
-      window.open('/admin.html', '_blank');
-    }
+    async function logout() {
+  if (!confirm('ចាកចេញពីគណនីទេ?')) return;
+  
+  // ✅ ជូនដំណឹង Server ដើម្បី Reset Device
+  try {
+    await fetch('/api/auth/logout', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      }
+    });
+  } catch (e) {
+    console.log('Logout API error:', e);
+  }
+  
+  if (room) leaveRoom();
+  
+  // ✅ Clear ទាំងអស់ រួមទាំង deviceId
+  authToken = null;
+  currentUser = null;
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('currentUser');
+  localStorage.removeItem('deviceId'); // ✅ សំខាន់!
+  
+  document.getElementById('loginUsername').value = '';
+  document.getElementById('loginPassword').value = '';
+  
+  showLogin();
+  showStatus('🚪 បានចាកចេញពីគណនី');
+}
 
     // ============================================================
     // ✅ JOIN ROOM (Auto-enable screen share for users)
