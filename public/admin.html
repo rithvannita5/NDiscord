@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - User Management</title>
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Kantumruy Pro', 'Segoe UI', sans-serif; }
+    body { background: #0b132b; color: #fff; min-height: 100vh; padding: 20px; }
+    
+    .container { max-width: 1200px; margin: 0 auto; }
+    
+    .header {
+      background: #1c2541;
+      padding: 25px 30px;
+      border-radius: 12px;
+      margin-bottom: 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      border: 1px solid #2d2d44;
+    }
+    .header h1 { color: #48cae4; font-size: 24px; }
+    .header .user-info {
+      color: #94a3b8;
+      font-size: 14px;
+    }
+    .header .user-info strong { color: #48cae4; }
+    
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+      font-family: inherit;
+    }
+    .btn-primary { background: #00b4d8; color: #fff; }
+    .btn-primary:hover { background: #0096c7; }
+    .btn-success { background: #10b981; color: #fff; }
+    .btn-success:hover { background: #059669; }
+    .btn-danger { background: #ef4444; color: #fff; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-warning { background: #f59e0b; color: #000; }
+    .btn-warning:hover { background: #d97706; }
+    .btn-secondary { background: #475569; color: #fff; }
+    .btn-secondary:hover { background: #334155; }
+    
+    .card {
+      background: #1c2541;
+      padding: 30px;
+      border-radius: 12px;
+      margin-bottom: 25px;
+      border: 1px solid #2d2d44;
+    }
+    .card h2 {
+      color: #48cae4;
+      margin-bottom: 20px;
+      font-size: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #2d2d44;
+    }
+    
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    
+    input, select {
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: 1px solid #3a506b;
+      background: #0b132b;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      font-family: inherit;
+    }
+    input:focus, select:focus { border-color: #48cae4; }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #2d2d44;
+      font-size: 14px;
+    }
+    th {
+      background: #0b132b;
+      color: #48cae4;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+    tr:hover { background: #16213e; }
+    
+    .badge {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: bold;
+      display: inline-block;
+    }
+    .badge-admin { background: #f59e0b; color: #000; }
+    .badge-user { background: #00b4d8; color: #fff; }
+    .badge-active { background: #10b981; color: #fff; }
+    .badge-inactive { background: #ef4444; color: #fff; }
+    
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .action-buttons button {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+    
+    .alert {
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: none;
+      font-size: 14px;
+    }
+    .alert.show { display: block; }
+    .alert-success { background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #10b981; }
+    .alert-error { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #ef4444; }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+    .stat-card {
+      background: #16213e;
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid #2d2d44;
+      text-align: center;
+    }
+    .stat-card .stat-value {
+      font-size: 32px;
+      font-weight: bold;
+      color: #48cae4;
+      margin-bottom: 5px;
+    }
+    .stat-card .stat-label {
+      font-size: 13px;
+      color: #94a3b8;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #94a3b8;
+    }
+    
+    @media (max-width: 768px) {
+      .header { flex-direction: column; align-items: flex-start; }
+      .form-grid { grid-template-columns: 1fr; }
+      table { font-size: 12px; }
+      th, td { padding: 8px; }
+      .action-buttons { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div>
+        <h1>👑 Admin Dashboard</h1>
+        <div class="user-info">ចូលជា: <strong id="adminName">-</strong></div>
+      </div>
+      <div>
+        <button class="btn btn-secondary" onclick="window.close()">✕ បិទ</button>
+      </div>
+    </div>
+
+    <!-- Alert -->
+    <div id="alert" class="alert"></div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" id="totalUsers">0</div>
+        <div class="stat-label">👥 អ្នកប្រើសរុប</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="activeUsers">0</div>
+        <div class="stat-label">✅ សកម្ម</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="inactiveUsers">0</div>
+        <div class="stat-label">🚫 អសកម្ម</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="adminUsers">0</div>
+        <div class="stat-label">👑 Admin</div>
+      </div>
+    </div>
+
+    <!-- Create User Form -->
+    <div class="card">
+      <h2>➕ បង្កើតអ្នកប្រើថ្មី</h2>
+      <div class="form-grid">
+        <input type="text" id="newUsername" placeholder="ឈ្មោះអ្នកប្រើ (Username)">
+        <input type="text" id="newDisplayName" placeholder="ឈ្មោះបង្ហាញ (Display Name)">
+        <input type="password" id="newPassword" placeholder="លេខសម្ងាត់ (Password)">
+        <select id="newRole">
+          <option value="user">User (អ្នកប្រើធម្មតា)</option>
+          <option value="admin">Admin (អ្នកគ្រប់គ្រង)</option>
+        </select>
+      </div>
+      <button class="btn btn-success" onclick="createUser()">➕ បង្កើតអ្នកប្រើ</button>
+    </div>
+
+    <!-- Users Table -->
+    <div class="card">
+      <h2>👥 បញ្ជីអ្នកប្រើ</h2>
+      <div id="usersLoading" class="loading">⏳ កំពុងផ្ទុក...</div>
+      <div style="overflow-x: auto;">
+        <table id="usersTable" style="display:none;">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Display Name</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Last Login</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // CHECK AUTHENTICATION
+    // ============================================================
+    const token = localStorage.getItem('authToken');
+    const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+
+    if (!token || user.role !== 'admin') {
+      alert('អ្នកគ្មានសិទ្ធិចូលទំព័រនេះទេ!');
+      window.location.href = '/';
+    }
+
+    document.getElementById('adminName').textContent = user.displayName || user.username;
+
+    // ============================================================
+    // SHOW ALERT
+    // ============================================================
+    function showAlert(message, type = 'success') {
+      const alert = document.getElementById('alert');
+      alert.textContent = message;
+      alert.className = 'alert alert-' + type + ' show';
+      setTimeout(() => alert.classList.remove('show'), 3000);
+    }
+
+    // ============================================================
+    // LOAD USERS
+    // ============================================================
+    async function loadUsers() {
+      try {
+        const response = await fetch('/api/admin/users', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+          if (response.status === 401 || response.status === 403) {
+            alert('Session ផុតកំណត់ សូមចូលម្តងទៀត!');
+            window.location.href = '/';
+            return;
+          }
+          throw new Error('Failed to load users');
+        }
+
+        const data = await response.json();
+        displayUsers(data.users);
+        updateStats(data.users);
+
+      } catch (error) {
+        console.error('Load users error:', error);
+        document.getElementById('usersLoading').textContent = '❌ មិនអាចផ្ទុកបានទេ: ' + error.message;
+      }
+    }
+
+    // ============================================================
+    // DISPLAY USERS
+    // ============================================================
+    function displayUsers(users) {
+      const tbody = document.getElementById('usersTableBody');
+      tbody.innerHTML = '';
+
+      if (users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:#94a3b8;">គ្មានអ្នកប្រើទេ</td></tr>';
+      } else {
+        users.forEach(u => {
+          const tr = document.createElement('tr');
+          
+          const lastLogin = u.lastLogin 
+            ? new Date(u.lastLogin).toLocaleString('km-KH') 
+            : 'មិនធ្លាប់';
+
+          const roleBadge = u.role === 'admin' 
+            ? '<span class="badge badge-admin">👑 Admin</span>' 
+            : '<span class="badge badge-user">👤 User</span>';
+
+          const statusBadge = u.isActive 
+            ? '<span class="badge badge-active">✅ សកម្ម</span>' 
+            : '<span class="badge badge-inactive">🚫 អសកម្ម</span>';
+
+          tr.innerHTML = `
+            <td><strong>${u.username}</strong></td>
+            <td>${u.displayName || '-'}</td>
+            <td>${roleBadge}</td>
+            <td>${statusBadge}</td>
+            <td>${lastLogin}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-warning" onclick="toggleUser('${u._id}')">
+                  ${u.isActive ? '🚫 ផ្អាក' : '✅ សកម្ម'}
+                </button>
+                <button class="btn btn-primary" onclick="resetPassword('${u._id}', '${u.username}')">
+                  🔑 Reset
+                </button>
+                ${u.role !== 'admin' ? `
+                  <button class="btn btn-danger" onclick="deleteUser('${u._id}', '${u.username}')">
+                    🗑️ លុប
+                  </button>
+                ` : ''}
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      document.getElementById('usersLoading').style.display = 'none';
+      document.getElementById('usersTable').style.display = 'table';
+    }
+
+    // ============================================================
+    // UPDATE STATS
+    // ============================================================
+    function updateStats(users) {
+      document.getElementById('totalUsers').textContent = users.length;
+      document.getElementById('activeUsers').textContent = users.filter(u => u.isActive).length;
+      document.getElementById('inactiveUsers').textContent = users.filter(u => !u.isActive).length;
+      document.getElementById('adminUsers').textContent = users.filter(u => u.role === 'admin').length;
+    }
+
+    // ============================================================
+    // CREATE USER
+    // ============================================================
+    async function createUser() {
+      const username = document.getElementById('newUsername').value.trim();
+      const displayName = document.getElementById('newDisplayName').value.trim();
+      const password = document.getElementById('newPassword').value;
+      const role = document.getElementById('newRole').value;
+
+      if (!username || !password) {
+        return showAlert('សូមបំពេញ Username និង Password!', 'error');
+      }
+
+      if (password.length < 4) {
+        return showAlert('Password ត្រូវមានយ៉ាងតិច 4 តួអក្សរ!', 'error');
+      }
+
+      try {
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ username, password, displayName, role })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to create user');
+        }
+
+        showAlert('✅ បង្កើតអ្នកប្រើជោគជ័យ!', 'success');
+        
+        // Clear form
+        document.getElementById('newUsername').value = '';
+        document.getElementById('newDisplayName').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('newRole').value = 'user';
+
+        // Reload users
+        loadUsers();
+
+      } catch (error) {
+        console.error('Create user error:', error);
+        showAlert('❌ ' + error.message, 'error');
+      }
+    }
+
+    // ============================================================
+    // TOGGLE USER STATUS
+    // ============================================================
+    async function toggleUser(id) {
+      try {
+        const response = await fetch(`/api/admin/users/${id}/toggle`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to toggle');
+        }
+
+        showAlert(`✅ អ្នកប្រើត្រូវបាន${data.isActive ? 'សកម្ម' : 'ផ្អាក'}!`, 'success');
+        loadUsers();
+
+      } catch (error) {
+        showAlert('❌ ' + error.message, 'error');
+      }
+    }
+
+    // ============================================================
+    // RESET PASSWORD
+    // ============================================================
+    async function resetPassword(id, username) {
+      const newPassword = prompt(`បញ្ចូលលេខសម្ងាត់ថ្មីសម្រាប់ "${username}":`);
+      
+      if (!newPassword) return;
+      
+      if (newPassword.length < 4) {
+        return showAlert('Password ត្រូវមានយ៉ាងតិច 4 តួអក្សរ!', 'error');
+      }
+
+      try {
+        const response = await fetch(`/api/admin/users/${id}/reset-password`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ newPassword })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to reset');
+        }
+
+        showAlert('✅ ប្តូរលេខសម្ងាត់ជោគជ័យ!', 'success');
+
+      } catch (error) {
+        showAlert('❌ ' + error.message, 'error');
+      }
+    }
+
+    // ============================================================
+    // DELETE USER
+    // ============================================================
+    async function deleteUser(id, username) {
+      if (!confirm(`តើអ្នកប្រាកដថាចង់លុប "${username}" ទេ?\n\nការលុបមិនអាចត្រឡប់វិញបានទេ!`)) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/admin/users/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to delete');
+        }
+
+        showAlert('✅ លុបអ្នកប្រើជោគជ័យ!', 'success');
+        loadUsers();
+
+      } catch (error) {
+        showAlert('❌ ' + error.message, 'error');
+      }
+    }
+
+    // ============================================================
+    // INITIAL LOAD
+    // ============================================================
+    loadUsers();
+  </script>
+</body>
+</html>
