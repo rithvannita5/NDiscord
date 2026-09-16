@@ -11,9 +11,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Kantumruy Pro', 'Segoe UI', sans-serif; }
     body { background: #1a1a2e; color: #fff; min-height: 100vh; padding: 20px; }
     
-    /* ============================================================
-       LOGIN SCREEN
-       ============================================================ */
     #login-screen {
       display: flex;
       flex-direction: column;
@@ -22,12 +19,7 @@
       min-height: 100vh;
       gap: 15px;
     }
-    #login-screen h1 { 
-      color: #48cae4; 
-      margin-bottom: 20px; 
-      font-size: 32px;
-      text-align: center;
-    }
+    #login-screen h1 { color: #48cae4; margin-bottom: 20px; font-size: 32px; text-align: center; }
     #login-screen input {
       padding: 14px 20px;
       border-radius: 8px;
@@ -54,14 +46,8 @@
       max-width: 400px;
     }
     #login-screen button:hover { background: #0096c7; }
-    #login-screen button:disabled { 
-      background: #475569; 
-      cursor: not-allowed; 
-    }
+    #login-screen button:disabled { background: #475569; cursor: not-allowed; }
     
-    /* ============================================================
-       MAIN APP
-       ============================================================ */
     #app { display: none; }
     #app.active { display: block; }
     
@@ -78,11 +64,7 @@
     }
     .header h2 { color: #48cae4; font-size: 18px; }
     
-    .controls {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
+    .controls { display: flex; gap: 10px; flex-wrap: wrap; }
     .controls button {
       padding: 10px 20px;
       border: none;
@@ -102,14 +84,7 @@
     .btn-success { background: #10b981; color: #fff; }
     .btn-success:hover { background: #059669; }
     .controls button.off { background: #ef4444; color: #fff; }
-    .controls button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
     
-    /* ============================================================
-       VIDEO GRIDS
-       ============================================================ */
     .section-title {
       font-size: 14px;
       color: #94a3b8;
@@ -143,9 +118,7 @@
       object-fit: cover;
       display: block;
     }
-    .video-box.screen-share {
-      border-color: #f59e0b;
-    }
+    .video-box.screen-share { border-color: #f59e0b; }
     .video-box.screen-share video { object-fit: contain; }
     .video-box .name-tag {
       position: absolute;
@@ -171,16 +144,6 @@
       font-weight: bold;
       z-index: 2;
     }
-    .video-box .placeholder {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: #475569;
-      font-size: 14px;
-      text-align: center;
-      z-index: 1;
-    }
     
     .screen-grid {
       display: grid;
@@ -189,19 +152,12 @@
       margin-bottom: 20px;
     }
     
-    /* ============================================================
-       PARTICIPANTS
-       ============================================================ */
     .participants-list {
       background: #16213e;
       padding: 20px;
       border-radius: 10px;
     }
-    .participants-list h3 { 
-      color: #48cae4; 
-      margin-bottom: 15px; 
-      font-size: 16px; 
-    }
+    .participants-list h3 { color: #48cae4; margin-bottom: 15px; font-size: 16px; }
     .participant-item {
       padding: 10px 15px;
       background: #0b132b;
@@ -220,9 +176,6 @@
       box-shadow: 0 0 8px #10b981;
     }
     
-    /* ============================================================
-       STATUS MESSAGE
-       ============================================================ */
     #status {
       position: fixed;
       bottom: 20px;
@@ -241,9 +194,6 @@
     }
     #status.show { display: block; }
     
-    /* ============================================================
-       RESPONSIVE
-       ============================================================ */
     @media (max-width: 768px) {
       .video-grid, .screen-grid { grid-template-columns: 1fr; }
       .header { flex-direction: column; align-items: flex-start; }
@@ -255,9 +205,6 @@
 </head>
 <body>
 
-  <!-- ============================================================
-       LOGIN SCREEN
-       ============================================================ -->
   <div id="login-screen">
     <h1>🎥 Video Conference</h1>
     <input type="text" id="roomNameInput" placeholder="ឈ្មោះបន្ទប់ (ឧ. meeting-1)" value="meeting-1">
@@ -265,9 +212,6 @@
     <button id="joinBtn" onclick="joinRoom()">🚀 ចូលបន្ទប់</button>
   </div>
 
-  <!-- ============================================================
-       MAIN APP
-       ============================================================ -->
   <div id="app">
     <div class="header">
       <h2>🎥 បន្ទប់: <span id="currentRoom">-</span></h2>
@@ -291,9 +235,6 @@
     </div>
   </div>
 
-  <!-- ============================================================
-       STATUS MESSAGE
-       ============================================================ -->
   <div id="status"></div>
 
   <script>
@@ -343,9 +284,6 @@
         room = new LivekitClient.Room({
           adaptiveStream: true,
           dynacast: true,
-          videoCaptureDefaults: {
-            resolution: LivekitClient.VideoPresets.h720.resolution,
-          },
         });
 
         setupRoomEvents();
@@ -357,8 +295,7 @@
         localParticipant = room.localParticipant;
 
         // ============================================================
-        // ព្យាយាមបើកកាមេរ៉ា និងមេក្រូ (បើមាន)
-        // ប្រសិនបើគ្មាន កម្មវិធីនឹងបន្តដំណើរការធម្មតា
+        // ព្យាយាមបើកកាមេរ៉ា និងមេក្រូ
         // ============================================================
         try {
           await localParticipant.enableCameraAndMicrophone();
@@ -370,47 +307,30 @@
           console.warn('⚠️ Camera/Mic not available:', deviceError.message);
           showStatus('⚠️ គ្មានកាមេរ៉ា/មេក្រូ - អ្នកអាច Share Screen បាន');
           
-          // ព្យាយាមបើកមេក្រូតែម្នាក់ឯង
           try {
             await localParticipant.setMicrophoneEnabled(true);
             isMicOn = true;
-            console.log('✅ Microphone enabled');
           } catch (micError) {
             console.warn('⚠️ Microphone not available');
             isMicOn = false;
           }
           
-          // ព្យាយាមបើកកាមេរ៉ាតែម្នាក់ឯង
           try {
             await localParticipant.setCameraEnabled(true);
             isCameraOn = true;
-            console.log('✅ Camera enabled');
           } catch (camError) {
             console.warn('⚠️ Camera not available');
             isCameraOn = false;
           }
-          
-          updateMediaButtons();
         }
         
         // បង្ហាញ Local Video
-        localParticipant.videoTracks.forEach(pub => {
-          if (pub.track) {
-            attachVideoTrack(pub.track, username + ' (អ្នក)', pub.source === 'screen_share');
-          }
-        });
-        localParticipant.audioTracks.forEach(pub => {
-          if (pub.track) pub.track.attach();
-        });
+        displayLocalTracks(username);
 
         // បង្ហាញអ្នកចូលរួមផ្សេងទៀត
         room.remoteParticipants.forEach(participant => {
           addParticipantToList(participant.identity);
-          participant.tracks.forEach(pub => {
-            if (pub.isSubscribed && pub.track) {
-              attachVideoTrack(pub.track, participant.identity, pub.source === 'screen_share');
-            }
-          });
+          displayRemoteTracks(participant);
         });
 
         // បង្ហាញ UI
@@ -436,6 +356,49 @@
     }
 
     // ============================================================
+    // DISPLAY LOCAL TRACKS (ប្រើ Array.from សម្រាប់ Map)
+    // ============================================================
+    function displayLocalTracks(username) {
+      try {
+        // ប្រើ Array.from ដើម្បីបំប្លែង Map ទៅ Array
+        const videoPublications = Array.from(localParticipant.videoTrackPublications.values());
+        videoPublications.forEach(pub => {
+          if (pub.track) {
+            attachVideoTrack(pub.track, username + ' (អ្នក)', pub.source === 'screen_share');
+          }
+        });
+
+        const audioPublications = Array.from(localParticipant.audioTrackPublications.values());
+        audioPublications.forEach(pub => {
+          if (pub.track) pub.track.attach();
+        });
+      } catch (error) {
+        console.warn('Error displaying local tracks:', error);
+      }
+    }
+
+    // ============================================================
+    // DISPLAY REMOTE TRACKS
+    // ============================================================
+    function displayRemoteTracks(participant) {
+      try {
+        const videoPublications = Array.from(participant.videoTrackPublications.values());
+        videoPublications.forEach(pub => {
+          if (pub.isSubscribed && pub.track) {
+            attachVideoTrack(pub.track, participant.identity, pub.source === 'screen_share');
+          }
+        });
+
+        const audioPublications = Array.from(participant.audioTrackPublications.values());
+        audioPublications.forEach(pub => {
+          if (pub.isSubscribed && pub.track) pub.track.attach();
+        });
+      } catch (error) {
+        console.warn('Error displaying remote tracks:', error);
+      }
+    }
+
+    // ============================================================
     // SETUP ROOM EVENTS
     // ============================================================
     function setupRoomEvents() {
@@ -444,6 +407,9 @@
         addParticipantToList(participant.identity);
         updateParticipantCount();
         showStatus('👤 ' + participant.identity + ' បានចូលរួម');
+        
+        // បង្ហាញ Tracks របស់អ្នកចូលថ្មី
+        setTimeout(() => displayRemoteTracks(participant), 500);
       });
 
       room.on('participantDisconnected', (participant) => {
@@ -473,6 +439,22 @@
         }
       });
 
+      room.on('localTrackPublished', (publication) => {
+        console.log('📺 Local track published:', publication.kind, publication.source);
+        if (publication.source === 'screen_share' && publication.track) {
+          attachVideoTrack(publication.track, localParticipant.identity + ' (អ្នក)', true);
+        } else if (publication.kind === 'video' && publication.track) {
+          attachVideoTrack(publication.track, localParticipant.identity + ' (អ្នក)', false);
+        }
+      });
+
+      room.on('localTrackUnpublished', (publication) => {
+        console.log('📺 Local track unpublished:', publication.kind, publication.source);
+        if (publication.source === 'screen_share') {
+          removeVideoByParticipant(localParticipant.identity + ' (អ្នក)', true);
+        }
+      });
+
       room.on('disconnected', () => {
         console.log('🔌 Disconnected from room');
         leaveRoom();
@@ -483,11 +465,12 @@
     // ATTACH VIDEO TRACK
     // ============================================================
     function attachVideoTrack(track, name, isScreen = false) {
+      if (!track) return;
+      
       const videoElement = track.attach();
       videoElement.autoplay = true;
       videoElement.playsInline = true;
       
-      // Mute វីដេអូរបស់ខ្លួនឯង
       if (name.includes('អ្នក')) {
         videoElement.muted = true;
       }
@@ -562,7 +545,7 @@
       } catch (error) {
         console.error('Mic toggle error:', error);
         isMicOn = !isMicOn;
-        showStatus('⚠️ មិនអាចប្តូរមេក្រូបានទេ: ' + error.message);
+        showStatus('⚠️ មិនអាចប្តូរមេក្រូបានទេ');
         updateMediaButtons();
       }
     }
@@ -585,7 +568,7 @@
       } catch (error) {
         console.error('Camera toggle error:', error);
         isCameraOn = !isCameraOn;
-        showStatus('⚠️ មិនអាចប្តូរកាមេរ៉ាបានទេ: ' + error.message);
+        showStatus('⚠️ មិនអាចប្តូរកាមេរ៉ាបានទេ');
         updateMediaButtons();
       }
     }
@@ -621,7 +604,7 @@
         const btn = document.getElementById('btnScreen');
         btn.innerHTML = '🖥️ Share Screen';
         btn.className = 'btn-warning';
-        showStatus('❌ បោះបង់ការ Share Screen: ' + error.message);
+        showStatus('❌ បោះបង់ការ Share Screen');
       }
     }
 
@@ -679,12 +662,10 @@
       document.getElementById('app').classList.remove('active');
       document.getElementById('login-screen').style.display = 'flex';
       
-      // Reset variables
       isMicOn = false;
       isCameraOn = false;
       isScreenSharing = false;
       
-      // Reset buttons
       document.getElementById('btnMic').innerHTML = '🎤 Mic On';
       document.getElementById('btnMic').className = 'btn-primary';
       document.getElementById('btnCam').innerHTML = '📹 Camera On';
