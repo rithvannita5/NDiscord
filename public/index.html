@@ -34,6 +34,22 @@
     .error-message { color: #ef4444; font-size: 14px; text-align: center; padding: 12px; background: rgba(239, 68, 68, 0.1); border-radius: 8px; display: none; margin-bottom: 15px; border: 1px solid rgba(239, 68, 68, 0.3); }
     .error-message.show { display: block; }
     
+    /* ✅ ROOM SELECT & ROLE HINT */
+    .room-select-group { transition: all 0.3s; }
+    .room-select-group.hidden { display: none; }
+    .role-hint {
+      color: #f59e0b;
+      font-size: 13px;
+      padding: 10px 14px;
+      background: rgba(245, 158, 11, 0.12);
+      border-radius: 8px;
+      margin-bottom: 15px;
+      border-left: 3px solid #f59e0b;
+      display: none;
+      text-align: center;
+    }
+    .role-hint.show { display: block; }
+    
     /* OTP */
     #otp-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); z-index: 99999; justify-content: center; align-items: center; padding: 20px; }
     #otp-modal.active { display: flex; }
@@ -52,7 +68,7 @@
     
     /* ✅ SIDEBAR - Participants List */
     .sidebar {
-      width: 240px;
+      width: 260px;
       background: #16213e;
       border-radius: 10px;
       padding: 20px;
@@ -82,6 +98,7 @@
       align-items: center;
       gap: 8px;
       border-left: 3px solid #10b981;
+      position: relative;
     }
     .sidebar .participant-name.me {
       border-left-color: #f59e0b;
@@ -109,6 +126,19 @@
     }
     .sidebar .participant-name:hover .remote-btn {
       display: block;
+    }
+    /* ✅ បង្ហាញស្ថានភាពកាមេរ៉ា និង Screen Share */
+    .sidebar .participant-name .media-status {
+      display: flex;
+      gap: 4px;
+      margin-left: auto;
+      font-size: 12px;
+    }
+    .sidebar .participant-name .media-status .icon {
+      opacity: 0.4;
+    }
+    .sidebar .participant-name .media-status .icon.active {
+      opacity: 1;
     }
     
     /* ✅ MAIN CONTENT */
@@ -185,75 +215,81 @@
       font-weight: 600;
     }
     
-    /* ✅ VIDEO GRIDS - ទំហំតូចជាងនេះបន្តិច (Square) */
+    /* ✅ VIDEO GRIDS */
     .screen-grid, .video-grid {
       display: grid;
-      gap: 12px;
-      margin-bottom: 20px;
-      justify-content: start;
+      gap: 15px;
+      margin-bottom: 25px;
     }
-    .screen-grid { 
-      grid-template-columns: repeat(auto-fill, 260px);
-    }
-    .video-grid { 
-      grid-template-columns: repeat(auto-fill, 200px);
-    }
+    .screen-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+    .video-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
     
     .video-box {
       position: relative;
       background: #000;
       border-radius: 12px;
       overflow: hidden;
-      aspect-ratio: 1/1;
+      aspect-ratio: 16/9;
       border: 2px solid #2d2d44;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       transition: all 0.2s;
-      width: 100%;
     }
     .video-box:hover { border-color: #48cae4; transform: scale(1.02); box-shadow: 0 8px 25px rgba(72, 202, 228, 0.3); }
     .video-box.screen-share { border-color: #f59e0b; cursor: context-menu; }
     .video-box.screen-share:hover { border-color: #fbbf24; box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3); }
-    .video-box video { width: 100%; height: 100%; object-fit: cover; display: block; position: relative; z-index: 2; }
+    .video-box video { width: 100%; height: 100%; object-fit: cover; display: block; }
     .video-box.screen-share video { object-fit: contain; }
-    .video-box .name-tag { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.75); padding: 4px 10px; border-radius: 6px; font-size: 12px; z-index: 5; }
-    .video-box .status-tag { position: absolute; top: 8px; right: 8px; background: rgba(16, 185, 129, 0.9); padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; z-index: 5; }
-    .video-box .expand-icon { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); padding: 5px 8px; border-radius: 6px; font-size: 11px; z-index: 5; opacity: 0; transition: opacity 0.2s; }
+    .video-box .name-tag { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.75); padding: 6px 12px; border-radius: 6px; font-size: 13px; z-index: 2; }
+    .video-box .status-tag { position: absolute; top: 10px; right: 10px; background: rgba(16, 185, 129, 0.9); padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; z-index: 2; }
+    .video-box .expand-icon { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 6px 10px; border-radius: 6px; font-size: 12px; z-index: 2; opacity: 0; transition: opacity 0.2s; }
     .video-box:hover .expand-icon { opacity: 1; }
     
-    /* ✅ AVATAR PLACEHOLDER - ថ្មី */
+    /* ✅ AVATAR PLACEHOLDER (ពេលមិនបើកកាមេរ៉ា) */
     .video-box .avatar-placeholder {
       position: absolute;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      display: flex;
+      display: none;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      flex-direction: column;
       background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
       z-index: 1;
     }
+    .video-box.camera-off .avatar-placeholder { display: flex; }
+    .video-box.camera-off video { display: none; }
     .video-box .avatar-placeholder .avatar-circle {
-      width: 70px; height: 70px;
+      width: 90px;
+      height: 90px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #48cae4 0%, #8b5cf6 100%);
+      background: linear-gradient(135deg, #00b4d8, #8b5cf6);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 32px;
+      font-size: 40px;
       font-weight: bold;
       color: #fff;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-      box-shadow: 0 8px 25px rgba(72, 202, 228, 0.4);
       margin-bottom: 12px;
+      box-shadow: 0 4px 20px rgba(0, 180, 216, 0.5);
+      text-transform: uppercase;
     }
-    .video-box .avatar-placeholder .avatar-name { color: #e0e0e0; font-size: 14px; font-weight: 600; text-align: center; padding: 0 10px; }
-    .video-box .avatar-placeholder .avatar-status { color: #64748b; font-size: 11px; margin-top: 4px; }
-    .video-box.no-video video { display: none; }
+    .video-box .avatar-placeholder .avatar-name {
+      color: #48cae4;
+      font-size: 16px;
+      font-weight: 600;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      text-align: center;
+      padding: 0 10px;
+    }
+    .video-box .avatar-placeholder .mic-status {
+      margin-top: 10px;
+      font-size: 22px;
+    }
     
-    /* ✅ CHAT PANEL - Right Side */
+    /* ✅ CHAT PANEL */
     #chatPanel {
       position: fixed;
       top: 0;
@@ -296,7 +332,6 @@
     }
     .chat-header .close-btn:hover { color: #ef4444; }
     
-    /* ✅ CHAT USER LIST */
     .chat-body {
       display: flex;
       flex: 1;
@@ -359,7 +394,6 @@
       font-weight: bold;
     }
     
-    /* ✅ CHAT MESSAGES */
     .chat-messages-container {
       flex: 1;
       display: flex;
@@ -434,7 +468,6 @@
       font-size: 13px;
     }
     
-    /* ✅ CHAT INPUT */
     .chat-input {
       padding: 10px 15px;
       background: #0b132b;
@@ -467,7 +500,6 @@
     }
     .chat-input button:hover { background: #7c3aed; }
     
-    /* ✅ CHAT NOTIFICATION POPUP */
     .chat-notification {
       position: fixed;
       bottom: 20px;
@@ -539,20 +571,15 @@
     #beingControlledIndicator { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(239, 68, 68, 0.95); color: white; padding: 12px 25px; border-radius: 10px; font-weight: bold; z-index: 999999; box-shadow: 0 4px 20px rgba(239, 68, 68, 0.6); display: flex; align-items: center; gap: 10px; animation: pulseRed 1.5s ease-in-out infinite; }
     @keyframes pulseRed { 0%, 100% { box-shadow: 0 4px 20px rgba(239, 68, 68, 0.6); } 50% { box-shadow: 0 4px 30px rgba(239, 68, 68, 1); } }
     
-    /* CONTEXT MENU */
     .menu-item { transition: background 0.15s; }
     
-    /* RESPONSIVE */
     @media (max-width: 992px) {
-      .sidebar { width: 180px; padding: 15px; }
-      .screen-grid { grid-template-columns: repeat(auto-fill, 220px); }
-      .video-grid { grid-template-columns: repeat(auto-fill, 160px); }
+      .sidebar { width: 200px; padding: 15px; }
     }
     @media (max-width: 768px) {
       #app.active { flex-direction: column; }
-      .sidebar { width: 100%; max-height: 150px; position: static; }
-      .screen-grid { grid-template-columns: repeat(auto-fill, 200px); }
-      .video-grid { grid-template-columns: repeat(auto-fill, 140px); }
+      .sidebar { width: 100%; max-height: 200px; position: static; }
+      .screen-grid, .video-grid { grid-template-columns: 1fr; }
       .header { flex-direction: column; align-items: flex-start; }
       .controls { width: 100%; }
       .controls button { flex: 1; padding: 10px; font-size: 12px; }
@@ -569,10 +596,13 @@
     <div class="login-card">
       <h1>🔐 ចូលប្រើប្រាស់</h1>
       <div id="login-error" class="error-message"></div>
+      <div id="roleHint" class="role-hint"></div>
       <input type="text" id="loginUsername" placeholder="ឈ្មោះអ្នកប្រើ">
       <input type="password" id="loginPassword" placeholder="លេខសម្ងាត់">
-      <label>🚪 ជ្រើសរើសបន្ទប់:</label>
-      <select id="roomSelect"><option value="">-- កំពុងផ្ទុក... --</option></select>
+      <div class="room-select-group" id="roomSelectGroup">
+        <label>🚪 ជ្រើសរើសបន្ទប់:</label>
+        <select id="roomSelect"><option value="">-- កំពុងផ្ទុក... --</option></select>
+      </div>
       <button id="loginBtn" onclick="login()">🔑 ចូល</button>
     </div>
   </div>
@@ -629,7 +659,7 @@
     </div>
   </div>
 
-  <!-- ✅ CHAT PANEL (Right Side) -->
+  <!-- CHAT PANEL -->
   <div id="chatPanel">
     <div class="chat-header">
       <h3>💬 សារសម្ងាត់</h3>
@@ -725,10 +755,13 @@
     let unreadMessages = {};
     let totalUnread = 0;
 
+    // ✅ Participant Media State (សម្រាប់ Sidebar)
+    let participantMediaState = {}; // { name: { hasCamera, hasMic, hasScreen } }
+
     // Audio
     let audioContext = null;
 
-    const APP_VERSION = 'v19';
+    const APP_VERSION = 'v17';
     if (localStorage.getItem('appVersion') !== APP_VERSION) {
       localStorage.clear();
       sessionStorage.clear();
@@ -748,7 +781,7 @@
     }
 
     // ============================================================
-    // ✅ PIANO SOUND (លឺខ្លាំងជាងនេះបន្តិច)
+    // ✅ SOUND - បង្កើនសំឡេងឱ្យលឺខ្លាំង
     // ============================================================
     function initAudioContext() {
       if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -760,10 +793,11 @@
       try {
         const ctx = initAudioContext();
         const now = ctx.currentTime;
+        // ✅ សំឡេងចូល - បង្កើន volume ដល់ 0.5
         const notes = [
           { freq: 523.25, time: 0.0, duration: 0.25 },
           { freq: 659.25, time: 0.12, duration: 0.25 },
-          { freq: 783.99, time: 0.24, duration: 0.40 }
+          { freq: 783.99, time: 0.24, duration: 0.45 }
         ];
         notes.forEach(note => {
           const osc = ctx.createOscillator();
@@ -771,14 +805,14 @@
           osc.type = 'sine';
           osc.frequency.value = note.freq;
           gain.gain.setValueAtTime(0, now + note.time);
-          gain.gain.linearRampToValueAtTime(0.5, now + note.time + 0.02); // កើនពី 0.25 ទៅ 0.5
+          gain.gain.linearRampToValueAtTime(0.5, now + note.time + 0.03); // ✅ 0.5 ជំនួស 0.25
           gain.gain.exponentialRampToValueAtTime(0.001, now + note.time + note.duration);
           osc.connect(gain);
           gain.connect(ctx.destination);
           osc.start(now + note.time);
           osc.stop(now + note.time + note.duration);
         });
-        console.log('🎹 Join sound');
+        console.log('🎹 Join sound (volume 0.5)');
       } catch (e) { console.log('Sound error:', e); }
     }
 
@@ -786,10 +820,11 @@
       try {
         const ctx = initAudioContext();
         const now = ctx.currentTime;
+        // ✅ សំឡេងចេញ - បង្កើន volume ដល់ 0.5
         const notes = [
           { freq: 783.99, time: 0.0, duration: 0.25 },
           { freq: 659.25, time: 0.14, duration: 0.25 },
-          { freq: 523.25, time: 0.28, duration: 0.45 }
+          { freq: 523.25, time: 0.28, duration: 0.50 }
         ];
         notes.forEach(note => {
           const osc = ctx.createOscillator();
@@ -797,14 +832,14 @@
           osc.type = 'sine';
           osc.frequency.value = note.freq;
           gain.gain.setValueAtTime(0, now + note.time);
-          gain.gain.linearRampToValueAtTime(0.5, now + note.time + 0.02); // កើនពី 0.25 ទៅ 0.5
+          gain.gain.linearRampToValueAtTime(0.5, now + note.time + 0.03); // ✅ 0.5
           gain.gain.exponentialRampToValueAtTime(0.001, now + note.time + note.duration);
           osc.connect(gain);
           gain.connect(ctx.destination);
           osc.start(now + note.time);
           osc.stop(now + note.time + note.duration);
         });
-        console.log('🎹 Leave sound');
+        console.log('🎹 Leave sound (volume 0.5)');
       } catch (e) { console.log('Sound error:', e); }
     }
 
@@ -818,13 +853,45 @@
         osc.frequency.setValueAtTime(880, now);
         osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
         gain.gain.setValueAtTime(0, now);
-        gain.gain.linearRampToValueAtTime(0.3, now + 0.02); // កើនពី 0.2 ទៅ 0.3
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+        gain.gain.linearRampToValueAtTime(0.35, now + 0.03); // ✅ បង្កើន
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start(now);
-        osc.stop(now + 0.15);
+        osc.stop(now + 0.18);
       } catch (e) {}
+    }
+
+    // ============================================================
+    // ✅ CHECK ROLE FOR LOGIN FORM
+    // ============================================================
+    async function checkUserRoleForLogin() {
+      const username = document.getElementById('loginUsername').value.trim();
+      if (!username) return;
+      
+      try {
+        const res = await fetch('/api/auth/check-role', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username })
+        });
+        const data = await res.json();
+        
+        const roomGroup = document.getElementById('roomSelectGroup');
+        const roleHint = document.getElementById('roleHint');
+        
+        if (data.role === 'admin' || data.role === 'supervisor') {
+          roomGroup.classList.add('hidden');
+          roleHint.textContent = `👑 ${data.role === 'admin' ? 'Admin' : 'Supervisor'} អាចចូលបន្ទប់ណាក៏បានដោយមិនចាំបាច់ជ្រើសរើស`;
+          roleHint.classList.add('show');
+        } else {
+          roomGroup.classList.remove('hidden');
+          roleHint.classList.remove('show');
+        }
+      } catch (e) {
+        document.getElementById('roomSelectGroup').classList.remove('hidden');
+        document.getElementById('roleHint').classList.remove('show');
+      }
     }
 
     // ============================================================
@@ -838,11 +905,13 @@
         window.history.replaceState({}, '', '/');
       }
       
+      // ✅ ភ្ជាប់ event សម្រាប់ username blur
+      document.getElementById('loginUsername').addEventListener('blur', checkUserRoleForLogin);
+      
       const savedToken = localStorage.getItem('authToken');
       const savedUser = localStorage.getItem('currentUser');
       const autoJoinRoom = localStorage.getItem('autoJoinRoom');
       
-      // ✅ ប្រសិនបើមាន autoJoinRoom + session → ចូលបន្ទប់ភ្លាម
       if (autoJoinRoom && savedToken && savedUser) {
         authToken = savedToken;
         currentUser = JSON.parse(savedUser);
@@ -878,12 +947,37 @@
       });
 
       socket.on('connect', () => {
+        console.log('✅ Socket.IO connected:', socket.id);
         socketConnected = true;
-        if (currentUser) socket.emit('register-user', { username: currentUser.username });
+        if (currentUser) {
+          socket.emit('register-user', { username: currentUser.username });
+          // ✅ ប្រកាសថាចូលបន្ទប់ (សម្រាប់សំឡេង join/leave)
+          if (document.getElementById('currentRoom').textContent !== '-') {
+            socket.emit('room-joined', {
+              roomId: document.getElementById('currentRoom').textContent,
+              username: currentUser.username,
+              displayName: currentUser.displayName || currentUser.username
+            });
+          }
+        }
       });
 
       socket.on('disconnect', () => { socketConnected = false; });
 
+      // ✅ JOIN/LEAVE SOUND BROADCAST
+      socket.on('room-user-joined', ({ roomId, username, displayName }) => {
+        console.log(`👤 ${username} joined room`);
+        showStatus(`👤 ${displayName || username} បានចូលបន្ទប់`);
+        playJoinSound(); // ✅ លេងសំឡេងចូល
+      });
+
+      socket.on('room-user-left', ({ roomId, username }) => {
+        console.log(`👤 ${username} left room`);
+        showStatus(`👤 ${username} បានចាកចេញ`);
+        playLeaveSound(); // ✅ លេងសំឡេងចេញ
+      });
+
+      // Remote Control
       socket.on('remote-request-received', ({ controllerName, controllerSocketId }) => {
         remoteControllerSocketId = controllerSocketId;
         document.getElementById('remoteRequesterName').textContent = controllerName;
@@ -938,8 +1032,12 @@
         document.getElementById('remoteRequestModal').classList.remove('active');
       });
 
+      // Chat
       socket.on('chat-message-received', ({ fromUsername, fromSocketId, message, time }) => {
+        console.log('💬 Message from:', fromUsername);
+        
         const senderId = fromSocketId;
+        
         if (!chatHistory[senderId]) chatHistory[senderId] = [];
         chatHistory[senderId].push({
           from: 'other',
@@ -993,20 +1091,25 @@
     function updateChatUserList() {
       const container = document.getElementById('chatUserList');
       if (!container) return;
+      
       container.innerHTML = '';
+      
       const users = [];
       if (room) {
         room.remoteParticipants.forEach(p => {
           users.push({ id: p.identity, name: p.identity });
         });
       }
+      
       if (users.length === 0) {
         container.innerHTML = '<div style="padding:15px; color:#64748b; font-size:11px; text-align:center;">គ្មានអ្នកប្រើ</div>';
         return;
       }
+      
       users.forEach(user => {
         const unread = unreadMessages[user.id] || 0;
         const isActive = currentChatTarget === user.id;
+        
         const div = document.createElement('div');
         div.className = 'chat-user-item' + (isActive ? ' active' : '');
         div.innerHTML = `
@@ -1021,11 +1124,13 @@
 
     function selectChatUser(peerId, username) {
       currentChatTarget = peerId;
+      
       if (unreadMessages[peerId]) {
         totalUnread -= unreadMessages[peerId];
         unreadMessages[peerId] = 0;
         updateChatBadge();
       }
+      
       document.getElementById('chatTargetHeader').textContent = '💬 ' + username;
       updateChatUserList();
       renderChatMessages();
@@ -1035,11 +1140,14 @@
     function renderChatMessages() {
       const container = document.getElementById('chatMessages');
       if (!container || !currentChatTarget) return;
+      
       const messages = chatHistory[currentChatTarget] || [];
+      
       if (messages.length === 0) {
         container.innerHTML = '<div class="chat-empty">ចាប់ផ្ដើមសន្ទនា...</div>';
         return;
       }
+      
       container.innerHTML = '';
       messages.forEach(msg => {
         const div = document.createElement('div');
@@ -1050,22 +1158,32 @@
         `;
         container.appendChild(div);
       });
+      
       container.scrollTop = container.scrollHeight;
     }
 
     function sendChat() {
       const input = document.getElementById('chatInput');
       const message = input.value.trim();
+      
       if (!message || !currentChatTarget) return;
+      
       const time = new Date().toLocaleTimeString();
+      
       socket.emit('chat-message', {
         toSocketId: currentChatTarget,
         message: message,
         fromUsername: currentUser.username,
         time: time
       });
+      
       if (!chatHistory[currentChatTarget]) chatHistory[currentChatTarget] = [];
-      chatHistory[currentChatTarget].push({ from: 'me', message, time });
+      chatHistory[currentChatTarget].push({
+        from: 'me',
+        message,
+        time
+      });
+      
       input.value = '';
       renderChatMessages();
     }
@@ -1083,6 +1201,7 @@
         notif.remove();
       };
       document.body.appendChild(notif);
+      
       setTimeout(() => {
         if (notif.parentNode) {
           notif.style.opacity = '0';
@@ -1139,8 +1258,10 @@
 
     function requestRemote(targetName) {
       if (!socketConnected) return showStatus('⚠️ កំពុងភ្ជាប់ Socket...');
+      
       const targetUsername = targetName.replace(' (អ្នក)', '').trim();
       if (!confirm(`ស្នើសុំគ្រប់គ្រង Screen របស់ "${targetUsername}"?`)) return;
+      
       socket.emit('remote-request', {
         targetUsername: targetUsername,
         controllerName: currentUser.displayName || currentUser.username
@@ -1192,10 +1313,13 @@
 
     function startRemoteControl() {
       if (!isRemoteControlling || !remoteTargetSocketId) return showStatus('⚠️ មិនទាន់មានការអនុញ្ញាត!');
+      
       let container = document.getElementById('remoteScreenContainer');
       if (!container) container = createRemoteScreenContainer();
       container.style.display = 'flex';
+      
       const video = document.getElementById('remoteScreenVideo');
+      
       let targetScreenTrack = null;
       room.remoteParticipants.forEach(participant => {
         if (participant.identity === document.getElementById('remoteTargetName').textContent) {
@@ -1204,6 +1328,7 @@
           });
         }
       });
+      
       if (targetScreenTrack) {
         video.srcObject = new MediaStream([targetScreenTrack.mediaStreamTrack]);
       } else {
@@ -1218,6 +1343,7 @@
           }
         });
       }
+      
       video.onmousemove = (e) => {
         if (!isRemoteControlling) return;
         const rect = video.getBoundingClientRect();
@@ -1225,6 +1351,7 @@
         const y = (e.clientY - rect.top) / rect.height;
         socket.emit('remote-mouse-move', { targetSocketId: remoteTargetSocketId, x, y });
       };
+      
       video.onclick = (e) => {
         if (!isRemoteControlling) return;
         const rect = video.getBoundingClientRect();
@@ -1232,6 +1359,7 @@
         const y = (e.clientY - rect.top) / rect.height;
         socket.emit('remote-mouse-click', { targetSocketId: remoteTargetSocketId, x, y, button: e.button });
       };
+      
       showStatus('🎮 ចាប់ផ្ដើមបញ្ជា! ចុចលើ Screen');
     }
 
@@ -1265,16 +1393,18 @@
     }
 
     // ============================================================
-    // CONTEXT MENU
+    // CONTEXT MENU FOR SCREEN SHARE
     // ============================================================
     function showScreenShareContextMenu(event, videoElement, name) {
       event.preventDefault();
       const oldMenu = document.getElementById('screenShareContextMenu');
       if (oldMenu) oldMenu.remove();
+      
       const isSelfScreen = name.includes('អ្នក');
       const menu = document.createElement('div');
       menu.id = 'screenShareContextMenu';
       menu.style.cssText = `position: fixed; left: ${event.clientX}px; top: ${event.clientY}px; background: #16213e; border: 1px solid #2d2d44; border-radius: 8px; padding: 8px 0; z-index: 999999; min-width: 220px; box-shadow: 0 10px 40px rgba(0,0,0,0.7);`;
+      
       let menuHTML = '';
       if (isSelfScreen) {
         menuHTML = `
@@ -1302,8 +1432,10 @@
         `;
       }
       menuHTML += `<div class="menu-item" onclick="closeScreenShareMenu()" style="padding: 8px 15px; cursor: pointer; font-size: 13px; color: #94a3b8; border-top: 1px solid #2d2d44; text-align: center;">✕ បិទ</div>`;
+      
       menu.innerHTML = menuHTML;
       document.body.appendChild(menu);
+      
       const closeMenu = (e) => {
         if (!menu.contains(e.target)) { menu.remove(); document.removeEventListener('click', closeMenu); }
       };
@@ -1401,8 +1533,19 @@
       const errorDiv = document.getElementById('login-error');
 
       errorDiv.classList.remove('show');
-      if (!username || !password) { errorDiv.textContent = 'សូមបំពេញ!'; errorDiv.classList.add('show'); return; }
-      if (!selectedRoom) { errorDiv.textContent = 'សូមជ្រើសរើសបន្ទប់!'; errorDiv.classList.add('show'); return; }
+      if (!username || !password) { 
+        errorDiv.textContent = 'សូមបំពេញ!'; 
+        errorDiv.classList.add('show'); 
+        return; 
+      }
+      
+      // ✅ ពិនិត្យថាតើត្រូវការជ្រើសបន្ទប់ឬអត់
+      const roomGroupHidden = document.getElementById('roomSelectGroup').classList.contains('hidden');
+      if (!roomGroupHidden && !selectedRoom) { 
+        errorDiv.textContent = 'សូមជ្រើសរើសបន្ទប់!'; 
+        errorDiv.classList.add('show'); 
+        return; 
+      }
 
       loginBtn.disabled = true;
       loginBtn.textContent = '⏳ កំពុងចូល...';
@@ -1411,12 +1554,17 @@
         const response = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password, deviceId: getDeviceId(), selectedRoom })
+          body: JSON.stringify({ 
+            username, 
+            password, 
+            deviceId: getDeviceId(), 
+            selectedRoom: roomGroupHidden ? null : selectedRoom
+          })
         });
         const data = await response.json();
 
         if (data.requires2FA) {
-          pendingLoginData = { username, password, selectedRoom };
+          pendingLoginData = { username, password, selectedRoom: roomGroupHidden ? null : selectedRoom };
           document.getElementById('otp-modal').classList.add('active');
           document.getElementById('otpInput').focus();
           return;
@@ -1429,7 +1577,7 @@
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
         localStorage.setItem('deviceId', getDeviceId());
 
-        await handlePostLogin(data.selectedRoom || selectedRoom);
+        await handlePostLogin(data.selectedRoom || (roomGroupHidden ? null : selectedRoom));
       } catch (error) {
         errorDiv.textContent = error.message;
         errorDiv.classList.add('show');
@@ -1448,7 +1596,6 @@
       return deviceId;
     }
 
-    // ✅ POST LOGIN HANDLER - Admin ចូល Dashboard ភ្លាម
     async function handlePostLogin(selectedRoom) {
       const autoJoinRoom = localStorage.getItem('autoJoinRoom');
       if (autoJoinRoom) {
@@ -1458,7 +1605,7 @@
         return;
       }
       
-      // ✅ Admin/Supervisor → Dashboard ភ្លាម មិនចាំបាច់ជ្រើសរើសបន្ទប់
+      // ✅ Admin/Supervisor → Dashboard
       if (currentUser.role === 'admin' || currentUser.role === 'supervisor') {
         showStatus('✅ កំពុងបើក Dashboard...');
         setTimeout(() => window.location.href = '/admin.html', 800);
@@ -1483,14 +1630,22 @@
         const response = await fetch('/api/auth/verify-otp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: pendingLoginData.username, password: pendingLoginData.password, otp, deviceId: getDeviceId(), selectedRoom: pendingLoginData.selectedRoom })
+          body: JSON.stringify({ 
+            username: pendingLoginData.username, 
+            password: pendingLoginData.password, 
+            otp, 
+            deviceId: getDeviceId(), 
+            selectedRoom: pendingLoginData.selectedRoom 
+          })
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error);
+        
         authToken = data.token;
         currentUser = data.user;
         localStorage.setItem('authToken', authToken);
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        
         document.getElementById('otp-modal').classList.remove('active');
         document.getElementById('otpInput').value = '';
         pendingLoginData = null;
@@ -1519,6 +1674,8 @@
       document.getElementById('loginUsername').value = '';
       document.getElementById('loginPassword').value = '';
       document.getElementById('roomSelect').value = '';
+      document.getElementById('roomSelectGroup').classList.remove('hidden');
+      document.getElementById('roleHint').classList.remove('show');
       showLogin();
       await loadPublicRooms();
       showStatus('🚪 បានចាកចេញ');
@@ -1526,7 +1683,6 @@
 
     function openAdmin() { window.location.href = '/admin.html'; }
 
-    // ✅ JOIN ROOM - Admin ចូលបន្ទប់ភ្លាម មិនចាំបាច់ Login ម្តងទៀត
     async function joinRoom(roomName) {
       showLoading('⏳ កំពុងចូល ' + roomName + '...');
       const timeoutId = setTimeout(() => {
@@ -1569,15 +1725,22 @@
         localParticipant = room.localParticipant;
         try { await localParticipant.setMicrophoneEnabled(true); isMicOn = true; } catch (e) { isMicOn = false; }
 
+        // ✅ ចាប់ផ្ដើមជាមួយកាមេរ៉ាបិទ
+        isCameraOn = false;
+
         displayLocalTracks(currentUser.displayName || currentUser.username);
-        room.remoteParticipants.forEach(p => { addParticipantToList(p.identity); displayRemoteTracks(p); });
+        room.remoteParticipants.forEach(p => { 
+          addParticipantToList(p.identity); 
+          displayRemoteTracks(p); 
+        });
 
-        // ✅ បង្ហាញ Avatar ប្រសិនបើកាមេរ៉ាបិទ
-        if (!isCameraOn) {
-          showAvatarPlaceholder(localParticipant.identity, currentUser.displayName || currentUser.username, true);
-        }
-
-        try { await fetch('/api/online/join', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ roomId: roomName }) }); } catch (e) {}
+        try { 
+          await fetch('/api/online/join', { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, 
+            body: JSON.stringify({ roomId: roomName }) 
+          }); 
+        } catch (e) {}
 
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app').classList.add('active');
@@ -1609,11 +1772,7 @@
     function displayLocalTracks(username) {
       try {
         Array.from(localParticipant.videoTrackPublications.values()).forEach(pub => {
-          if (pub.track && pub.source === 'camera') {
-            attachVideoTrack(pub.track, username + ' (អ្នក)', false);
-          } else if (pub.track && pub.source === 'screen_share') {
-            attachVideoTrack(pub.track, username + ' (អ្នក)', true);
-          }
+          if (pub.track) attachVideoTrack(pub.track, username + ' (អ្នក)', pub.source === 'screen_share');
         });
         Array.from(localParticipant.audioTrackPublications.values()).forEach(pub => { if (pub.track) pub.track.attach(); });
       } catch (e) {}
@@ -1622,9 +1781,7 @@
     function displayRemoteTracks(participant) {
       try {
         Array.from(participant.videoTrackPublications.values()).forEach(pub => {
-          if (pub.isSubscribed && pub.track) {
-            attachVideoTrack(pub.track, participant.identity, pub.source === 'screen_share');
-          }
+          if (pub.isSubscribed && pub.track) attachVideoTrack(pub.track, participant.identity, pub.source === 'screen_share');
         });
         Array.from(participant.audioTrackPublications.values()).forEach(pub => { if (pub.isSubscribed && pub.track) pub.track.attach(); });
       } catch (e) {}
@@ -1636,6 +1793,7 @@
         updateParticipantCount();
         updateChatUserList();
         showStatus('👤 ' + participant.identity + ' បានចូល');
+        // ✅ លេងសំឡេងចូល (Local detection)
         playJoinSound();
         setTimeout(() => displayRemoteTracks(participant), 500);
       });
@@ -1644,18 +1802,29 @@
         removeParticipantFromList(participant.identity);
         removeVideoByParticipant(participant.identity, false);
         removeVideoByParticipant(participant.identity, true);
+        delete participantMediaState[participant.identity];
         updateParticipantCount();
         updateChatUserList();
+        // ✅ លេងសំឡេងចេញ (Local detection)
         playLeaveSound();
       });
 
       room.on('trackSubscribed', (track, publication, participant) => {
         if (track.kind === 'video') {
-          const isScreen = publication.source === 'screen_share';
-          attachVideoTrack(track, participant.identity, isScreen);
-          if (!isScreen) hideAvatarPlaceholder(participant.identity);
+          attachVideoTrack(track, participant.identity, publication.source === 'screen_share');
+          // ✅ Update media state
+          if (!participantMediaState[participant.identity]) participantMediaState[participant.identity] = {};
+          if (publication.source === 'screen_share') {
+            participantMediaState[participant.identity].hasScreen = true;
+          } else {
+            participantMediaState[participant.identity].hasCamera = true;
+          }
+          updateParticipantMediaIcons(participant.identity);
         } else if (track.kind === 'audio') {
           track.attach();
+          if (!participantMediaState[participant.identity]) participantMediaState[participant.identity] = {};
+          participantMediaState[participant.identity].hasMic = true;
+          updateParticipantMediaIcons(participant.identity);
         }
       });
 
@@ -1663,51 +1832,67 @@
         track.detach();
         if (publication.source === 'screen_share') {
           removeVideoByParticipant(participant.identity, true);
+          if (participantMediaState[participant.identity]) {
+            participantMediaState[participant.identity].hasScreen = false;
+            updateParticipantMediaIcons(participant.identity);
+          }
         } else if (track.kind === 'video') {
-          showAvatarPlaceholder(participant.identity, participant.identity);
-        }
-      });
-
-      // ✅ តាមដានកាមេរ៉ា On/Off
-      room.on('trackMuted', (publication, participant) => {
-        if (publication.kind === 'video' && publication.source === 'camera') {
-          showAvatarPlaceholder(participant.identity, participant.identity);
-        }
-      });
-
-      room.on('trackUnmuted', (publication, participant) => {
-        if (publication.kind === 'video' && publication.source === 'camera') {
-          hideAvatarPlaceholder(participant.identity);
+          removeVideoByParticipant(participant.identity, false);
+          if (participantMediaState[participant.identity]) {
+            participantMediaState[participant.identity].hasCamera = false;
+            updateParticipantMediaIcons(participant.identity);
+          }
+        } else if (track.kind === 'audio') {
+          if (participantMediaState[participant.identity]) {
+            participantMediaState[participant.identity].hasMic = false;
+            updateParticipantMediaIcons(participant.identity);
+          }
         }
       });
 
       room.on('localTrackPublished', (publication) => {
         if (publication.source === 'screen_share' && publication.track) {
           attachVideoTrack(publication.track, localParticipant.identity + ' (អ្នក)', true);
-        } else if (publication.kind === 'video' && publication.track && publication.source === 'camera') {
+          if (!participantMediaState[localParticipant.identity]) participantMediaState[localParticipant.identity] = {};
+          participantMediaState[localParticipant.identity].hasScreen = true;
+          updateParticipantMediaIcons(localParticipant.identity + ' (អ្នក)');
+        } else if (publication.kind === 'video' && publication.track) {
           attachVideoTrack(publication.track, localParticipant.identity + ' (អ្នក)', false);
-          hideAvatarPlaceholder(localParticipant.identity);
+          if (!participantMediaState[localParticipant.identity]) participantMediaState[localParticipant.identity] = {};
+          participantMediaState[localParticipant.identity].hasCamera = true;
+          updateParticipantMediaIcons(localParticipant.identity + ' (អ្នក)');
         }
       });
 
       room.on('localTrackUnpublished', (publication) => {
         if (publication.source === 'screen_share') {
           removeVideoByParticipant(localParticipant.identity + ' (អ្នក)', true);
-        } else if (publication.kind === 'video' && publication.source === 'camera') {
-          showAvatarPlaceholder(localParticipant.identity, currentUser.displayName || currentUser.username, true);
+          if (participantMediaState[localParticipant.identity]) {
+            participantMediaState[localParticipant.identity].hasScreen = false;
+            updateParticipantMediaIcons(localParticipant.identity + ' (អ្នក)');
+          }
+        } else if (publication.kind === 'video') {
+          removeVideoByParticipant(localParticipant.identity + ' (អ្នក)', false);
+          if (participantMediaState[localParticipant.identity]) {
+            participantMediaState[localParticipant.identity].hasCamera = false;
+            updateParticipantMediaIcons(localParticipant.identity + ' (អ្នក)');
+          }
         }
       });
 
       room.on('disconnected', () => leaveRoom(false));
     }
 
-    // ✅ ATTACH VIDEO TRACK
+    // ============================================================
+    // ✅ ATTACH VIDEO TRACK WITH AVATAR FALLBACK
+    // ============================================================
     function attachVideoTrack(track, name, isScreen = false) {
       if (!track) return;
       const safeName = name.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
       const boxId = (isScreen ? 'screen-' : 'video-') + safeName;
       const gridId = isScreen ? 'screenGrid' : 'videoGrid';
-      const isSelf = name.includes('អ្នក');
+      const displayName = name.replace(' (អ្នក)', '');
+      const initial = displayName.charAt(0).toUpperCase();
       
       let box = document.getElementById(boxId);
       if (box) {
@@ -1716,24 +1901,27 @@
         if (oldVideo) oldVideo.remove();
         const videoElement = track.attach();
         videoElement.autoplay = true; videoElement.playsInline = true;
-        if (isSelf) videoElement.muted = true;
-        // ✅ លុប Avatar
-        const avatar = box.querySelector('.avatar-placeholder');
-        if (avatar) avatar.remove();
-        box.classList.remove('no-video');
+        if (name.includes('អ្នក')) videoElement.muted = true;
         box.insertBefore(videoElement, box.firstChild);
-        if (isScreen) addScreenShareContextMenu(videoElement, name, isSelf);
+        // ✅ លុប camera-off class ព្រោះមាន video ថ្មី
+        box.classList.remove('camera-off');
+        if (isScreen) addScreenShareContextMenu(videoElement, name, name.includes('អ្នក'));
         return;
       }
 
       const videoElement = track.attach();
       videoElement.autoplay = true; videoElement.playsInline = true;
-      if (isSelf) videoElement.muted = true;
+      if (name.includes('អ្នក')) videoElement.muted = true;
 
       box = document.createElement('div');
       box.className = 'video-box' + (isScreen ? ' screen-share' : '');
       box.id = boxId;
       box.innerHTML = `
+        <div class="avatar-placeholder">
+          <div class="avatar-circle">${initial}</div>
+          <div class="avatar-name">${displayName}</div>
+          <div class="mic-status">🎤</div>
+        </div>
         <div class="name-tag">${isScreen ? '🖥️ ' : '👤 '}${name}</div>
         <div class="status-tag">🟢 Live</div>
         <div class="expand-icon">${isScreen ? '🖱️ Right-Click' : '🔍 ចុចមើលធំ'}</div>
@@ -1742,42 +1930,48 @@
       document.getElementById(gridId).appendChild(box);
       
       box.onclick = () => openFullscreen(videoElement, name, isScreen);
-      if (isScreen) addScreenShareContextMenu(videoElement, name, isSelf);
+      if (isScreen) addScreenShareContextMenu(videoElement, name, name.includes('អ្នក'));
       if (isScreen) document.getElementById('screenTitle').style.display = 'flex';
       updateVideoCounts();
     }
 
-    // ✅ AVATAR PLACEHOLDER
-    function showAvatarPlaceholder(peerId, displayName, isSelf = false) {
-      const safeName = displayName.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
-      const boxId = 'video-' + safeName;
-      const box = document.getElementById(boxId);
-      if (!box) return;
-      if (box.querySelector('.avatar-placeholder')) return;
-      
-      const video = box.querySelector('video');
-      if (video) video.remove();
-      
-      const initial = displayName.charAt(0).toUpperCase();
-      const avatarHTML = `
-        <div class="avatar-placeholder" id="avatar-${safeName}">
-          <div class="avatar-circle">${initial}</div>
-          <div class="avatar-name">${displayName}${isSelf ? ' (អ្នក)' : ''}</div>
-          <div class="avatar-status">📷 កាមេរ៉ាបិទ</div>
-        </div>
-      `;
-      box.classList.add('no-video');
-      box.insertAdjacentHTML('afterbegin', avatarHTML);
+    // ✅ បង្ហាញ Avatar ពេលបិទកាមេរ៉ា
+    function setCameraOffState(name, isOff) {
+      const safeName = name.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
+      const box = document.getElementById('video-' + safeName);
+      if (box) {
+        if (isOff) {
+          box.classList.add('camera-off');
+        } else {
+          box.classList.remove('camera-off');
+        }
+      }
     }
 
-    function hideAvatarPlaceholder(displayName) {
-      const safeName = displayName.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
+    // ✅ បង្កើត Box សម្រាប់អ្នកដែលបិទកាមេរ៉ា
+    function createCameraOffBox(name) {
+      const safeName = name.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
       const boxId = 'video-' + safeName;
-      const box = document.getElementById(boxId);
-      if (!box) return;
-      const avatar = box.querySelector('.avatar-placeholder');
-      if (avatar) avatar.remove();
-      box.classList.remove('no-video');
+      if (document.getElementById(boxId)) return;
+      
+      const displayName = name.replace(' (អ្នក)', '');
+      const initial = displayName.charAt(0).toUpperCase();
+      
+      const box = document.createElement('div');
+      box.className = 'video-box camera-off';
+      box.id = boxId;
+      box.innerHTML = `
+        <div class="avatar-placeholder">
+          <div class="avatar-circle">${initial}</div>
+          <div class="avatar-name">${displayName}</div>
+          <div class="mic-status">🎤</div>
+        </div>
+        <div class="name-tag">👤 ${name}</div>
+        <div class="status-tag" style="background: rgba(239, 68, 68, 0.9);">📷 បិទកាមេរ៉ា</div>
+      `;
+      box.onclick = () => openFullscreen(null, name, false);
+      document.getElementById('videoGrid').appendChild(box);
+      updateVideoCounts();
     }
 
     function openFullscreen(videoElement, name, isScreen) {
@@ -1785,10 +1979,23 @@
       const modalBody = document.getElementById('modalBody');
       document.getElementById('modalTitle').textContent = (isScreen ? '🖥️ ' : '👤 ') + name;
       modalBody.innerHTML = '';
-      const newVideo = document.createElement('video');
-      newVideo.autoplay = true; newVideo.playsInline = true; newVideo.muted = videoElement.muted;
-      newVideo.srcObject = videoElement.srcObject;
-      modalBody.appendChild(newVideo);
+      
+      if (videoElement && videoElement.srcObject) {
+        const newVideo = document.createElement('video');
+        newVideo.autoplay = true; newVideo.playsInline = true; newVideo.muted = videoElement.muted;
+        newVideo.srcObject = videoElement.srcObject;
+        modalBody.appendChild(newVideo);
+      } else {
+        // ✅ បង្ហាញ Avatar ពេលគ្មាន video
+        const displayName = name.replace(' (អ្នក)', '');
+        modalBody.innerHTML = `
+          <div style="display:flex; flex-direction:column; align-items:center; gap:20px;">
+            <div style="width:150px; height:150px; border-radius:50%; background:linear-gradient(135deg, #00b4d8, #8b5cf6); display:flex; align-items:center; justify-content:center; font-size:70px; font-weight:bold; color:#fff; box-shadow: 0 4px 30px rgba(0, 180, 216, 0.5);">${displayName.charAt(0).toUpperCase()}</div>
+            <div style="color:#48cae4; font-size:24px; font-weight:600;">${displayName}</div>
+            <div style="color:#ef4444; font-size:16px;">📷 បិទកាមេរ៉ា</div>
+          </div>
+        `;
+      }
       modal.classList.add('active');
     }
 
@@ -1828,7 +2035,12 @@
 
     async function toggleMic() {
       if (!localParticipant) return;
-      try { isMicOn = !isMicOn; await localParticipant.setMicrophoneEnabled(isMicOn); updateMediaButtons(); } catch (e) {}
+      try { 
+        isMicOn = !isMicOn; 
+        await localParticipant.setMicrophoneEnabled(isMicOn); 
+        updateMediaButtons();
+        updateParticipantMediaIcons(localParticipant.identity + ' (អ្នក)');
+      } catch (e) {}
     }
 
     async function toggleCamera() {
@@ -1838,20 +2050,24 @@
         await localParticipant.setCameraEnabled(isCameraOn);
         updateMediaButtons();
         
+        const myName = localParticipant.identity + ' (អ្នក)';
         if (!isCameraOn) {
-          // ✅ បង្ហាញ Avatar
-          showAvatarPlaceholder(
-            localParticipant.identity,
-            currentUser.displayName || currentUser.username,
-            true
-          );
+          // ✅ បង្ហាញ Avatar ពេលបិទកាមេរ៉ា
+          removeVideoByParticipant(myName, false);
+          createCameraOffBox(myName);
+          if (!participantMediaState[localParticipant.identity]) participantMediaState[localParticipant.identity] = {};
+          participantMediaState[localParticipant.identity].hasCamera = false;
         } else {
-          // ✅ លុប Avatar
-          hideAvatarPlaceholder(currentUser.displayName || currentUser.username);
+          // ✅ លុប Avatar ពេលបើកកាមេរ៉ា
+          const safeName = myName.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
+          const existingBox = document.getElementById('video-' + safeName);
+          if (existingBox) existingBox.remove();
+          if (!participantMediaState[localParticipant.identity]) participantMediaState[localParticipant.identity] = {};
+          participantMediaState[localParticipant.identity].hasCamera = true;
+          // Video នឹងត្រូវបានភ្ជាប់ដោយ localTrackPublished event
         }
-      } catch (error) {
-        isCameraOn = !isCameraOn;
-      }
+        updateParticipantMediaIcons(myName);
+      } catch (e) {}
     }
 
     async function toggleScreenShare() {
@@ -1864,10 +2080,13 @@
         btn.innerHTML = isScreenSharing ? '🛑 ឈប់' : '🖥️ ចែកអេក្រង់';
         btn.className = isScreenSharing ? 'btn-danger' : 'btn-warning';
         if (!isScreenSharing) removeVideoByParticipant(localParticipant.identity + ' (អ្នក)', true);
+        updateParticipantMediaIcons(localParticipant.identity + ' (អ្នក)');
       } catch (e) { isScreenSharing = false; }
     }
 
-    // ✅ SIDEBAR - PARTICIPANTS
+    // ============================================================
+    // ✅ SIDEBAR - Participants List with Media Icons
+    // ============================================================
     function addParticipantToList(name) {
       const list = document.getElementById('participantsList');
       const safeName = name.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
@@ -1882,14 +2101,39 @@
       if (isSelf) item.classList.add('me');
       
       const displayName = name.replace(' (អ្នក)', '');
-      const remoteBtn = (!isSelf) ? `<button class="remote-btn" onclick="event.stopPropagation(); requestRemote('${name}')">🎮 Remote</button>` : '';
+      const remoteBtn = (!isSelf) ? `<button class="remote-btn" onclick="event.stopPropagation(); requestRemote('${name}')">🎮</button>` : '';
       
       item.innerHTML = `
         <div class="dot"></div>
         <span style="flex:1;">${displayName}${isSelf ? ' (អ្នក)' : ''}</span>
+        <div class="media-status" id="media-${safeName}">
+          <span class="icon" id="mic-${safeName}" title="មេក្រូ">🎤</span>
+          <span class="icon" id="cam-${safeName}" title="កាមេរ៉ា">📹</span>
+          <span class="icon" id="screen-${safeName}" title="ចែកអេក្រង់">🖥️</span>
+        </div>
         ${remoteBtn}
       `;
       list.appendChild(item);
+      
+      // ✅ Initialize media state
+      if (!participantMediaState[name]) {
+        participantMediaState[name] = { hasMic: false, hasCamera: false, hasScreen: false };
+      }
+      updateParticipantMediaIcons(name);
+    }
+
+    // ✅ Update Media Icons
+    function updateParticipantMediaIcons(name) {
+      const safeName = name.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
+      const state = participantMediaState[name] || {};
+      
+      const micIcon = document.getElementById('mic-' + safeName);
+      const camIcon = document.getElementById('cam-' + safeName);
+      const screenIcon = document.getElementById('screen-' + safeName);
+      
+      if (micIcon) micIcon.classList.toggle('active', state.hasMic !== false);
+      if (camIcon) camIcon.classList.toggle('active', state.hasCamera === true);
+      if (screenIcon) screenIcon.classList.toggle('active', state.hasScreen === true);
     }
 
     function removeParticipantFromList(name) {
@@ -1909,6 +2153,14 @@
       if (isBeingControlled) stopBeingControlled();
       if (isRemoteControlling) endRemoteControl();
       
+      // ✅ ប្រកាសចេញពីបន្ទប់
+      if (socket && currentUser) {
+        const currentRoomId = document.getElementById('currentRoom').textContent;
+        if (currentRoomId !== '-') {
+          socket.emit('room-left', { roomId: currentRoomId, username: currentUser.username });
+        }
+      }
+      
       if (room) { try { await room.disconnect(); } catch (e) {} room = null; localParticipant = null; }
       try { await fetch('/api/online/leave', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` } }); } catch (e) {}
       
@@ -1925,6 +2177,7 @@
       currentChatTarget = null;
       totalUnread = 0;
       unreadMessages = {};
+      participantMediaState = {};
       updateChatBadge();
       
       if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'supervisor')) {
