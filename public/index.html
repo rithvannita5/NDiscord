@@ -21,7 +21,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Kantumruy Pro', 'Noto Sans Khmer', sans-serif; -webkit-font-smoothing: antialiased; }
     body { background: #1a1a2e; color: #fff; min-height: 100vh; padding: 20px; line-height: 1.6; }
     
-    /* LOGIN */
+    /* ✅ LOGIN - ដូចដើមវិញ */
     #login-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; }
     .login-card { background: #16213e; padding: 40px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); width: 100%; max-width: 440px; border: 1px solid #2d2d44; }
     .login-card h1 { color: #48cae4; margin-bottom: 25px; font-size: 26px; text-align: center; font-weight: 700; }
@@ -61,11 +61,11 @@
     .otp-card .btn-verify { background: #10b981; color: #fff; }
     .otp-card .btn-cancel { background: #ef4444; color: #fff; font-size: 14px; padding: 10px; }
     
-    /* ✅ DISCORD-LIKE LAYOUT */
+    /* ✅ MAIN APP LAYOUT */
     #app { display: none; }
     #app.active { display: flex; gap: 15px; min-height: calc(100vh - 40px); }
     
-    /* ✅ SIDEBAR - Discord Style */
+    /* ✅ SIDEBAR - ២ ផ្នែក */
     .sidebar {
       width: 260px;
       background: #16213e;
@@ -79,21 +79,42 @@
       display: flex;
       flex-direction: column;
     }
-    .sidebar-header {
-      padding: 18px 20px;
-      border-bottom: 1px solid #2d2d44;
+    .sidebar-section {
+      border-bottom: 2px solid #0b132b;
+    }
+    .sidebar-section:last-child { border-bottom: none; }
+    .sidebar-section-header {
+      padding: 14px 18px 10px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
     }
-    .sidebar-header h3 {
+    .sidebar-section-header:hover { background: #1a2a4a; }
+    .sidebar-section-header h3 {
       color: #48cae4;
-      font-size: 13px;
+      font-size: 12px;
       text-transform: uppercase;
       letter-spacing: 1px;
       font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .sidebar-header .count-badge {
+    .sidebar-section-header .arrow {
+      color: #64748b;
+      font-size: 10px;
+      transition: transform 0.2s;
+    }
+    .sidebar-section.collapsed .sidebar-section-header .arrow {
+      transform: rotate(-90deg);
+    }
+    .sidebar-section.collapsed .sidebar-section-body {
+      display: none;
+    }
+    .sidebar-section-header .count-badge {
       background: #0b132b;
       color: #48cae4;
       padding: 2px 8px;
@@ -101,28 +122,13 @@
       font-size: 11px;
       font-weight: bold;
     }
-    
-    /* ✅ Discord-style Channel Categories */
-    .channel-category {
-      padding: 12px 20px 6px;
-      color: #64748b;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+    .sidebar-section-body {
+      padding: 0 0 10px 0;
     }
-    .channel-category .arrow {
-      font-size: 9px;
-      transition: transform 0.2s;
-    }
-    .channel-category.collapsed .arrow { transform: rotate(-90deg); }
     
     /* ✅ Participant Item - Discord Style */
     .participant-item {
-      padding: 8px 20px;
+      padding: 8px 18px;
       display: flex;
       align-items: center;
       gap: 10px;
@@ -168,15 +174,6 @@
       background: #10b981;
     }
     .participant-item .status-dot.offline { background: #64748b; }
-    .participant-item .status-dot.speaking {
-      background: #10b981;
-      box-shadow: 0 0 8px #10b981;
-      animation: speakPulse 1s ease infinite;
-    }
-    @keyframes speakPulse {
-      0%, 100% { box-shadow: 0 0 8px #10b981; }
-      50% { box-shadow: 0 0 16px #10b981, 0 0 24px #10b981; }
-    }
     
     .participant-item .info {
       flex: 1;
@@ -208,7 +205,6 @@
       font-weight: 600;
     }
     
-    /* ✅ Media icons - Discord Style */
     .participant-item .media-icons {
       display: flex;
       gap: 4px;
@@ -234,7 +230,6 @@
       background: rgba(239, 68, 68, 0.2);
     }
     
-    /* ✅ Remote button */
     .participant-item .remote-btn {
       padding: 4px 8px;
       background: #f59e0b;
@@ -250,17 +245,12 @@
       display: block;
     }
     
-    /* ✅ Empty state */
     .empty-state {
-      padding: 30px 20px;
+      padding: 15px 18px;
       text-align: center;
       color: #64748b;
-      font-size: 13px;
-    }
-    .empty-state .icon {
-      font-size: 40px;
-      margin-bottom: 10px;
-      opacity: 0.5;
+      font-size: 12px;
+      font-style: italic;
     }
     
     /* ✅ MAIN CONTENT */
@@ -335,7 +325,7 @@
       font-weight: 600;
     }
     
-    /* ✅ VIDEO GRIDS - Discord Style */
+    /* ✅ VIDEO GRIDS */
     .screen-grid, .video-grid {
       display: grid;
       gap: 15px;
@@ -367,20 +357,18 @@
     .video-box .expand-icon { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 6px 10px; border-radius: 6px; font-size: 12px; z-index: 2; opacity: 0; transition: opacity 0.2s; }
     .video-box:hover .expand-icon { opacity: 1; }
     
-    /* ✅ AVATAR PLACEHOLDER (ពេលមិនបើកកាមេរ៉ា) */
+    /* ✅ AVATAR PLACEHOLDER - ប្រអប់ ៤ ជ្រុងពេលមិនបើកកាមេរ៉ា */
     .video-box .avatar-placeholder {
       position: absolute;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      display: none;
+      display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
       z-index: 1;
     }
-    .video-box.camera-off .avatar-placeholder { display: flex; }
-    .video-box.camera-off video { display: none; }
     .video-box .avatar-placeholder .avatar-circle {
       width: 100px;
       height: 100px;
@@ -687,6 +675,7 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     #loadingOverlay .loading-text { color: #48cae4; font-size: 18px; font-weight: 600; }
     
+    /* ✅ REMOTE CONTROL PANEL */
     #remoteControlPanel { position: fixed; bottom: 20px; right: 20px; background: #16213e; border: 2px solid #10b981; border-radius: 12px; padding: 15px 20px; z-index: 99999; display: none; box-shadow: 0 10px 40px rgba(16, 185, 129, 0.3); max-width: 320px; }
     #remoteControlPanel.active { display: block; }
     #remoteControlPanel .panel-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
@@ -719,7 +708,7 @@
 </head>
 <body>
 
-  <!-- LOGIN -->
+  <!-- ✅ LOGIN - ដូចដើមវិញ -->
   <div id="login-screen">
     <div class="login-card">
       <h1>🔐 ចូលប្រើប្រាស់</h1>
@@ -748,33 +737,31 @@
 
   <!-- MAIN APP -->
   <div id="app">
-    <!-- ✅ SIDEBAR - Discord Style -->
+    <!-- ✅ SIDEBAR - ២ ផ្នែក -->
     <div class="sidebar">
-      <div class="sidebar-header">
-        <h3>👥 អ្នកចូលរួម</h3>
-        <span class="count-badge" id="participantCount">0</span>
+      <!-- ✅ ផ្នែកទី ១: អ្នកចូលរួមទាំងអស់ -->
+      <div class="sidebar-section" id="sectionParticipants">
+        <div class="sidebar-section-header" onclick="toggleSidebarSection('sectionParticipants')">
+          <h3>👥 អ្នកចូលរួម</h3>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="count-badge" id="participantCount">0</span>
+            <span class="arrow">▼</span>
+          </div>
+        </div>
+        <div class="sidebar-section-body" id="participantsList"></div>
       </div>
       
-      <!-- ✅ Category: កំពុងបើកកាមេរ៉ា / Video -->
-      <div class="channel-category" onclick="toggleCategory('videoCategory')">
-        <span class="arrow">▼</span>
-        <span>📹 កាមេរ៉ា</span>
+      <!-- ✅ ផ្នែកទី ២: អ្នកកំពុង Share Screen -->
+      <div class="sidebar-section" id="sectionScreenShare">
+        <div class="sidebar-section-header" onclick="toggleSidebarSection('sectionScreenShare')">
+          <h3>🖥️ កំពុង Share Screen</h3>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="count-badge" id="screenShareCount">0</span>
+            <span class="arrow">▼</span>
+          </div>
+        </div>
+        <div class="sidebar-section-body" id="screenShareList"></div>
       </div>
-      <div id="videoCategory"></div>
-      
-      <!-- ✅ Category: មិនបើកកាមេរ៉ា / Audio Only -->
-      <div class="channel-category" onclick="toggleCategory('audioCategory')">
-        <span class="arrow">▼</span>
-        <span>🎤 សំឡេងតែប៉ុណ្ណោះ</span>
-      </div>
-      <div id="audioCategory"></div>
-      
-      <!-- ✅ Category: ចែកអេក្រង់ / Screen Share -->
-      <div class="channel-category" onclick="toggleCategory('screenCategory')">
-        <span class="arrow">▼</span>
-        <span>🖥️ កំពុង Share Screen</span>
-      </div>
-      <div id="screenCategory"></div>
     </div>
 
     <!-- ✅ MAIN CONTENT -->
@@ -810,7 +797,7 @@
     </div>
   </div>
 
-  <!-- CHAT PANEL -->
+  <!-- ✅ CHAT PANEL -->
   <div id="chatPanel">
     <div class="chat-header">
       <h3>💬 សារសម្ងាត់</h3>
@@ -834,7 +821,7 @@
     </div>
   </div>
 
-  <!-- FULLSCREEN -->
+  <!-- ✅ FULLSCREEN -->
   <div id="fullscreenModal">
     <div class="modal-header">
       <div class="modal-title" id="modalTitle">📺 Video</div>
@@ -843,7 +830,7 @@
     <div class="modal-body" id="modalBody"></div>
   </div>
 
-  <!-- REMOTE REQUEST MODAL -->
+  <!-- ✅ REMOTE REQUEST MODAL -->
   <div id="remoteRequestModal">
     <div class="remote-request-card">
       <h2>🖥️ សំណើរ Remote Control</h2>
@@ -853,7 +840,7 @@
     </div>
   </div>
 
-  <!-- REMOTE PANEL -->
+  <!-- ✅ REMOTE CONTROL PANEL -->
   <div id="remoteControlPanel">
     <div class="panel-header">
       <div class="icon">🎮</div>
@@ -906,13 +893,13 @@
     let unreadMessages = {};
     let totalUnread = 0;
 
-    // ✅ Participant State (Discord Style)
-    let participants = {}; // { name: { hasCamera, hasMic, hasScreen, isSpeaking, displayName } }
+    // ✅ Participant State
+    let participants = {}; // { name: { hasCamera, hasMic, hasScreen, displayName } }
 
     // Audio
     let audioContext = null;
 
-    const APP_VERSION = 'v18';
+    const APP_VERSION = 'v20';
     if (localStorage.getItem('appVersion') !== APP_VERSION) {
       localStorage.clear();
       sessionStorage.clear();
@@ -1042,18 +1029,11 @@
     }
 
     // ============================================================
-    // ✅ TOGGLE CATEGORY (Discord Style)
+    // ✅ TOGGLE SIDEBAR SECTION
     // ============================================================
-    function toggleCategory(categoryId) {
-      const cat = document.getElementById(categoryId);
-      const header = cat.previousElementSibling;
-      if (cat.style.display === 'none') {
-        cat.style.display = 'block';
-        header.classList.remove('collapsed');
-      } else {
-        cat.style.display = 'none';
-        header.classList.add('collapsed');
-      }
+    function toggleSidebarSection(sectionId) {
+      const section = document.getElementById(sectionId);
+      section.classList.toggle('collapsed');
     }
 
     // ============================================================
@@ -1134,7 +1114,7 @@
         playLeaveSound();
       });
 
-      // Remote Control
+      // ✅ REMOTE CONTROL
       socket.on('remote-request-received', ({ controllerName, controllerSocketId }) => {
         remoteControllerSocketId = controllerSocketId;
         document.getElementById('remoteRequesterName').textContent = controllerName;
@@ -1189,7 +1169,7 @@
         document.getElementById('remoteRequestModal').classList.remove('active');
       });
 
-      // Chat
+      // ✅ CHAT
       socket.on('chat-message-received', ({ fromUsername, fromSocketId, message, time }) => {
         const senderId = fromSocketId;
         
@@ -1373,7 +1353,7 @@
     }
 
     // ============================================================
-    // REMOTE CONTROL
+    // ✅ REMOTE CONTROL
     // ============================================================
     function showRemotePointer(x, y) {
       if (!remotePointer) {
@@ -1867,22 +1847,34 @@
         localParticipant = room.localParticipant;
         try { await localParticipant.setMicrophoneEnabled(true); isMicOn = true; } catch (e) { isMicOn = false; }
 
+        // ✅ ចាប់ផ្ដើមជាមួយកាមេរ៉ាបិទ - បង្ហាញប្រអប់ ៤ ជ្រុង
         isCameraOn = false;
 
-        // ✅ Initialize participant state
         const myName = localParticipant.identity + ' (អ្នក)';
         participants[myName] = {
           hasCamera: false,
           hasMic: isMicOn,
           hasScreen: false,
-          isSpeaking: false,
           displayName: currentUser.displayName || currentUser.username
         };
+
+        // ✅ បង្ហាញប្រអប់កាមេរ៉ាខ្លួនឯងភ្លាមៗ (ទោះមិនបើកកាមេរ៉ា)
+        createCameraOffBox(myName);
 
         displayLocalTracks(currentUser.displayName || currentUser.username);
         room.remoteParticipants.forEach(p => { 
           addParticipantToList(p.identity); 
           displayRemoteTracks(p); 
+          // ✅ បង្ហាញប្រអប់កាមេរ៉ាសម្រាប់អ្នកផ្សេងដែលមិនបើកកាមេរ៉ា
+          const remoteName = p.identity;
+          if (!participants[remoteName]) {
+            participants[remoteName] = { hasCamera: false, hasMic: true, hasScreen: false, displayName: remoteName };
+          }
+          setTimeout(() => {
+            if (!participants[remoteName].hasCamera) {
+              createCameraOffBox(remoteName);
+            }
+          }, 800);
         });
 
         try { 
@@ -1904,6 +1896,7 @@
         
         updateParticipantCount();
         updateMediaButtons();
+        renderSidebarSections();
         hideLoading();
         showStatus('✅ ភ្ជាប់ជោគជ័យ!');
         
@@ -1945,7 +1938,20 @@
         updateChatUserList();
         showStatus('👤 ' + participant.identity + ' បានចូល');
         playJoinSound();
-        setTimeout(() => displayRemoteTracks(participant), 500);
+        
+        if (!participants[participant.identity]) {
+          participants[participant.identity] = { hasCamera: false, hasMic: true, hasScreen: false, displayName: participant.identity };
+        }
+        
+        setTimeout(() => {
+          displayRemoteTracks(participant);
+          // ✅ បង្ហាញប្រអប់កាមេរ៉ាប្រសិនបើមិនបើក
+          setTimeout(() => {
+            if (!participants[participant.identity].hasCamera) {
+              createCameraOffBox(participant.identity);
+            }
+          }, 800);
+        }, 500);
       });
 
       room.on('participantDisconnected', (participant) => {
@@ -1955,24 +1961,31 @@
         delete participants[participant.identity];
         updateParticipantCount();
         updateChatUserList();
+        renderSidebarSections();
         playLeaveSound();
       });
 
       room.on('trackSubscribed', (track, publication, participant) => {
         if (track.kind === 'video') {
+          // ✅ លុបប្រអប់ Avatar ចេញ ព្រោះមាន video ហើយ
+          const safeName = participant.identity.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
+          const existingBox = document.getElementById((publication.source === 'screen_share' ? 'screen-' : 'video-') + safeName);
+          if (existingBox && !publication.source === 'screen_share') existingBox.remove();
+          
           attachVideoTrack(track, participant.identity, publication.source === 'screen_share');
+          
           if (!participants[participant.identity]) participants[participant.identity] = {};
           if (publication.source === 'screen_share') {
             participants[participant.identity].hasScreen = true;
           } else {
             participants[participant.identity].hasCamera = true;
           }
-          renderParticipantCategories();
+          renderSidebarSections();
         } else if (track.kind === 'audio') {
           track.attach();
           if (!participants[participant.identity]) participants[participant.identity] = {};
           participants[participant.identity].hasMic = true;
-          renderParticipantCategories();
+          renderSidebarSections();
         }
       });
 
@@ -1982,18 +1995,20 @@
           removeVideoByParticipant(participant.identity, true);
           if (participants[participant.identity]) {
             participants[participant.identity].hasScreen = false;
-            renderParticipantCategories();
+            renderSidebarSections();
           }
         } else if (track.kind === 'video') {
           removeVideoByParticipant(participant.identity, false);
           if (participants[participant.identity]) {
             participants[participant.identity].hasCamera = false;
-            renderParticipantCategories();
+            // ✅ បង្ហាញប្រអប់ Avatar ពេលបិទកាមេរ៉ា
+            createCameraOffBox(participant.identity);
+            renderSidebarSections();
           }
         } else if (track.kind === 'audio') {
           if (participants[participant.identity]) {
             participants[participant.identity].hasMic = false;
-            renderParticipantCategories();
+            renderSidebarSections();
           }
         }
       });
@@ -2004,12 +2019,12 @@
           attachVideoTrack(publication.track, myName, true);
           if (!participants[myName]) participants[myName] = {};
           participants[myName].hasScreen = true;
-          renderParticipantCategories();
+          renderSidebarSections();
         } else if (publication.kind === 'video' && publication.track) {
           attachVideoTrack(publication.track, myName, false);
           if (!participants[myName]) participants[myName] = {};
           participants[myName].hasCamera = true;
-          renderParticipantCategories();
+          renderSidebarSections();
         }
       });
 
@@ -2019,13 +2034,15 @@
           removeVideoByParticipant(myName, true);
           if (participants[myName]) {
             participants[myName].hasScreen = false;
-            renderParticipantCategories();
+            renderSidebarSections();
           }
         } else if (publication.kind === 'video') {
           removeVideoByParticipant(myName, false);
           if (participants[myName]) {
             participants[myName].hasCamera = false;
-            renderParticipantCategories();
+            // ✅ បង្ហាញប្រអប់ Avatar ពេលបិទកាមេរ៉ា
+            createCameraOffBox(myName);
+            renderSidebarSections();
           }
         }
       });
@@ -2034,7 +2051,7 @@
     }
 
     // ============================================================
-    // ✅ ATTACH VIDEO TRACK WITH AVATAR
+    // ✅ ATTACH VIDEO TRACK
     // ============================================================
     function attachVideoTrack(track, name, isScreen = false) {
       if (!track) return;
@@ -2084,7 +2101,7 @@
       updateVideoCounts();
     }
 
-    // ✅ បង្កើត Box សម្រាប់អ្នកដែលបិទកាមេរ៉ា
+    // ✅ បង្កើត Box សម្រាប់អ្នកដែលបិទកាមេរ៉ា (ប្រអប់ ៤ ជ្រុង)
     function createCameraOffBox(name) {
       const safeName = name.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
       const boxId = 'video-' + safeName;
@@ -2105,6 +2122,7 @@
         </div>
         <div class="name-tag">👤 ${name}</div>
         <div class="status-tag" style="background: rgba(239, 68, 68, 0.9);">📷 បិទកាមេរ៉ា</div>
+        <div class="expand-icon">🔍 ចុចមើលធំ</div>
       `;
       box.onclick = () => openFullscreen(null, name, false);
       document.getElementById('videoGrid').appendChild(box);
@@ -2177,7 +2195,7 @@
         updateMediaButtons();
         const myName = localParticipant.identity + ' (អ្នក)';
         if (participants[myName]) participants[myName].hasMic = isMicOn;
-        renderParticipantCategories();
+        renderSidebarSections();
       } catch (e) {}
     }
 
@@ -2192,14 +2210,16 @@
         if (participants[myName]) participants[myName].hasCamera = isCameraOn;
         
         if (!isCameraOn) {
+          // ✅ បង្ហាញប្រអប់ ៤ ជ្រុងពេលបិទ
           removeVideoByParticipant(myName, false);
           createCameraOffBox(myName);
         } else {
+          // ✅ លុបប្រអប់ Avatar ពេលបើក
           const safeName = myName.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
           const existingBox = document.getElementById('video-' + safeName);
           if (existingBox) existingBox.remove();
         }
-        renderParticipantCategories();
+        renderSidebarSections();
       } catch (e) {}
     }
 
@@ -2215,12 +2235,12 @@
         if (!isScreenSharing) removeVideoByParticipant(localParticipant.identity + ' (អ្នក)', true);
         const myName = localParticipant.identity + ' (អ្នក)';
         if (participants[myName]) participants[myName].hasScreen = isScreenSharing;
-        renderParticipantCategories();
+        renderSidebarSections();
       } catch (e) { isScreenSharing = false; }
     }
 
     // ============================================================
-    // ✅ SIDEBAR - Discord Style Categories
+    // ✅ SIDEBAR - ២ ផ្នែក
     // ============================================================
     function addParticipantToList(name) {
       if (!participants[name]) {
@@ -2228,47 +2248,50 @@
           hasCamera: false,
           hasMic: true,
           hasScreen: false,
-          isSpeaking: false,
           displayName: name.replace(' (អ្នក)', '')
         };
       }
-      renderParticipantCategories();
+      renderSidebarSections();
     }
 
-    function renderParticipantCategories() {
-      const videoCat = document.getElementById('videoCategory');
-      const audioCat = document.getElementById('audioCategory');
-      const screenCat = document.getElementById('screenCategory');
+    function renderSidebarSections() {
+      const participantsList = document.getElementById('participantsList');
+      const screenShareList = document.getElementById('screenShareList');
       
-      videoCat.innerHTML = '';
-      audioCat.innerHTML = '';
-      screenCat.innerHTML = '';
+      participantsList.innerHTML = '';
+      screenShareList.innerHTML = '';
       
-      let videoCount = 0, audioCount = 0, screenCount = 0;
+      let participantCount = 0;
+      let screenShareCount = 0;
       
       Object.keys(participants).forEach(name => {
         const state = participants[name];
-        const item = createParticipantItem(name, state);
         
-        // ✅ ចាត់ថ្នាក់: Screen Share > Video > Audio
+        // ✅ ផ្នែកទី ១: អ្នកចូលរួមទាំងអស់
+        const item = createParticipantItem(name, state, false);
+        participantsList.appendChild(item);
+        participantCount++;
+        
+        // ✅ ផ្នែកទី ២: អ្នកកំពុង Share Screen
         if (state.hasScreen) {
-          screenCat.appendChild(item.cloneNode(true));
-          screenCount++;
-        } else if (state.hasCamera) {
-          videoCat.appendChild(item.cloneNode(true));
-          videoCount++;
-        } else {
-          audioCat.appendChild(item.cloneNode(true));
-          audioCount++;
+          const screenItem = createParticipantItem(name, state, true);
+          screenShareList.appendChild(screenItem);
+          screenShareCount++;
         }
       });
       
-      if (videoCount === 0) videoCat.innerHTML = '<div class="empty-state" style="padding: 12px 20px; font-size: 12px;">គ្មានអ្នកបើកកាមេរ៉ា</div>';
-      if (audioCount === 0) audioCat.innerHTML = '<div class="empty-state" style="padding: 12px 20px; font-size: 12px;">គ្មានអ្នកបិទកាមេរ៉ា</div>';
-      if (screenCount === 0) screenCat.innerHTML = '<div class="empty-state" style="padding: 12px 20px; font-size: 12px;">គ្មានអ្នក Share Screen</div>';
+      document.getElementById('participantCount').textContent = participantCount;
+      document.getElementById('screenShareCount').textContent = screenShareCount;
+      
+      if (participantCount === 0) {
+        participantsList.innerHTML = '<div class="empty-state">គ្មានអ្នកចូលរួម</div>';
+      }
+      if (screenShareCount === 0) {
+        screenShareList.innerHTML = '<div class="empty-state">គ្មានអ្នក Share Screen</div>';
+      }
     }
 
-    function createParticipantItem(name, state) {
+    function createParticipantItem(name, state, isScreenSection = false) {
       const isSelf = name.includes('អ្នក');
       const displayName = name.replace(' (អ្នក)', '');
       const initial = displayName.charAt(0).toUpperCase();
@@ -2276,11 +2299,10 @@
       const item = document.createElement('div');
       item.className = 'participant-item' + (isSelf ? ' me' : '');
       
-      const remoteBtn = (!isSelf) ? `<button class="remote-btn" onclick="event.stopPropagation(); requestRemote('${name}')">🎮</button>` : '';
+      const remoteBtn = (!isSelf && isScreenSection) ? `<button class="remote-btn" onclick="event.stopPropagation(); requestRemote('${name}')">🎮</button>` : '';
       
-      // ✅ Status text
       let subInfo = '';
-      if (state.hasScreen) {
+      if (isScreenSection) {
         subInfo = '<span class="screen-tag">🖥️ កំពុង Share</span>';
       } else if (state.hasCamera) {
         subInfo = '<span class="live-tag">📹 កាមេរ៉ា</span>';
@@ -2291,7 +2313,7 @@
       item.innerHTML = `
         <div class="avatar-wrapper">
           <div class="avatar ${state.hasCamera ? '' : 'offline'}">${initial}</div>
-          <div class="status-dot ${state.hasMic === false ? 'offline' : (state.isSpeaking ? 'speaking' : '')}"></div>
+          <div class="status-dot ${state.hasMic === false ? 'offline' : ''}"></div>
         </div>
         <div class="info">
           <div class="name">${displayName}${isSelf ? ' (អ្នក)' : ''}</div>
@@ -2305,7 +2327,6 @@
         ${remoteBtn}
       `;
       
-      // ✅ Add click to open fullscreen
       item.onclick = () => {
         if (state.hasScreen) {
           const safeName = name.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
@@ -2323,13 +2344,11 @@
 
     function removeParticipantFromList(name) {
       delete participants[name];
-      renderParticipantCategories();
+      renderSidebarSections();
     }
 
     function updateParticipantCount() {
       if (!room) return;
-      const count = room.remoteParticipants.size + 1;
-      document.getElementById('participantCount').textContent = count;
       if (localParticipant) {
         const myName = localParticipant.identity + ' (អ្នក)';
         if (!participants[myName]) {
@@ -2337,12 +2356,11 @@
             hasCamera: false,
             hasMic: isMicOn,
             hasScreen: false,
-            isSpeaking: false,
             displayName: currentUser.displayName || currentUser.username
           };
         }
-        renderParticipantCategories();
       }
+      renderSidebarSections();
     }
 
     async function leaveRoom(showLobby = true) {
@@ -2361,9 +2379,8 @@
       
       document.getElementById('videoGrid').innerHTML = '';
       document.getElementById('screenGrid').innerHTML = '';
-      document.getElementById('videoCategory').innerHTML = '';
-      document.getElementById('audioCategory').innerHTML = '';
-      document.getElementById('screenCategory').innerHTML = '';
+      document.getElementById('participantsList').innerHTML = '';
+      document.getElementById('screenShareList').innerHTML = '';
       document.getElementById('chatUserList').innerHTML = '';
       document.getElementById('chatMessages').innerHTML = '<div class="chat-empty">ជ្រើសរើសអ្នកប្រើដើម្បីសន្ទនា</div>';
       document.getElementById('screenTitle').style.display = 'none';
