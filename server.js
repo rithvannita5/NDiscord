@@ -159,6 +159,21 @@ function verifyAdminOrSupervisor(req, res, next) {
 }
 
 // ============================================================
+// ✅ API ថ្មី: CHECK ROLE (សម្រាប់ Login Form)
+// ============================================================
+app.post('/api/auth/check-role', async (req, res) => {
+  const { username } = req.body;
+  if (!username) return res.json({ role: 'user' });
+  
+  try {
+    const user = await User.findOne({ username }, 'role');
+    res.json({ role: user ? user.role : 'user' });
+  } catch (error) {
+    res.json({ role: 'user' });
+  }
+});
+
+// ============================================================
 // API: GET PUBLIC ROOMS
 // ============================================================
 app.get('/api/rooms/public', async (req, res) => {
@@ -196,7 +211,7 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'ឈ្មោះ ឬលេខសម្ងាត់មិនត្រឹមត្រូវ!' });
     }
 
-    // ✅ ពិនិត្យសិទ្ធិចូលបន្ទប់
+    // ✅ ពិនិត្យសិទ្ធិចូលបន្ទប់ (តែ User ធម្មតា)
     if (user.role === 'user' && selectedRoom) {
       const canJoin = user.assignedRooms.includes('*') || 
                       user.assignedRooms.includes(selectedRoom);
@@ -663,21 +678,53 @@ app.get('/api/health', (req, res) => {
 });
 
 // ============================================================
-// ✅ SOCKET.IO - REMOTE CONTROL SIGNALING
+// ✅ SOCKET.IO - REMOTE CONTROL + ROOM PRESENCE + CHAT
 // ============================================================
-const userSockets = new Map(); // { username: socketId }
+const userSockets = new Map();
 
 io.on('connection', (socket) => {
   console.log('🔌 Socket connected:', socket.id);
 
-  // ចុះឈ្មោះ User
   socket.on('register-user', ({ username }) => {
     userSockets.set(username, socket.id);
     socket.username = username;
+    socket.data.username = username;
     console.log(`✅ Registered: ${username} → ${socket.id}`);
   });
 
-  // ✅ Controller ផ្ញើសំណើ
+  // ✅ ROOM PRESENCE
+  socket.on('room-joined', ({ roomId, username, displayName }) => {
+    if (!roomId || !username) return;
+    socket.join('vc-room-' + roomId);
+    socket.data.currentRoomId = roomId;
+    socket.data.username = username;
+    socket.to('vc-room-' + roomId).emit('room-user-joined', { roomId, username, displayName });
+    console.log(`👤 ${username} joined room ${roomId} (socket presence)`);
+  });
+
+  socket.on('room-left', ({ roomId, username }) => {
+    if (!roomId || !username) return;
+    socket.to('vc-room-' + roomId).emit('room-user-left', { roomId, username });
+    socket.leave('vc-room-' + roomId);
+    if (socket.data.currentRoomId === roomId) {
+      socket.data.currentRoomId = null;
+    }
+    console.log(`👤 ${username} left room ${roomId} (socket presence)`);
+  });
+
+  // ✅ CHAT - Private Message
+  socket.on('chat-message', ({ toSocketId, message, fromUsername, time }) => {
+    if (!toSocketId || !message) return;
+    io.to(toSocketId).emit('chat-message-received', {
+      fromUsername: fromUsername || socket.username,
+      fromSocketId: socket.id,
+      message,
+      time: time || new Date().toLocaleTimeString()
+    });
+    console.log(`💬 Chat: ${fromUsername} → ${toSocketId}: ${message.substring(0, 30)}`);
+  });
+
+  // ✅ REMOTE CONTROL
   socket.on('remote-request', ({ targetUsername, controllerName }) => {
     const targetSocketId = userSockets.get(targetUsername);
     if (targetSocketId) {
@@ -692,7 +739,6 @@ io.on('connection', (socket) => {
     }
   });
 
-  // ✅ Target អនុញ្ញាត
   socket.on('remote-approved', ({ controllerSocketId, targetUsername }) => {
     io.to(controllerSocketId).emit('remote-approved-notify', {
       targetUsername,
@@ -701,35 +747,37 @@ io.on('connection', (socket) => {
     console.log(`✅ Remote approved: ${targetUsername}`);
   });
 
-  // ✅ Target បដិសេធ
   socket.on('remote-rejected', ({ controllerSocketId }) => {
     io.to(controllerSocketId).emit('remote-rejected-notify');
     console.log(`❌ Remote rejected`);
   });
 
-  // ✅ Mouse Move
   socket.on('remote-mouse-move', ({ targetSocketId, x, y }) => {
     io.to(targetSocketId).emit('remote-mouse-move-received', { x, y });
   });
 
-  // ✅ Mouse Click
   socket.on('remote-mouse-click', ({ targetSocketId, x, y, button }) => {
     io.to(targetSocketId).emit('remote-mouse-click-received', { x, y, button });
   });
 
-  // ✅ Keyboard
   socket.on('remote-keyboard', ({ targetSocketId, key }) => {
     io.to(targetSocketId).emit('remote-keyboard-received', { key });
   });
 
-  // ✅ បញ្ចប់
   socket.on('remote-end', ({ targetSocketId }) => {
     io.to(targetSocketId).emit('remote-ended-notify');
     console.log(`🛑 Remote ended`);
   });
 
-  // Disconnect
+  // ✅ DISCONNECT
   socket.on('disconnect', () => {
+    if (socket.data.currentRoomId && socket.data.username) {
+      socket.to('vc-room-' + socket.data.currentRoomId).emit('room-user-left', {
+        roomId: socket.data.currentRoomId,
+        username: socket.data.username
+      });
+    }
+
     if (socket.username) {
       userSockets.delete(socket.username);
       console.log(`🔌 Disconnected: ${socket.username}`);
@@ -738,11 +786,13 @@ io.on('connection', (socket) => {
 });
 
 // ============================================================
-// START SERVER (ប្រើ server មិនមែន app)
+// START SERVER
 // ============================================================
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📡 LiveKit URL: ${LIVEKIT_URL}`);
   console.log(`🎮 Socket.IO Remote Control: Enabled`);
+  console.log(`🔊 Room Join/Leave Sound Broadcast: Enabled`);
+  console.log(`💬 Private Chat: Enabled`);
 });
