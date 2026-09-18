@@ -46,16 +46,16 @@
     .otp-card .btn-verify { background: #10b981; color: #fff; }
     .otp-card .btn-cancel { background: #ef4444; color: #fff; font-size: 14px; padding: 10px; }
     
-    /* ✅ MAIN APP LAYOUT - Sidebar + Content */
+    /* MAIN APP */
     #app { display: none; }
     #app.active { display: flex; gap: 15px; min-height: calc(100vh - 40px); }
     
-    /* ✅ SIDEBAR - Participants List */
+    /* ✅ SIDEBAR */
     .sidebar {
       width: 240px;
       background: #16213e;
       border-radius: 10px;
-      padding: 20px;
+      padding: 15px;
       flex-shrink: 0;
       border: 1px solid #2d2d44;
       max-height: calc(100vh - 40px);
@@ -63,53 +63,84 @@
       position: sticky;
       top: 20px;
     }
-    .sidebar h3 {
+    
+    .sidebar-section-title {
       color: #48cae4;
-      font-size: 14px;
-      margin-bottom: 15px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #2d2d44;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    .sidebar .participant-name {
-      padding: 10px 12px;
+      font-size: 12px;
+      margin-bottom: 10px;
+      padding: 8px 10px;
       background: #0b132b;
       border-radius: 6px;
-      margin-bottom: 6px;
-      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .sidebar-section-title .count {
+      background: #2d4a7a;
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+    }
+    
+    .screen-share-section { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #2d2d44; }
+    .screen-share-section .sidebar-section-title { color: #f59e0b; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .participants-section .sidebar-section-title { color: #10b981; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); }
+    
+    .sidebar .participant-name {
+      padding: 8px 10px;
+      background: #0b132b;
+      border-radius: 6px;
+      margin-bottom: 5px;
+      font-size: 13px;
       display: flex;
       align-items: center;
       gap: 8px;
       border-left: 3px solid #10b981;
+      transition: all 0.2s;
     }
-    .sidebar .participant-name.me {
-      border-left-color: #f59e0b;
-      background: #1a1a3e;
+    .sidebar .participant-name:hover { background: #1a1a3e; }
+    .sidebar .participant-name.me { border-left-color: #f59e0b; background: #1a1a3e; }
+    .sidebar .participant-name.sharing { border-left-color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
+    .sidebar .participant-name .dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; flex-shrink: 0; box-shadow: 0 0 6px #10b981; }
+    .sidebar .participant-name.sharing .dot { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
+    .sidebar .participant-name .remote-btn { margin-left: auto; padding: 3px 8px; background: #f59e0b; color: #000; border: none; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer; }
+    .sidebar .participant-name .remote-btn:hover { background: #d97706; }
+    .sidebar .empty-section { padding: 15px 10px; color: #64748b; font-size: 12px; text-align: center; font-style: italic; }
+    
+    /* ✅ AVATAR PLACEHOLDER */
+    .video-box .avatar-placeholder {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      z-index: 1;
     }
-    .sidebar .participant-name .dot {
-      width: 8px;
-      height: 8px;
+    .video-box .avatar-placeholder .avatar-circle {
+      width: 80px; height: 80px;
       border-radius: 50%;
-      background: #10b981;
-      flex-shrink: 0;
-      box-shadow: 0 0 6px #10b981;
-    }
-    .sidebar .participant-name .remote-btn {
-      margin-left: auto;
-      padding: 3px 8px;
-      background: #f59e0b;
-      color: #000;
-      border: none;
-      border-radius: 4px;
-      font-size: 10px;
+      background: linear-gradient(135deg, #48cae4 0%, #8b5cf6 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
       font-weight: bold;
-      cursor: pointer;
-      display: none;
+      color: #fff;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      box-shadow: 0 8px 25px rgba(72, 202, 228, 0.4);
+      margin-bottom: 15px;
     }
-    .sidebar .participant-name:hover .remote-btn {
-      display: block;
-    }
+    .video-box .avatar-placeholder .avatar-name { color: #e0e0e0; font-size: 16px; font-weight: 600; }
+    .video-box .avatar-placeholder .avatar-status { color: #64748b; font-size: 12px; margin-top: 5px; }
+    .video-box video { position: relative; z-index: 2; }
+    .video-box.no-video { border-color: #2d2d44; }
     
     /* ✅ MAIN CONTENT */
     .main-content { flex: 1; min-width: 0; }
@@ -126,15 +157,7 @@
       gap: 15px;
     }
     .header h2 { color: #48cae4; font-size: 18px; }
-    .header .user-badge {
-      background: #0b132b;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 13px;
-      color: #94a3b8;
-      margin-top: 5px;
-      display: inline-block;
-    }
+    .header .user-badge { background: #0b132b; padding: 6px 12px; border-radius: 6px; font-size: 13px; color: #94a3b8; margin-top: 5px; display: inline-block; }
     
     .controls { display: flex; gap: 10px; flex-wrap: wrap; }
     .controls button { padding: 10px 18px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; position: relative; }
@@ -150,7 +173,6 @@
     .btn-chat { background: #8b5cf6; color: #fff; position: relative; }
     .controls button.off { background: #ef4444; color: #fff; }
     
-    /* ✅ CHAT BADGE */
     .chat-badge {
       position: absolute;
       top: -8px;
@@ -165,12 +187,8 @@
       text-align: center;
       animation: badgePulse 1.5s ease infinite;
     }
-    @keyframes badgePulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.15); }
-    }
+    @keyframes badgePulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
     
-    /* ✅ SECTION TITLES */
     .section-title {
       font-size: 14px;
       color: #94a3b8;
@@ -185,7 +203,6 @@
       font-weight: 600;
     }
     
-    /* ✅ VIDEO GRIDS */
     .screen-grid, .video-grid {
       display: grid;
       gap: 15px;
@@ -212,259 +229,59 @@
     .video-box.screen-share:hover { border-color: #fbbf24; box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3); }
     .video-box video { width: 100%; height: 100%; object-fit: cover; display: block; }
     .video-box.screen-share video { object-fit: contain; }
-    .video-box .name-tag { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.75); padding: 6px 12px; border-radius: 6px; font-size: 13px; z-index: 2; }
-    .video-box .status-tag { position: absolute; top: 10px; right: 10px; background: rgba(16, 185, 129, 0.9); padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; z-index: 2; }
-    .video-box .expand-icon { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 6px 10px; border-radius: 6px; font-size: 12px; z-index: 2; opacity: 0; transition: opacity 0.2s; }
+    .video-box .name-tag { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.75); padding: 6px 12px; border-radius: 6px; font-size: 13px; z-index: 5; }
+    .video-box .status-tag { position: absolute; top: 10px; right: 10px; background: rgba(16, 185, 129, 0.9); padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; z-index: 5; }
+    .video-box .expand-icon { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 6px 10px; border-radius: 6px; font-size: 12px; z-index: 5; opacity: 0; transition: opacity 0.2s; }
     .video-box:hover .expand-icon { opacity: 1; }
     
-    /* ✅ CHAT PANEL - Right Side */
-    #chatPanel {
-      position: fixed;
-      top: 0;
-      right: -420px;
-      width: 400px;
-      height: 100vh;
-      background: #16213e;
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      transition: right 0.3s ease;
-      border-left: 2px solid #8b5cf6;
-      box-shadow: -5px 0 30px rgba(0,0,0,0.6);
-    }
+    /* ✅ CHAT PANEL */
+    #chatPanel { position: fixed; top: 0; right: -420px; width: 400px; height: 100vh; background: #16213e; z-index: 9999; display: flex; flex-direction: column; transition: right 0.3s ease; border-left: 2px solid #8b5cf6; box-shadow: -5px 0 30px rgba(0,0,0,0.6); }
     #chatPanel.open { right: 0; }
     
-    .chat-header {
-      padding: 15px 20px;
-      background: #0b132b;
-      border-bottom: 1px solid #2d2d44;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-shrink: 0;
-    }
-    .chat-header h3 {
-      color: #8b5cf6;
-      font-size: 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .chat-header .close-btn {
-      background: none;
-      border: none;
-      color: #94a3b8;
-      font-size: 22px;
-      cursor: pointer;
-      padding: 0 5px;
-    }
+    .chat-header { padding: 15px 20px; background: #0b132b; border-bottom: 1px solid #2d2d44; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+    .chat-header h3 { color: #8b5cf6; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+    .chat-header .close-btn { background: none; border: none; color: #94a3b8; font-size: 22px; cursor: pointer; padding: 0 5px; }
     .chat-header .close-btn:hover { color: #ef4444; }
     
-    /* ✅ CHAT USER LIST */
-    .chat-body {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
-    .chat-users {
-      width: 140px;
-      background: #0b132b;
-      overflow-y: auto;
-      border-right: 1px solid #2d2d44;
-      flex-shrink: 0;
-    }
-    .chat-users-header {
-      padding: 10px;
-      color: #64748b;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      border-bottom: 1px solid #1a1a3e;
-    }
-    .chat-user-item {
-      padding: 10px;
-      cursor: pointer;
-      border-bottom: 1px solid #1a1a3e;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      position: relative;
-      transition: background 0.2s;
-    }
+    .chat-body { display: flex; flex: 1; overflow: hidden; }
+    .chat-users { width: 140px; background: #0b132b; overflow-y: auto; border-right: 1px solid #2d2d44; flex-shrink: 0; }
+    .chat-users-header { padding: 10px; color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #1a1a3e; }
+    .chat-user-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #1a1a3e; display: flex; align-items: center; gap: 8px; position: relative; transition: background 0.2s; }
     .chat-user-item:hover { background: #16213e; }
     .chat-user-item.active { background: #1a3a5e; border-left: 3px solid #8b5cf6; }
-    .chat-user-item .avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: #2d4a7a;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: bold;
-      font-size: 12px;
-      flex-shrink: 0;
-    }
-    .chat-user-item .name {
-      font-size: 12px;
-      color: #e0e0e0;
-      flex: 1;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .chat-user-item .unread {
-      background: #ef4444;
-      color: #fff;
-      border-radius: 10px;
-      padding: 1px 6px;
-      font-size: 10px;
-      font-weight: bold;
-    }
+    .chat-user-item .avatar { width: 32px; height: 32px; border-radius: 50%; background: #2d4a7a; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; flex-shrink: 0; }
+    .chat-user-item .name { font-size: 12px; color: #e0e0e0; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chat-user-item .unread { background: #ef4444; color: #fff; border-radius: 10px; padding: 1px 6px; font-size: 10px; font-weight: bold; }
     
-    /* ✅ CHAT MESSAGES */
-    .chat-messages-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: #12122a;
-    }
-    .chat-messages-header {
-      padding: 10px 15px;
-      background: #16213e;
-      border-bottom: 1px solid #2d2d44;
-      color: #e0e0e0;
-      font-size: 13px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-    .chat-messages {
-      flex: 1;
-      padding: 15px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+    .chat-messages-container { flex: 1; display: flex; flex-direction: column; background: #12122a; }
+    .chat-messages-header { padding: 10px 15px; background: #16213e; border-bottom: 1px solid #2d2d44; color: #e0e0e0; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
     .chat-messages::-webkit-scrollbar { width: 5px; }
     .chat-messages::-webkit-scrollbar-thumb { background: #2d2d44; border-radius: 3px; }
     
-    .chat-msg {
-      max-width: 85%;
-      display: flex;
-      flex-direction: column;
-      animation: msgSlide 0.2s ease;
-    }
-    @keyframes msgSlide {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    .chat-msg { max-width: 85%; display: flex; flex-direction: column; animation: msgSlide 0.2s ease; }
+    @keyframes msgSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .chat-msg.my-msg { align-self: flex-end; }
     .chat-msg.other-msg { align-self: flex-start; }
-    .chat-msg .bubble {
-      padding: 8px 14px;
-      border-radius: 12px;
-      font-size: 14px;
-      word-wrap: break-word;
-      line-height: 1.4;
-    }
-    .chat-msg.my-msg .bubble {
-      background: #8b5cf6;
-      color: white;
-      border-bottom-right-radius: 4px;
-    }
-    .chat-msg.other-msg .bubble {
-      background: #1a2a3e;
-      color: #e0e0e0;
-      border-bottom-left-radius: 4px;
-    }
-    .chat-msg .time {
-      font-size: 10px;
-      color: #64748b;
-      margin-top: 3px;
-      padding: 0 4px;
-    }
+    .chat-msg .bubble { padding: 8px 14px; border-radius: 12px; font-size: 14px; word-wrap: break-word; line-height: 1.4; }
+    .chat-msg.my-msg .bubble { background: #8b5cf6; color: white; border-bottom-right-radius: 4px; }
+    .chat-msg.other-msg .bubble { background: #1a2a3e; color: #e0e0e0; border-bottom-left-radius: 4px; }
+    .chat-msg .time { font-size: 10px; color: #64748b; margin-top: 3px; padding: 0 4px; }
     .chat-msg.my-msg .time { text-align: right; }
     .chat-msg.other-msg .time { text-align: left; }
+    .chat-empty { color: #64748b; text-align: center; padding: 40px 20px; font-size: 13px; }
     
-    .chat-empty {
-      color: #64748b;
-      text-align: center;
-      padding: 40px 20px;
-      font-size: 13px;
-    }
-    
-    /* ✅ CHAT INPUT */
-    .chat-input {
-      padding: 10px 15px;
-      background: #0b132b;
-      border-top: 1px solid #2d2d44;
-      display: flex;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-    .chat-input input {
-      flex: 1;
-      padding: 10px 15px;
-      border: 1px solid #2d2d44;
-      border-radius: 20px;
-      background: #1a1a3e;
-      color: #e0e0e0;
-      outline: none;
-      font-size: 14px;
-      font-family: inherit;
-    }
+    .chat-input { padding: 10px 15px; background: #0b132b; border-top: 1px solid #2d2d44; display: flex; gap: 8px; flex-shrink: 0; }
+    .chat-input input { flex: 1; padding: 10px 15px; border: 1px solid #2d2d44; border-radius: 20px; background: #1a1a3e; color: #e0e0e0; outline: none; font-size: 14px; font-family: inherit; }
     .chat-input input:focus { border-color: #8b5cf6; }
-    .chat-input button {
-      padding: 10px 18px;
-      background: #8b5cf6;
-      color: white;
-      border: none;
-      border-radius: 20px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
-    }
+    .chat-input button { padding: 10px 18px; background: #8b5cf6; color: white; border: none; border-radius: 20px; font-weight: 600; cursor: pointer; font-family: inherit; }
     .chat-input button:hover { background: #7c3aed; }
     
-    /* ✅ CHAT NOTIFICATION POPUP */
-    .chat-notification {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #16213e;
-      border: 2px solid #8b5cf6;
-      border-radius: 12px;
-      padding: 12px 18px;
-      max-width: 320px;
-      z-index: 10000;
-      cursor: pointer;
-      box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
-      animation: notifSlide 0.3s ease;
-    }
-    @keyframes notifSlide {
-      from { opacity: 0; transform: translateX(30px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-    .chat-notification .from {
-      color: #8b5cf6;
-      font-weight: bold;
-      font-size: 13px;
-      margin-bottom: 4px;
-    }
-    .chat-notification .preview {
-      color: #e0e0e0;
-      font-size: 13px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    .chat-notification { position: fixed; bottom: 20px; right: 20px; background: #16213e; border: 2px solid #8b5cf6; border-radius: 12px; padding: 12px 18px; max-width: 320px; z-index: 10000; cursor: pointer; box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4); animation: notifSlide 0.3s ease; }
+    @keyframes notifSlide { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+    .chat-notification .from { color: #8b5cf6; font-weight: bold; font-size: 13px; margin-bottom: 4px; }
+    .chat-notification .preview { color: #e0e0e0; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     
-    /* MODALS & OTHERS */
     #status { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 12px 25px; background: #1c2541; border: 1px solid #48cae4; border-radius: 10px; font-size: 14px; display: none; z-index: 9999; max-width: 90%; text-align: center; }
     #status.show { display: block; }
     
@@ -503,16 +320,13 @@
     #beingControlledIndicator { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(239, 68, 68, 0.95); color: white; padding: 12px 25px; border-radius: 10px; font-weight: bold; z-index: 999999; box-shadow: 0 4px 20px rgba(239, 68, 68, 0.6); display: flex; align-items: center; gap: 10px; animation: pulseRed 1.5s ease-in-out infinite; }
     @keyframes pulseRed { 0%, 100% { box-shadow: 0 4px 20px rgba(239, 68, 68, 0.6); } 50% { box-shadow: 0 4px 30px rgba(239, 68, 68, 1); } }
     
-    /* CONTEXT MENU */
     .menu-item { transition: background 0.15s; }
     
     /* RESPONSIVE */
-    @media (max-width: 992px) {
-      .sidebar { width: 180px; padding: 15px; }
-    }
+    @media (max-width: 992px) { .sidebar { width: 180px; padding: 12px; } }
     @media (max-width: 768px) {
       #app.active { flex-direction: column; }
-      .sidebar { width: 100%; max-height: 150px; position: static; }
+      .sidebar { width: 100%; max-height: 200px; position: static; }
       .screen-grid, .video-grid { grid-template-columns: 1fr; }
       .header { flex-direction: column; align-items: flex-start; }
       .controls { width: 100%; }
@@ -551,10 +365,27 @@
 
   <!-- MAIN APP -->
   <div id="app">
-    <!-- ✅ SIDEBAR - Participants List -->
+    <!-- ✅ SIDEBAR -->
     <div class="sidebar">
-      <h3>👥 អ្នកចូលរួម (<span id="participantCount">0</span>)</h3>
-      <div id="participantsList"></div>
+      <!-- 🖥️ Screen Sharing Section -->
+      <div class="screen-share-section">
+        <div class="sidebar-section-title">
+          <span>🖥️ កំពុង Share</span>
+          <span class="count" id="screenSharingCount">0</span>
+        </div>
+        <div id="screenSharingList">
+          <div class="empty-section">គ្មានអ្នក Share Screen</div>
+        </div>
+      </div>
+
+      <!-- 👥 Participants Section -->
+      <div class="participants-section">
+        <div class="sidebar-section-title">
+          <span>👥 អ្នកចូលរួម</span>
+          <span class="count" id="participantCount">0</span>
+        </div>
+        <div id="participantsList"></div>
+      </div>
     </div>
 
     <!-- ✅ MAIN CONTENT -->
@@ -590,7 +421,7 @@
     </div>
   </div>
 
-  <!-- ✅ CHAT PANEL (Right Side) -->
+  <!-- ✅ CHAT PANEL -->
   <div id="chatPanel">
     <div class="chat-header">
       <h3>💬 សារសម្ងាត់</h3>
@@ -670,7 +501,6 @@
     let pendingLoginData = null;
     let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-    // Remote Control
     let socket = null;
     let socketConnected = false;
     let isRemoteControlling = false;
@@ -679,17 +509,15 @@
     let remoteControllerSocketId = null;
     let remotePointer = null;
 
-    // Chat
     let chatOpen = false;
-    let currentChatTarget = null; // Peer ID
-    let chatHistory = {}; // { peerId: [{from, message, time}] }
-    let unreadMessages = {}; // { peerId: count }
+    let currentChatTarget = null;
+    let chatHistory = {};
+    let unreadMessages = {};
     let totalUnread = 0;
 
-    // Audio
     let audioContext = null;
 
-    const APP_VERSION = 'v16';
+    const APP_VERSION = 'v17';
     if (localStorage.getItem('appVersion') !== APP_VERSION) {
       localStorage.clear();
       sessionStorage.clear();
@@ -709,7 +537,7 @@
     }
 
     // ============================================================
-    // ✅ PIANO SOUND
+    // PIANO SOUND
     // ============================================================
     function initAudioContext() {
       if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -739,8 +567,7 @@
           osc.start(now + note.time);
           osc.stop(now + note.time + note.duration);
         });
-        console.log('🎹 Join sound');
-      } catch (e) { console.log('Sound error:', e); }
+      } catch (e) {}
     }
 
     function playLeaveSound() {
@@ -765,11 +592,9 @@
           osc.start(now + note.time);
           osc.stop(now + note.time + note.duration);
         });
-        console.log('🎹 Leave sound');
-      } catch (e) { console.log('Sound error:', e); }
+      } catch (e) {}
     }
 
-    // ✅ លេងសំឡេងពេលមានសារថ្មី
     function playMessageSound() {
       try {
         const ctx = initAudioContext();
@@ -839,14 +664,12 @@
       });
 
       socket.on('connect', () => {
-        console.log('✅ Socket.IO connected:', socket.id);
         socketConnected = true;
         if (currentUser) socket.emit('register-user', { username: currentUser.username });
       });
 
       socket.on('disconnect', () => { socketConnected = false; });
 
-      // Remote Control
       socket.on('remote-request-received', ({ controllerName, controllerSocketId }) => {
         remoteControllerSocketId = controllerSocketId;
         document.getElementById('remoteRequesterName').textContent = controllerName;
@@ -877,7 +700,6 @@
         const screenX = x * window.innerWidth;
         const screenY = y * window.innerHeight;
         showRemoteClick(screenX, screenY);
-        
         const element = document.elementFromPoint(screenX, screenY);
         if (element) {
           const clickEvent = new MouseEvent('click', {
@@ -901,25 +723,14 @@
         document.getElementById('remoteRequestModal').classList.remove('active');
       });
 
-      // ✅ CHAT - Receive Messages
       socket.on('chat-message-received', ({ fromUsername, fromSocketId, message, time }) => {
-        console.log('💬 Message from:', fromUsername);
-        
         const senderId = fromSocketId;
-        
         if (!chatHistory[senderId]) chatHistory[senderId] = [];
-        chatHistory[senderId].push({
-          from: 'other',
-          fromUsername,
-          message,
-          time: time || new Date().toLocaleTimeString()
-        });
+        chatHistory[senderId].push({ from: 'other', fromUsername, message, time: time || new Date().toLocaleTimeString() });
         
-        // ✅ បង្ហាញសារ
         if (chatOpen && currentChatTarget === senderId) {
           renderChatMessages();
         } else {
-          // ✅ បង្កើន Unread
           unreadMessages[senderId] = (unreadMessages[senderId] || 0) + 1;
           totalUnread++;
           updateChatBadge();
@@ -931,14 +742,13 @@
     }
 
     // ============================================================
-    // CHAT FUNCTIONS
+    // CHAT
     // ============================================================
     function toggleChat() {
       chatOpen = !chatOpen;
       const panel = document.getElementById('chatPanel');
       if (chatOpen) {
         panel.classList.add('open');
-        // ✅ Clear unread សម្រាប់ target បច្ចុប្បន្ន
         if (currentChatTarget && unreadMessages[currentChatTarget]) {
           totalUnread -= unreadMessages[currentChatTarget];
           unreadMessages[currentChatTarget] = 0;
@@ -963,16 +773,11 @@
     function updateChatUserList() {
       const container = document.getElementById('chatUserList');
       if (!container) return;
-      
       container.innerHTML = '';
       
-      // បង្ហាញអ្នកប្រើក្នុងបន្ទប់ (លើកលែងខ្លួនឯង)
       const users = [];
-      
       if (room) {
-        room.remoteParticipants.forEach(p => {
-          users.push({ id: p.identity, name: p.identity });
-        });
+        room.remoteParticipants.forEach(p => users.push({ id: p.identity, name: p.identity }));
       }
       
       if (users.length === 0) {
@@ -983,7 +788,6 @@
       users.forEach(user => {
         const unread = unreadMessages[user.id] || 0;
         const isActive = currentChatTarget === user.id;
-        
         const div = document.createElement('div');
         div.className = 'chat-user-item' + (isActive ? ' active' : '');
         div.innerHTML = `
@@ -998,14 +802,11 @@
 
     function selectChatUser(peerId, username) {
       currentChatTarget = peerId;
-      
-      // ✅ Clear unread
       if (unreadMessages[peerId]) {
         totalUnread -= unreadMessages[peerId];
         unreadMessages[peerId] = 0;
         updateChatBadge();
       }
-      
       document.getElementById('chatTargetHeader').textContent = '💬 ' + username;
       updateChatUserList();
       renderChatMessages();
@@ -1015,52 +816,36 @@
     function renderChatMessages() {
       const container = document.getElementById('chatMessages');
       if (!container || !currentChatTarget) return;
-      
       const messages = chatHistory[currentChatTarget] || [];
-      
       if (messages.length === 0) {
         container.innerHTML = '<div class="chat-empty">ចាប់ផ្ដើមសន្ទនា...</div>';
         return;
       }
-      
       container.innerHTML = '';
       messages.forEach(msg => {
         const div = document.createElement('div');
         div.className = 'chat-msg ' + (msg.from === 'me' ? 'my-msg' : 'other-msg');
-        div.innerHTML = `
-          <div class="bubble">${escapeHtml(msg.message)}</div>
-          <div class="time">${msg.time}</div>
-        `;
+        div.innerHTML = `<div class="bubble">${escapeHtml(msg.message)}</div><div class="time">${msg.time}</div>`;
         container.appendChild(div);
       });
-      
       container.scrollTop = container.scrollHeight;
     }
 
     function sendChat() {
       const input = document.getElementById('chatInput');
       const message = input.value.trim();
-      
       if (!message || !currentChatTarget) return;
       
       const time = new Date().toLocaleTimeString();
-      
-      // ✅ ផ្ញើទៅ Server
       socket.emit('chat-message', {
         toSocketId: currentChatTarget,
-        message: message,
-        fromUsername: currentUser.username,
-        time: time
-      });
-      
-      // ✅ បន្ថែមទៅ History ខ្លួនឯង
-      if (!chatHistory[currentChatTarget]) chatHistory[currentChatTarget] = [];
-      chatHistory[currentChatTarget].push({
-        from: 'me',
         message,
+        fromUsername: currentUser.username,
         time
       });
       
+      if (!chatHistory[currentChatTarget]) chatHistory[currentChatTarget] = [];
+      chatHistory[currentChatTarget].push({ from: 'me', message, time });
       input.value = '';
       renderChatMessages();
     }
@@ -1068,17 +853,13 @@
     function showChatNotification(fromUsername, message, senderId) {
       const notif = document.createElement('div');
       notif.className = 'chat-notification';
-      notif.innerHTML = `
-        <div class="from">💬 ${fromUsername}</div>
-        <div class="preview">${escapeHtml(message)}</div>
-      `;
+      notif.innerHTML = `<div class="from">💬 ${fromUsername}</div><div class="preview">${escapeHtml(message)}</div>`;
       notif.onclick = () => {
         if (!chatOpen) toggleChat();
         selectChatUser(senderId, fromUsername);
         notif.remove();
       };
       document.body.appendChild(notif);
-      
       setTimeout(() => {
         if (notif.parentNode) {
           notif.style.opacity = '0';
@@ -1095,7 +876,7 @@
     }
 
     // ============================================================
-    // REMOTE CONTROL (Mouse Only)
+    // REMOTE CONTROL
     // ============================================================
     function showRemotePointer(x, y) {
       if (!remotePointer) {
@@ -1135,12 +916,10 @@
 
     function requestRemote(targetName) {
       if (!socketConnected) return showStatus('⚠️ កំពុងភ្ជាប់ Socket...');
-      
       const targetUsername = targetName.replace(' (អ្នក)', '').trim();
       if (!confirm(`ស្នើសុំគ្រប់គ្រង Screen របស់ "${targetUsername}"?`)) return;
-      
       socket.emit('remote-request', {
-        targetUsername: targetUsername,
+        targetUsername,
         controllerName: currentUser.displayName || currentUser.username
       });
       showStatus('📨 ស្នើសុំរួច! សូមរង់ចាំការអនុញ្ញាត...');
@@ -1196,9 +975,8 @@
       container.style.display = 'flex';
       
       const video = document.getElementById('remoteScreenVideo');
-      
-      // រក Screen Share Track
       let targetScreenTrack = null;
+      
       room.remoteParticipants.forEach(participant => {
         if (participant.identity === document.getElementById('remoteTargetName').textContent) {
           participant.videoTrackPublications.forEach(pub => {
@@ -1222,7 +1000,6 @@
         });
       }
       
-      // ✅ Mouse Only
       video.onmousemove = (e) => {
         if (!isRemoteControlling) return;
         const rect = video.getBoundingClientRect();
@@ -1272,7 +1049,7 @@
     }
 
     // ============================================================
-    // CONTEXT MENU FOR SCREEN SHARE
+    // SCREEN SHARE CONTEXT MENU
     // ============================================================
     function showScreenShareContextMenu(event, videoElement, name) {
       event.preventDefault();
@@ -1339,6 +1116,7 @@
         document.getElementById('btnScreen').innerHTML = '🛑 ឈប់';
         document.getElementById('btnScreen').className = 'btn-danger';
         showStatus('✅ ប្តូរ Screen ជោគជ័យ!');
+        updateScreenSharingList();
       } catch (error) {
         showStatus('❌ បោះបង់');
         isScreenSharing = false;
@@ -1356,6 +1134,7 @@
         document.getElementById('btnScreen').innerHTML = '🖥️ ចែកអេក្រង់';
         document.getElementById('btnScreen').className = 'btn-warning';
         showStatus('🛑 ឈប់ Share');
+        updateScreenSharingList();
       } catch (e) {}
     }
 
@@ -1537,6 +1316,9 @@
 
     function openAdmin() { window.location.href = '/admin.html'; }
 
+    // ============================================================
+    // JOIN ROOM
+    // ============================================================
     async function joinRoom(roomName) {
       showLoading('⏳ កំពុងចូល ' + roomName + '...');
       const timeoutId = setTimeout(() => {
@@ -1582,6 +1364,11 @@
         displayLocalTracks(currentUser.displayName || currentUser.username);
         room.remoteParticipants.forEach(p => { addParticipantToList(p.identity); displayRemoteTracks(p); });
 
+        // ✅ បង្ហាញ Avatar ប្រសិនបើកាមេរ៉ាបិទ
+        if (!isCameraOn) {
+          showAvatarPlaceholder(localParticipant.identity, currentUser.displayName || currentUser.username, true);
+        }
+
         try { await fetch('/api/online/join', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ roomId: roomName }) }); } catch (e) {}
 
         document.getElementById('login-screen').style.display = 'none';
@@ -1594,6 +1381,7 @@
         }
         
         updateParticipantCount();
+        updateScreenSharingList();
         updateMediaButtons();
         hideLoading();
         showStatus('✅ ភ្ជាប់ជោគជ័យ!');
@@ -1614,7 +1402,11 @@
     function displayLocalTracks(username) {
       try {
         Array.from(localParticipant.videoTrackPublications.values()).forEach(pub => {
-          if (pub.track) attachVideoTrack(pub.track, username + ' (អ្នក)', pub.source === 'screen_share');
+          if (pub.track && pub.source === 'camera') {
+            attachVideoTrack(pub.track, username + ' (អ្នក)', false);
+          } else if (pub.track && pub.source === 'screen_share') {
+            attachVideoTrack(pub.track, username + ' (អ្នក)', true);
+          }
         });
         Array.from(localParticipant.audioTrackPublications.values()).forEach(pub => { if (pub.track) pub.track.attach(); });
       } catch (e) {}
@@ -1623,7 +1415,9 @@
     function displayRemoteTracks(participant) {
       try {
         Array.from(participant.videoTrackPublications.values()).forEach(pub => {
-          if (pub.isSubscribed && pub.track) attachVideoTrack(pub.track, participant.identity, pub.source === 'screen_share');
+          if (pub.isSubscribed && pub.track) {
+            attachVideoTrack(pub.track, participant.identity, pub.source === 'screen_share');
+          }
         });
         Array.from(participant.audioTrackPublications.values()).forEach(pub => { if (pub.isSubscribed && pub.track) pub.track.attach(); });
       } catch (e) {}
@@ -1633,6 +1427,7 @@
       room.on('participantConnected', (participant) => {
         addParticipantToList(participant.identity);
         updateParticipantCount();
+        updateScreenSharingList();
         updateChatUserList();
         showStatus('👤 ' + participant.identity + ' បានចូល');
         playJoinSound();
@@ -1644,54 +1439,110 @@
         removeVideoByParticipant(participant.identity, false);
         removeVideoByParticipant(participant.identity, true);
         updateParticipantCount();
+        updateScreenSharingList();
         updateChatUserList();
         playLeaveSound();
       });
 
       room.on('trackSubscribed', (track, publication, participant) => {
-        if (track.kind === 'video') attachVideoTrack(track, participant.identity, publication.source === 'screen_share');
-        else if (track.kind === 'audio') track.attach();
+        if (track.kind === 'video') {
+          const isScreen = publication.source === 'screen_share';
+          attachVideoTrack(track, participant.identity, isScreen);
+          if (!isScreen) hideAvatarPlaceholder(participant.identity);
+          if (isScreen) updateScreenSharingList();
+        } else if (track.kind === 'audio') {
+          track.attach();
+        }
       });
 
       room.on('trackUnsubscribed', (track, publication, participant) => {
         track.detach();
-        if (publication.source === 'screen_share') removeVideoByParticipant(participant.identity, true);
+        if (publication.source === 'screen_share') {
+          removeVideoByParticipant(participant.identity, true);
+          updateScreenSharingList();
+        } else if (track.kind === 'video') {
+          showAvatarPlaceholder(participant.identity, participant.identity);
+        }
+      });
+
+      // ✅ តាមដានកាមេរ៉ា On/Off
+      room.on('trackMuted', (publication, participant) => {
+        if (publication.kind === 'video' && publication.source === 'camera') {
+          showAvatarPlaceholder(participant.identity, participant.identity);
+        }
+        if (publication.source === 'screen_share') {
+          updateScreenSharingList();
+        }
+      });
+
+      room.on('trackUnmuted', (publication, participant) => {
+        if (publication.kind === 'video' && publication.source === 'camera') {
+          hideAvatarPlaceholder(participant.identity);
+        }
+        if (publication.source === 'screen_share') {
+          updateScreenSharingList();
+        }
       });
 
       room.on('localTrackPublished', (publication) => {
-        if (publication.source === 'screen_share' && publication.track) attachVideoTrack(publication.track, localParticipant.identity + ' (អ្នក)', true);
-        else if (publication.kind === 'video' && publication.track) attachVideoTrack(publication.track, localParticipant.identity + ' (អ្នក)', false);
+        if (publication.source === 'screen_share' && publication.track) {
+          attachVideoTrack(publication.track, localParticipant.identity + ' (អ្នក)', true);
+          updateScreenSharingList();
+        } else if (publication.kind === 'video' && publication.track && publication.source === 'camera') {
+          attachVideoTrack(publication.track, localParticipant.identity + ' (អ្នក)', false);
+          hideAvatarPlaceholder(localParticipant.identity);
+        }
       });
 
       room.on('localTrackUnpublished', (publication) => {
-        if (publication.source === 'screen_share') removeVideoByParticipant(localParticipant.identity + ' (អ្នក)', true);
+        if (publication.source === 'screen_share') {
+          removeVideoByParticipant(localParticipant.identity + ' (អ្នក)', true);
+          updateScreenSharingList();
+        } else if (publication.kind === 'video' && publication.source === 'camera') {
+          showAvatarPlaceholder(localParticipant.identity, currentUser.displayName || currentUser.username, true);
+        }
       });
 
       room.on('disconnected', () => leaveRoom(false));
     }
 
+    // ============================================================
+    // ATTACH VIDEO TRACK
+    // ============================================================
     function attachVideoTrack(track, name, isScreen = false) {
       if (!track) return;
       const safeName = name.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
       const boxId = (isScreen ? 'screen-' : 'video-') + safeName;
       const gridId = isScreen ? 'screenGrid' : 'videoGrid';
       
+      const isSelf = name.includes('អ្នក');
+      
       let box = document.getElementById(boxId);
       if (box) {
         const oldVideo = box.querySelector('video');
         if (oldVideo && oldVideo.srcObject && oldVideo.srcObject.id === track.mediaStreamTrack.id) return;
         if (oldVideo) oldVideo.remove();
+        
         const videoElement = track.attach();
-        videoElement.autoplay = true; videoElement.playsInline = true;
-        if (name.includes('អ្នក')) videoElement.muted = true;
+        videoElement.autoplay = true; 
+        videoElement.playsInline = true;
+        if (isSelf) videoElement.muted = true;
+        
+        // ✅ លុប Avatar ចេញ
+        const avatar = box.querySelector('.avatar-placeholder');
+        if (avatar) avatar.remove();
+        box.classList.remove('no-video');
+        
         box.insertBefore(videoElement, box.firstChild);
-        if (isScreen) addScreenShareContextMenu(videoElement, name, name.includes('អ្នក'));
+        
+        if (isScreen) addScreenShareContextMenu(videoElement, name, isSelf);
         return;
       }
 
       const videoElement = track.attach();
-      videoElement.autoplay = true; videoElement.playsInline = true;
-      if (name.includes('អ្នក')) videoElement.muted = true;
+      videoElement.autoplay = true; 
+      videoElement.playsInline = true;
+      if (isSelf) videoElement.muted = true;
 
       box = document.createElement('div');
       box.className = 'video-box' + (isScreen ? ' screen-share' : '');
@@ -1705,9 +1556,52 @@
       document.getElementById(gridId).appendChild(box);
       
       box.onclick = () => openFullscreen(videoElement, name, isScreen);
-      if (isScreen) addScreenShareContextMenu(videoElement, name, name.includes('អ្នក'));
+      if (isScreen) addScreenShareContextMenu(videoElement, name, isSelf);
       if (isScreen) document.getElementById('screenTitle').style.display = 'flex';
       updateVideoCounts();
+    }
+
+    // ============================================================
+    // AVATAR PLACEHOLDER
+    // ============================================================
+    function showAvatarPlaceholder(peerId, displayName, isSelf = false) {
+      const safeName = displayName.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
+      const boxId = 'video-' + safeName;
+      const box = document.getElementById(boxId);
+      
+      if (!box) return;
+      if (box.querySelector('.avatar-placeholder')) return;
+      
+      // ✅ លុបវីដេអូ
+      const video = box.querySelector('video');
+      if (video) video.remove();
+      
+      // ✅ បន្ថែម Avatar
+      const initial = displayName.charAt(0).toUpperCase();
+      const avatarHTML = `
+        <div class="avatar-placeholder" id="avatar-${safeName}">
+          <div class="avatar-circle">${initial}</div>
+          <div class="avatar-name">${displayName}${isSelf ? ' (អ្នក)' : ''}</div>
+          <div class="avatar-status">📷 កាមេរ៉ាបិទ</div>
+        </div>
+      `;
+      
+      box.classList.add('no-video');
+      box.insertAdjacentHTML('afterbegin', avatarHTML);
+      
+      const expandIcon = box.querySelector('.expand-icon');
+      if (expandIcon) expandIcon.remove();
+    }
+
+    function hideAvatarPlaceholder(displayName) {
+      const safeName = displayName.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
+      const boxId = 'video-' + safeName;
+      const box = document.getElementById(boxId);
+      
+      if (!box) return;
+      const avatar = box.querySelector('.avatar-placeholder');
+      if (avatar) avatar.remove();
+      box.classList.remove('no-video');
     }
 
     function openFullscreen(videoElement, name, isScreen) {
@@ -1767,13 +1661,27 @@
         isCameraOn = !isCameraOn;
         await localParticipant.setCameraEnabled(isCameraOn);
         updateMediaButtons();
-        if (!isCameraOn) removeVideoByParticipant(localParticipant.identity + ' (អ្នក)', false);
-      } catch (e) {}
+        
+        if (!isCameraOn) {
+          showAvatarPlaceholder(
+            localParticipant.identity,
+            currentUser.displayName || currentUser.username,
+            true
+          );
+        } else {
+          hideAvatarPlaceholder(currentUser.displayName || currentUser.username);
+        }
+      } catch (error) {
+        console.error('Camera toggle error:', error);
+        isCameraOn = !isCameraOn;
+      }
     }
 
     async function toggleScreenShare() {
       if (!localParticipant) return;
-      if (isMobile && !navigator.mediaDevices.getDisplayMedia) return showStatus('⚠️ ទូរស័ព្ទមិនអាច Share!');
+      if (isMobile) return showScreenShareNotSupportedModal();
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) return showScreenShareNotSupportedModal();
+      
       try {
         isScreenSharing = !isScreenSharing;
         await localParticipant.setScreenShareEnabled(isScreenSharing, { audio: true, video: { resolution: LivekitClient.VideoPresets.h1080.resolution } });
@@ -1781,10 +1689,35 @@
         btn.innerHTML = isScreenSharing ? '🛑 ឈប់' : '🖥️ ចែកអេក្រង់';
         btn.className = isScreenSharing ? 'btn-danger' : 'btn-warning';
         if (!isScreenSharing) removeVideoByParticipant(localParticipant.identity + ' (អ្នក)', true);
-      } catch (e) { isScreenSharing = false; }
+        updateScreenSharingList();
+      } catch (e) { 
+        isScreenSharing = false; 
+        document.getElementById('btnScreen').innerHTML = '🖥️ ចែកអេក្រង់';
+        document.getElementById('btnScreen').className = 'btn-warning';
+      }
     }
 
-    // ✅ SIDEBAR - Participants List
+    function showScreenShareNotSupportedModal() {
+      const modal = document.createElement('div');
+      modal.style.cssText = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 999999; display: flex; justify-content: center; align-items: center; padding: 20px;`;
+      modal.innerHTML = `
+        <div style="background: #16213e; border: 2px solid #f59e0b; border-radius: 15px; padding: 35px 30px; max-width: 440px; width: 100%; text-align: center;">
+          <div style="font-size: 64px; margin-bottom: 15px;">📱</div>
+          <h2 style="color: #f59e0b; margin-bottom: 15px; font-size: 22px;">មុខងារនេះមិនទ្រទ្រង់</h2>
+          <p style="color: #cbd5e1; font-size: 14px; line-height: 1.7; margin-bottom: 20px;">
+            ការ Share Screen <strong style="color: #f59e0b;">មិនអាចធ្វើបានលើទូរស័ព្ទ</strong> តាមរយៈ Browser ទេ។<br><br>
+            មុខងារនេះដំណើរការបាន <strong style="color: #10b981;">តែលើកុំព្យូទ័រ</strong> ប៉ុណ្ណោះ។
+          </p>
+          <button onclick="this.closest('div').parentElement.remove()" style="padding: 14px 40px; background: #00b4d8; color: #fff; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; font-family: inherit;">យល់ហើយ</button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+    }
+
+    // ============================================================
+    // SIDEBAR - PARTICIPANTS
+    // ============================================================
     function addParticipantToList(name) {
       const list = document.getElementById('participantsList');
       const safeName = name.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
@@ -1799,7 +1732,7 @@
       if (isSelf) item.classList.add('me');
       
       const displayName = name.replace(' (អ្នក)', '');
-      const remoteBtn = (!isSelf) ? `<button class="remote-btn" onclick="event.stopPropagation(); requestRemote('${name}')">🎮 Remote</button>` : '';
+      const remoteBtn = (!isSelf) ? `<button class="remote-btn" onclick="event.stopPropagation(); requestRemote('${name}')">🎮</button>` : '';
       
       item.innerHTML = `
         <div class="dot"></div>
@@ -1815,13 +1748,78 @@
       if (item) item.remove();
     }
 
+    // ============================================================
+    // SIDEBAR - SCREEN SHARING
+    // ============================================================
+    function updateScreenSharingList() {
+      const list = document.getElementById('screenSharingList');
+      const countEl = document.getElementById('screenSharingCount');
+      
+      if (!list || !room) return;
+      
+      const sharingUsers = [];
+      
+      // ✅ Local User
+      if (isScreenSharing && localParticipant) {
+        sharingUsers.push({
+          name: localParticipant.identity + ' (អ្នក)',
+          isSelf: true
+        });
+      }
+      
+      // ✅ Remote Users
+      room.remoteParticipants.forEach(participant => {
+        let isSharing = false;
+        participant.videoTrackPublications.forEach(pub => {
+          if (pub.source === 'screen_share' && pub.track && !pub.isMuted) {
+            isSharing = true;
+          }
+        });
+        if (isSharing) {
+          sharingUsers.push({
+            name: participant.identity,
+            isSelf: false
+          });
+        }
+      });
+      
+      countEl.textContent = sharingUsers.length;
+      
+      if (sharingUsers.length === 0) {
+        list.innerHTML = '<div class="empty-section">គ្មានអ្នក Share Screen</div>';
+        return;
+      }
+      
+      list.innerHTML = '';
+      sharingUsers.forEach(user => {
+        const safeName = user.name.replace(/[^a-zA-Z0-9\u1780-\u17FF]/g, '-');
+        const item = document.createElement('div');
+        item.className = 'participant-name sharing' + (user.isSelf ? ' me' : '');
+        item.id = 'sharing-' + safeName;
+        
+        const displayName = user.name.replace(' (អ្នក)', '');
+        const remoteBtn = (!user.isSelf) ? `<button class="remote-btn" onclick="event.stopPropagation(); requestRemote('${user.name}')">🎮</button>` : '';
+        
+        item.innerHTML = `
+          <div class="dot"></div>
+          <span style="flex:1;">${displayName}${user.isSelf ? ' (អ្នក)' : ''}</span>
+          ${remoteBtn}
+        `;
+        list.appendChild(item);
+      });
+    }
+
     function updateParticipantCount() {
       if (!room) return;
       const count = room.remoteParticipants.size + 1;
       document.getElementById('participantCount').textContent = count;
       if (localParticipant) addParticipantToList(localParticipant.identity + ' (អ្នក)');
+      updateScreenSharingList();
     }
 
+    // ============================================================
+    // LEAVE ROOM
+    // ============================================================
     async function leaveRoom(showLobby = true) {
       if (isBeingControlled) stopBeingControlled();
       if (isRemoteControlling) endRemoteControl();
@@ -1832,6 +1830,7 @@
       document.getElementById('videoGrid').innerHTML = '';
       document.getElementById('screenGrid').innerHTML = '';
       document.getElementById('participantsList').innerHTML = '';
+      document.getElementById('screenSharingList').innerHTML = '<div class="empty-section">គ្មានអ្នក Share Screen</div>';
       document.getElementById('chatUserList').innerHTML = '';
       document.getElementById('chatMessages').innerHTML = '<div class="chat-empty">ជ្រើសរើសអ្នកប្រើដើម្បីសន្ទនា</div>';
       document.getElementById('screenTitle').style.display = 'none';
